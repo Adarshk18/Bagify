@@ -53,6 +53,8 @@ module.exports.loginUser = async(req,res)=>{
                 let token = generateToken(user);
                 res.cookie("token",token);
                 res.send("you can login");
+            }else{
+                return res.send("Email or Pawword is incorrect!")
             }
         })
     }catch(err){
