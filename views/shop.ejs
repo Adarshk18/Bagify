@@ -1,49 +1,81 @@
 <%- include('./partials/header') %>
-<div class="w-full h-screen flex items-start px-20 py-20">
-  <div class="w-[25%] flex h-screen flex-col items-start">
-    <div class="flex items-center gap-2">
-      <h3>sort by</h3>
+
+<div class="min-h-screen flex gap-8 px-10 py-10 bg-gray-50">
+  <!-- Sidebar -->
+  <aside class="w-1/4">
+    <div class="mb-10">
+      <h3 class="font-semibold mb-2">Sort by</h3>
       <form action="/shop">
-        <select class="border-[1px] px-2 py-1" name="sortby" id="">
+        <select class="border px-3 py-2 rounded w-full" name="sortby">
           <option value="popular">Popular</option>
           <option value="newest">Newest</option>
         </select>
       </form>
     </div>
-    <div class="flex flex-col mt-20">
-      <a class="block w-fit mb-2" href="">New Collection</a>
-      <a class="block w-fit mb-2" href="">All Products</a>
-      <a class="block w-fit mb-2" href="">Discounted Products</a>
+
+    <div class="mb-10">
+      <h3 class="font-semibold mb-2">Categories</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#" class="hover:underline">New Collection</a></li>
+        <li><a href="#" class="hover:underline">All Products</a></li>
+        <li><a href="#" class="hover:underline">Discounted Products</a></li>
+      </ul>
     </div>
-    <div class="mt-32">
-      <a class="block w-fit mb-2" href="">Filter by :</a>
-      <a class="block w-fit mb-2" href="">Availability</a>
-      <a class="block w-fit mb-2" href="">Discount</a>
+
+    <div>
+      <h3 class="font-semibold mb-2">Filter by</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#" class="hover:underline">Availability</a></li>
+        <li><a href="#" class="hover:underline">Discount</a></li>
+      </ul>
     </div>
-  </div>
-  <div class="w-[75%] flex flex-col gap-5 h-screen"> 
-    <div class="flex items-start gap-5">
-      <% products.forEach(function(product){ %>
-      <div class="w-60">
+  </aside>
+
+  <!-- Main Product Grid -->
+  <main class="w-3/4">
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8"
+    >
+      <% products.forEach(function(product) { %>
+      <div
+        class="w-full shadow rounded overflow-hidden bg-white transform hover:scale-105 transition-transform duration-200 relative"
+      >
+       <% if ((product.discount + '').trim() !== '') { %>
+
+        <span
+          class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10"
+        >
+          ₹ <%= product.discount %> OFF
+        </span>
+        <% } %>
         <div
-          class="w-full h-52 flex items-center justify-center bg-[<%= product.bgcolor %>]"
+          class="w-full h-52 flex items-center justify-center bg-gradient-to-r from-white via-[<%= product.bgcolor %>] to-white"
         >
           <img
-            class="h-[12rem]"
-            src="data:image/jpeg;base64,<%= product.image.toString('base64') %>"
-            alt=""
+            class="h-full object-contain p-2"
+            src="/uploads/<%= product.image %>"
+            alt="Product Image"
           />
         </div>
         <div
-          class="flex justify-between bg-[<%= product.panelcolor %>] items-center px-4 py-4 text-[<%= product.textcolor %>]"
+          class="flex justify-between items-center px-4 py-3"
+          style="background-color: <%= product.panelcolor %>; color: <%= product.textcolor %>;"
         >
+
           <div>
-            <h3><%= product.name %></h3>
-            <h4>₹ <%= product.price %></h4>
+            <h3 class="font-semibold"><%= product.name %></h3>
+            <h4 class="text-sm">
+              ₹ <%= product.price %> <% if ((product.discount + '').trim() !== '') { %>
+
+              <span class="line-through text-gray-300 ml-2">
+                ₹ <%= parseInt(product.price) + parseInt(product.discount) %>
+              </span>
+              <% } %>
+            </h4>
           </div>
           <a
-            class="w-7 h-7 flex items-center justify-center rounded-full bg-white"
-            href=""
+            class="w-7 h-7 flex items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 transition"
+            href="#"
           >
             <i class="ri-add-line"></i>
           </a>
@@ -51,6 +83,7 @@
       </div>
       <% }) %>
     </div>
-  </div>
+  </main>
 </div>
+
 <%- include('./partials/footer') %>
