@@ -1,89 +1,72 @@
 <%- include('./partials/header') %>
 
-<div class="min-h-screen flex gap-8 px-10 py-10 bg-gray-50">
-  <!-- Sidebar -->
-  <aside class="w-1/4">
-    <div class="mb-10">
-      <h3 class="font-semibold mb-2">Sort by</h3>
-      <form action="/shop">
-        <select class="border px-3 py-2 rounded w-full" name="sortby">
-          <option value="popular">Popular</option>
-          <option value="newest">Newest</option>
-        </select>
-      </form>
-    </div>
-
-    <div class="mb-10">
-      <h3 class="font-semibold mb-2">Categories</h3>
-      <ul class="space-y-2 text-sm">
-        <li><a href="#" class="hover:underline">New Collection</a></li>
-        <li><a href="#" class="hover:underline">All Products</a></li>
-        <li><a href="#" class="hover:underline">Discounted Products</a></li>
-      </ul>
-    </div>
-
-    <div>
-      <h3 class="font-semibold mb-2">Filter by</h3>
-      <ul class="space-y-2 text-sm">
-        <li><a href="#" class="hover:underline">Availability</a></li>
-        <li><a href="#" class="hover:underline">Discount</a></li>
-      </ul>
-    </div>
-  </aside>
-
-  <!-- Main Product Grid -->
-  <main class="w-3/4">
-    <div
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8"
-    >
-      <% products.forEach(function(product) { %>
-      <div
-        class="w-full shadow rounded overflow-hidden bg-white transform hover:scale-105 transition-transform duration-200 relative"
-      >
-       <% if ((product.discount + '').trim() !== '') { %>
-
-        <span
-          class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10"
-        >
-          ₹ <%= product.discount %> OFF
-        </span>
-        <% } %>
-        <div
-          class="w-full h-52 flex items-center justify-center bg-gradient-to-r from-white via-[<%= product.bgcolor %>] to-white"
-        >
-          <img
-            class="h-full object-contain p-2"
-            src="/uploads/<%= product.image %>"
-            alt="Product Image"
-          />
+<div class="min-h-screen bg-gray-50 px-6 py-10">
+  <div class="flex flex-col lg:flex-row gap-10">
+    <!-- Sidebar -->
+    <aside class="w-full lg:w-1/4">
+      <div class="space-y-10">
+        <div>
+          <h3 class="text-lg font-semibold mb-3">Sort by</h3>
+          <form action="/shop">
+            <select class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none" name="sortby">
+              <option value="popular">Popular</option>
+              <option value="newest">Newest</option>
+            </select>
+          </form>
         </div>
-        <div
-          class="flex justify-between items-center px-4 py-3"
-          style="background-color: <%= product.panelcolor %>; color: <%= product.textcolor %>;"
-        >
 
-          <div>
-            <h3 class="font-semibold"><%= product.name %></h3>
-            <h4 class="text-sm">
-              ₹ <%= product.price %> <% if ((product.discount + '').trim() !== '') { %>
+        <div>
+          <h3 class="text-lg font-semibold mb-3">Categories</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:underline text-gray-700">New Collection</a></li>
+            <li><a href="#" class="hover:underline text-gray-700">All Products</a></li>
+            <li><a href="#" class="hover:underline text-gray-700">Discounted Products</a></li>
+          </ul>
+        </div>
 
-              <span class="line-through text-gray-300 ml-2">
-                ₹ <%= parseInt(product.price) + parseInt(product.discount) %>
-              </span>
-              <% } %>
-            </h4>
-          </div>
-          <a
-            class="w-7 h-7 flex items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 transition"
-            href="#"
-          >
-            <i class="ri-add-line"></i>
-          </a>
+        <div>
+          <h3 class="text-lg font-semibold mb-3">Filter by</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:underline text-gray-700">Availability</a></li>
+            <li><a href="#" class="hover:underline text-gray-700">Discount</a></li>
+          </ul>
         </div>
       </div>
-      <% }) %>
-    </div>
-  </main>
+    </aside>
+
+    <!-- Products Grid -->
+    <main class="w-full lg:w-3/4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        <% products.forEach(function(product) { %>
+          <div class="bg-white shadow-md rounded-lg overflow-hidden transition-transform transform hover:scale-105 relative">
+            
+            <% if ((product.discount + '').trim() !== '') { %>
+              <span class="absolute top-3 left-3 bg-red-600 text-white text-xs px-3 py-1 rounded-full z-10">
+                ₹ <%= product.discount %> OFF
+              </span>
+            <% } %>
+
+            <div class="bg-gradient-to-br from-white via-[<%= product.bgcolor %>] to-white flex items-center justify-center h-48">
+              <img src="/images/<%= product.image %>" alt="<%= product.name %>" class="h-full object-contain p-4" />
+            </div>
+
+            <div class="p-4" style="background-color: <%= product.panelcolor %>; color: <%= product.textcolor %>;">
+              <h3 class="font-semibold text-lg mb-1"><%= product.name %></h3>
+              <div class="flex items-center justify-between text-sm">
+                <span>₹ <%= product.price %></span>
+                <% if ((product.discount + '').trim() !== '') { %>
+                  <span class="line-through text-gray-400">₹ <%= parseInt(product.price) + parseInt(product.discount) %></span>
+                <% } %>
+                <a href="#" class="text-black bg-white rounded-full p-1 hover:bg-gray-200">
+                  <i class="ri-add-line text-lg"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </main>
+  </div>
 </div>
 
 <%- include('./partials/footer') %>

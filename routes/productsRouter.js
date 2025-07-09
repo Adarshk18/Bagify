@@ -19,7 +19,7 @@ router.post("/create",upload.single("image"), async(req,res)=>{
       bgcolor,
       panelcolor,
       textcolor,
-      image: req.file.buffer,
+      image: req.file.filename,
     });
 
     // Redirect or show success message
