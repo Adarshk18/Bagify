@@ -1,48 +1,71 @@
 <%- include('./partials/header') %>
+
 <div class="px-10 py-10">
   <h2 class="text-2xl font-bold mb-6">🛒 Your Cart</h2>
-  <% if(cartItems.length === 0) { %>
-  <p class="text-gray-600">Cart is empty</p>
-  <% } else { %>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <% cartItems.forEach(item => { %>
-    <div class="bg-white rounded shadow p-4 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <img
-          src="/images/<%= item.product.image %>"
-          class="w-20 h-20 object-contain rounded"
-        />
-        <div>
-          <h4 class="text-lg font-semibold"><%= item.product.name %></h4>
-          <p>
-            ₹ <%= item.product.price - item.product.discount %> × <%=
-            item.quantity %>
-          </p>
-        </div>
-      </div>
-      <a
-        href="/cart/remove/<%= item.product._id %>"
-        class="text-red-600 text-sm"
-        >Remove</a
-      >
-    </div>
-    <% }) %>
-  </div>
 
-  <div class="mt-10">
-    <h3 class="text-xl font-semibold">Total: ₹ <%= total %></h3>
-    <a
-      href="/checkout"
-      class="mt-4 inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-      >Proceed to Checkout</a
-    >
-    <a
-      href="/orders/checkout"
-      class="mt-4 inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-    >
-      Place Order
-    </a>
-  </div>
+  <% if(cartItems.length === 0) { %>
+    <p class="text-gray-600 mb-4">Your cart is empty.</p>
+    <a href="/shop" class="text-blue-600 underline">← Back to Shop</a>
+  <% } else { %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <% cartItems.forEach(item => { %>
+        <div class="bg-white rounded shadow p-4 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <img
+              src="/images/<%= item.product.image %>"
+              class="w-20 h-20 object-contain rounded"
+            />
+            <div>
+              <h4 class="text-lg font-semibold"><%= item.product.name %></h4>
+              <p>
+                ₹ <%= item.product.price - item.product.discount %> × <%= item.quantity %>
+              </p>
+              <div class="flex items-center gap-2 mt-2">
+                <form action="/cart/update" method="POST">
+                  <input type="hidden" name="id" value="<%= item.product._id %>" />
+                  <input type="hidden" name="action" value="decrease" />
+                  <button class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">-</button>
+                </form>
+                <form action="/cart/update" method="POST">
+                  <input type="hidden" name="id" value="<%= item.product._id %>" />
+                  <input type="hidden" name="action" value="increase" />
+                  <button class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">+</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <a
+            href="/cart/remove/<%= item.product._id %>"
+            class="text-red-600 text-sm"
+          >Remove</a>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="mt-10">
+      <h3 class="text-xl font-semibold">Total: ₹ <%= total %></h3>
+      <div class="flex flex-wrap gap-4 mt-4">
+        <a
+          href="/orders/checkout"
+          class="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+        >
+          Place Order (COD)
+        </a>
+        <a
+          href="/orders/pay"
+          class="inline-block bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+        >
+          Pay with Razorpay
+        </a>
+        <a
+          href="/shop"
+          class="inline-block text-blue-500 underline px-4 py-2"
+        >
+          ← Continue Shopping
+        </a>
+      </div>
+    </div>
   <% } %>
 </div>
+
 <%- include('./partials/footer') %>

@@ -18,7 +18,7 @@ router.post("/add/:id", isLoggedIn, async (req, res) => {
 
   await user.save();
   req.flash("success", "Added to cart!");
-  res.redirect("/shop");
+  res.redirect("/cart");
 });
 
 // 🚮 Remove from cart

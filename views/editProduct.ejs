@@ -1,15 +1,99 @@
 <%- include('./partials/header') %>
-<div class="p-10">
-  <h2 class="text-2xl font-semibold mb-5">Edit Product</h2>
-  <form action="/admin/edit/<%= product._id %>" method="post" enctype="multipart/form-data" class="space-y-4">
-    <input name="name" type="text" class="border p-2 w-full" value="<%= product.name %>" />
-    <input name="price" type="text" class="border p-2 w-full" value="<%= product.price %>" />
-    <input name="discount" type="text" class="border p-2 w-full" value="<%= product.discount %>" />
-    <input name="bgcolor" type="text" class="border p-2 w-full" value="<%= product.bgcolor %>" />
-    <input name="panelcolor" type="text" class="border p-2 w-full" value="<%= product.panelcolor %>" />
-    <input name="textcolor" type="text" class="border p-2 w-full" value="<%= product.textcolor %>" />
-    <input type="file" name="image" />
-    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Update</button>
-  </form>
+
+<div class="min-h-screen bg-gray-50 px-8 py-12">
+  <div class="max-w-3xl mx-auto bg-white shadow rounded-lg p-8">
+    <h2 class="text-2xl font-bold mb-6 text-center">✏️ Edit Product</h2>
+
+    <form action="/admin/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" class="space-y-8">
+      <!-- Current Image Preview -->
+      <div class="text-center">
+        <p class="text-gray-600 mb-2">Current Product Image:</p>
+        <img
+          src="/images/<%= product.image %>"
+          alt="Current Image"
+          class="w-40 h-40 object-contain mx-auto border rounded"
+        />
+      </div>
+
+      <!-- Product Fields -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <label class="block font-medium mb-1">Product Name</label>
+          <input
+            name="name"
+            type="text"
+            required
+            value="<%= product.name %>"
+            class="w-full border px-4 py-2 rounded focus:outline-none"
+          />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">New Image (Optional)</label>
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            class="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Price</label>
+          <input
+            name="price"
+            type="number"
+            value="<%= product.price %>"
+            class="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Discount</label>
+          <input
+            name="discount"
+            type="number"
+            value="<%= product.discount %>"
+            class="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Background Color</label>
+          <input
+            name="bgcolor"
+            type="text"
+            value="<%= product.bgcolor %>"
+            class="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Panel Color</label>
+          <input
+            name="panelcolor"
+            type="text"
+            value="<%= product.panelcolor %>"
+            class="w-full border px-4 py-2 rounded"
+          />
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Text Color</label>
+          <input
+            name="textcolor"
+            type="text"
+            value="<%= product.textcolor %>"
+            class="w-full border px-4 py-2 rounded"
+          />
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="text-center mt-6">
+        <button
+          type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full"
+        >
+          💾 Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
+
 <%- include('./partials/footer') %>

@@ -1,23 +1,19 @@
-const jwt = require("jsonwebtoken");
 const userModel = require("../models/user-model");
 
-module.exports = async (req, res, next) => {
-    if (!req.cookies.token) {
-        req.flash("error", "Please login first");
-        return res.redirect("/");
-    }
+module.exports = async function isLoggedIn(req, res, next) {
+  const userId = req.session?.passport?.user;
 
-    try {
-        let decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
-        let user = await userModel.findById(decoded.id).select("-password");
+  if (!userId) {
+    req.flash("error", "Please login first.");
+    return res.redirect("/");
+  }
 
-        if (!user) throw new Error("User not found");
-        
-        req.user = user;
+  const user = await userModel.findById(userId);
+  if (!user) {
+    req.flash("error", "Invalid session. Please login again.");
+    return res.redirect("/");
+  }
 
-        next();
-    } catch (error) {
-        req.flash("error", "something went wrong.");
-        return res.redirect("/");
-    }
+  req.user = user;
+  next();
 };

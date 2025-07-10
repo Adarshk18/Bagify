@@ -1,0 +1,57 @@
+<%- include('./partials/header') %>
+
+<div class="min-h-screen bg-gray-50 px-10 py-10">
+  <div class="bg-white rounded shadow p-6 max-w-3xl mx-auto">
+    <h2 class="text-2xl font-bold mb-4">👤 Your Profile</h2>
+
+    <div class="flex items-center gap-6 mb-6">
+      <img
+        src="/images/<%= user.picture || 'default-avatar.png' %>"
+        class="w-20 h-20 object-cover rounded-full border"
+        alt="Profile Picture"
+      />
+      <div>
+        <h3 class="text-xl font-semibold"><%= user.fullname %></h3>
+        <p class="text-gray-600"><%= user.email %></p>
+        <p class="text-gray-600">📞 <%= user.contact || "Not added" %></p>
+      </div>
+    </div>
+
+    <hr class="my-6" />
+
+    <h3 class="text-xl font-semibold mb-3">Recent Orders</h3>
+    <% if (user.orders.length === 0) { %>
+      <p class="text-gray-500">No orders placed yet.</p>
+    <% } else { %>
+      <div class="space-y-4">
+        <% user.orders.slice(-3).reverse().forEach(order => { %>
+          <div class="border p-3 rounded-md bg-gray-50">
+            <div class="flex justify-between items-center">
+              <span>🧾 Order ID: <%= order._id %></span>
+              <span class="text-sm text-blue-600 font-medium"><%= order.status %></span>
+            </div>
+            <ul class="mt-2 text-sm text-gray-700">
+              <% order.items.forEach(item => { %>
+                <li>
+                  👜 <%= item.product.name %> × <%= item.quantity %> – ₹<%= item.product.price - item.product.discount %> each
+                </li>
+              <% }) %>
+            </ul>
+            <p class="mt-2 text-right font-semibold text-green-600">Total: ₹<%= order.totalAmount %></p>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div class="mt-10">
+      <a
+        href="/users/logout"
+        class="text-red-500 hover:underline text-sm"
+      >
+        Logout
+      </a>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>

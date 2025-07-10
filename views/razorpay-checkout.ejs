@@ -1,12 +1,19 @@
 <%- include('./partials/header') %>
-<div class="p-10">
-  <h2 class="text-2xl mb-4">🧾 Payment Gateway</h2>
-  <button
-    id="rzp-button"
-    class="bg-green-500 text-white px-4 py-2 rounded"
-  >
-    Pay ₹ <%= amount %>
-  </button>
+
+<div class="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10">
+  <div class="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">🧾 Secure Payment</h2>
+    <p class="text-gray-600 mb-6">You're about to pay <strong>₹ <%= amount %></strong> for your order.</p>
+
+    <button
+      id="rzp-button"
+      class="bg-green-600 hover:bg-green-700 transition text-white px-6 py-3 rounded-md text-lg font-medium"
+    >
+      Pay Now ₹ <%= amount %>
+    </button>
+
+    <p class="text-sm text-gray-400 mt-6">Powered by Razorpay</p>
+  </div>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -30,15 +37,18 @@
       });
     },
     prefill: {
-      email: "<%= user.email %>",
+      email: "<%= user.email %>"
     },
     theme: {
-      color: "#3399cc"
+      color: "#4CAF50"
     }
   };
-  const rzp1 = new Razorpay(options);
+
+  const rzp = new Razorpay(options);
   document.getElementById("rzp-button").onclick = function (e) {
-    rzp1.open();
+    rzp.open();
     e.preventDefault();
   };
 </script>
+
+<%- include('./partials/footer') %>

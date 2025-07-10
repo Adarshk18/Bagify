@@ -1,26 +1,44 @@
 <%- include('./partials/header') %>
 
-<div class="px-10 py-10">
+<div class="px-10 py-10 min-h-screen bg-gray-50">
   <h2 class="text-2xl font-bold mb-6">📦 My Orders</h2>
+
   <% if (orders.length === 0) { %>
-    <p class="text-gray-600">No orders found.</p>
+    <p class="text-gray-600 mb-4">No orders found.</p>
+    <a href="/shop" class="text-blue-600 underline">← Go to Shop</a>
   <% } else { %>
-    <% orders.forEach(order => { %>
-      <div class="border p-4 rounded-md mb-4 bg-white">
-        <div class="flex justify-between mb-2">
-          <span>🆔 <%= order._id %></span>
-          <span class="text-sm font-medium text-blue-600"><%= order.status %></span>
+    <div class="space-y-6">
+      <% orders.forEach(order => { %>
+        <div class="border rounded-md bg-white p-5 shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <p class="text-sm text-gray-500">🆔 <%= order._id %></p>
+              <p class="text-xs text-gray-400">📅 <%= order.createdAt.toLocaleString() %></p>
+            </div>
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-medium
+                <%= order.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>">
+                <%= order.status %>
+              </span>
+            </div>
+          </div>
+          
+          <ul class="text-sm mb-3">
+            <% order.products.forEach(item => { %>
+              <li class="mb-1">
+                👜 <span class="font-semibold"><%= item.product.name %></span>
+                × <%= item.quantity %> –
+                ₹ <%= item.product.price - item.product.discount %> each
+              </li>
+            <% }) %>
+          </ul>
+
+          <div class="text-right text-green-600 font-bold">
+            Total: ₹ <%= order.totalAmount %>
+          </div>
         </div>
-        <ul>
-          <% order.products.forEach(item => { %>
-            <li class="text-gray-800">
-              👜 <%= item.product.name %> × <%= item.quantity %> – ₹ <%= item.product.price - item.product.discount %> each
-            </li>
-          <% }) %>
-        </ul>
-        <div class="mt-2 text-right font-bold text-green-600">Total: ₹ <%= order.totalAmount %></div>
-      </div>
-    <% }) %>
+      <% }) %>
+    </div>
   <% } %>
 </div>
 
