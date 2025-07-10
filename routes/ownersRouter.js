@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const ownerModel = require("../models/owner-model");
+const isAdmin = require("../middlewares/isAdmin");
+const productModel = require("../models/product-model");
 
 if (process.env.NODE_ENV === "development") {
     router.post("/create", async (req, res) => {
@@ -25,30 +27,53 @@ router.get("/admin", (req, res) => {
     res.render("createproducts", { success}); // or success: null / success: undefined as needed
 });
 
+// GET: Edit form
+router.get("/admin/edit/:id", isAdmin, async (req, res) => {
+  const product = await productModel.findById(req.params.id);
+  res.render("editproduct", { product });
+});
 
-/*
+// POST: Update data
+router.post("/admin/edit/:id", isAdmin, upload.single("image"), async (req, res) => {
+  const { name, price, discount, bgcolor, panelcolor, textcolor } = req.body;
 
-const express = require("express");
-const router = express.Router();
-const { createOwner, renderAdminPage } = require("../controllers/ownerController");
-const { renderCreateForm, createProduct } = require("../controllers/productController");
-const upload = require("../config/multer-config");
+  const updated = {
+    name,
+    price,
+    discount,
+    bgcolor,
+    panelcolor,
+    textcolor,
+  };
 
-if (process.env.NODE_ENV === "development") {
-  router.post("/admin/create-owner", createOwner);
-}
+  if (req.file) {
+    updated.image = req.file.filename;
+  }
 
-router.get("/admin", renderAdminPage);
-router.get("/admin/create-product", renderCreateForm);
-router.post("/admin/create-product", upload.single("image"), createProduct);
-
-module.exports = router;
-
+  await productModel.findByIdAndUpdate(req.params.id, updated);
+  req.flash("success", "Product updated.");
+  res.redirect("/admin");
+});
 
 
+// Delete individual product
+router.get("/admin/delete/:id", isAdmin, async (req, res) => {
+  try {
+    await productModel.findByIdAndDelete(req.params.id);
+    req.flash("success", "Product deleted.");
+    res.redirect("/admin");
+  } catch (err) {
+    req.flash("error", "Delete failed.");
+    res.redirect("/admin");
+  }
+});
 
+router.get("/admin/delete-all", isAdmin, async (req, res) => {
+  await productModel.deleteMany({});
+  req.flash("success", "All products deleted.");
+  res.redirect("/admin");
+});
 
-*/
 
 
 module.exports = router;

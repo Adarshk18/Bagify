@@ -1,0 +1,15 @@
+<%- include('./partials/header') %>
+<div class="p-10">
+  <h2 class="text-2xl font-semibold mb-5">Edit Product</h2>
+  <form action="/admin/edit/<%= product._id %>" method="post" enctype="multipart/form-data" class="space-y-4">
+    <input name="name" type="text" class="border p-2 w-full" value="<%= product.name %>" />
+    <input name="price" type="text" class="border p-2 w-full" value="<%= product.price %>" />
+    <input name="discount" type="text" class="border p-2 w-full" value="<%= product.discount %>" />
+    <input name="bgcolor" type="text" class="border p-2 w-full" value="<%= product.bgcolor %>" />
+    <input name="panelcolor" type="text" class="border p-2 w-full" value="<%= product.panelcolor %>" />
+    <input name="textcolor" type="text" class="border p-2 w-full" value="<%= product.textcolor %>" />
+    <input type="file" name="image" />
+    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Update</button>
+  </form>
+</div>
+<%- include('./partials/footer') %>

@@ -1,0 +1,44 @@
+<%- include('./partials/header') %>
+<div class="p-10">
+  <h2 class="text-2xl mb-4">🧾 Payment Gateway</h2>
+  <button
+    id="rzp-button"
+    class="bg-green-500 text-white px-4 py-2 rounded"
+  >
+    Pay ₹ <%= amount %>
+  </button>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  const options = {
+    key: "<%= key %>",
+    amount: "<%= amount * 100 %>",
+    currency: "INR",
+    name: "Bagify",
+    description: "Order Payment",
+    order_id: "<%= orderId %>",
+    handler: function (response) {
+      fetch("/orders/payment-success", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(response)
+      }).then(() => {
+        window.location.href = "/orders";
+      });
+    },
+    prefill: {
+      email: "<%= user.email %>",
+    },
+    theme: {
+      color: "#3399cc"
+    }
+  };
+  const rzp1 = new Razorpay(options);
+  document.getElementById("rzp-button").onclick = function (e) {
+    rzp1.open();
+    e.preventDefault();
+  };
+</script>
