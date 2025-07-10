@@ -6,6 +6,7 @@ const db = require("./config/mongoose-connection");
 const ownersRouter = require("./routes/ownersRouter");
 const usersRouter = require("./routes/usersRouter");
 const productsRouter = require("./routes/productsRouter");
+const adminRouter = require("./routes/authRouter");
 const indexRouter = require("./routes/index");
 const expressSession = require("express-session");
 const flash = require("connect-flash");
@@ -32,9 +33,16 @@ app.use("/",indexRouter);
 app.use("/", ownersRouter);
 app.use("/users", usersRouter);
 app.use("/products", productsRouter);
+app.use("/", authRouter);
+app.use("/cart", require("./routes/cartRouter"));
+app.use("/orders", require("./routes/ordersRouter"));
+
+
+
 
 app.get("/", (req, res) => {
-    res.send("Hi there");
+  const error = req.flash("error");
+  res.render("index", { error });
 });
 
 

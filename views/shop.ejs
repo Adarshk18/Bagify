@@ -57,7 +57,7 @@
                 <% if ((product.discount + '').trim() !== '') { %>
                   <span class="line-through text-gray-400">₹ <%= parseInt(product.price) + parseInt(product.discount) %></span>
                 <% } %>
-                <a href="#" class="text-black bg-white rounded-full p-1 hover:bg-gray-200">
+                <a href="/cart/add/<%= product._id %>" class="text-black bg-white rounded-full p-1 hover:bg-gray-200">
                   <i class="ri-add-line text-lg"></i>
                 </a>
               </div>

@@ -9,13 +9,15 @@ module.exports = async (req, res, next) => {
 
     try {
         let decoded = jwt.verify(req.cookies.token, process.env.JWT_KEY);
-        let user = await userModel.findOne({ email: decoded.email }).select("-password");
+        let user = await userModel.findById(decoded.id).select("-password");
+
+        if (!user) throw new Error("User not found");
         
         req.user = user;
 
         next();
     } catch (error) {
         req.flash("error", "something went wrong.");
-        res.redirect("/");
+        return res.redirect("/");
     }
 };

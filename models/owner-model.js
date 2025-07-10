@@ -11,10 +11,7 @@ const ownerSchema = mongoose.Schema({
     },
     email: String,
     password: String,
-    products: {
-        type: Array,
-        default: []
-    },
+    products: { type: [mongoose.Schema.Types.ObjectId], ref: "Product" },
     picture: String,
     gstin: String,
 });

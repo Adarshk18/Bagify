@@ -26,5 +26,29 @@ router.get("/admin", (req, res) => {
 });
 
 
+/*
+
+const express = require("express");
+const router = express.Router();
+const { createOwner, renderAdminPage } = require("../controllers/ownerController");
+const { renderCreateForm, createProduct } = require("../controllers/productController");
+const upload = require("../config/multer-config");
+
+if (process.env.NODE_ENV === "development") {
+  router.post("/admin/create-owner", createOwner);
+}
+
+router.get("/admin", renderAdminPage);
+router.get("/admin/create-product", renderCreateForm);
+router.post("/admin/create-product", upload.single("image"), createProduct);
+
+module.exports = router;
+
+
+
+
+
+*/
+
 
 module.exports = router;

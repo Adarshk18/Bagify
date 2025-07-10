@@ -1,0 +1,27 @@
+<%- include('./partials/header') %>
+
+<div class="px-10 py-10">
+  <h2 class="text-2xl font-bold mb-6">📦 My Orders</h2>
+  <% if (orders.length === 0) { %>
+    <p class="text-gray-600">No orders found.</p>
+  <% } else { %>
+    <% orders.forEach(order => { %>
+      <div class="border p-4 rounded-md mb-4 bg-white">
+        <div class="flex justify-between mb-2">
+          <span>🆔 <%= order._id %></span>
+          <span class="text-sm font-medium text-blue-600"><%= order.status %></span>
+        </div>
+        <ul>
+          <% order.products.forEach(item => { %>
+            <li class="text-gray-800">
+              👜 <%= item.product.name %> × <%= item.quantity %> – ₹ <%= item.product.price - item.product.discount %> each
+            </li>
+          <% }) %>
+        </ul>
+        <div class="mt-2 text-right font-bold text-green-600">Total: ₹ <%= order.totalAmount %></div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<%- include('./partials/footer') %>
