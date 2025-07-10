@@ -7,6 +7,7 @@ const ownersRouter = require("./routes/ownersRouter");
 const usersRouter = require("./routes/usersRouter");
 const productsRouter = require("./routes/productsRouter");
 const adminRouter = require("./routes/authRouter");
+const authRouter = require("./routes/authRouter")
 const indexRouter = require("./routes/index");
 const expressSession = require("express-session");
 const flash = require("connect-flash");

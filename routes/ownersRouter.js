@@ -3,6 +3,8 @@ const router = express.Router();
 const ownerModel = require("../models/owner-model");
 const isAdmin = require("../middlewares/isAdmin");
 const productModel = require("../models/product-model");
+const upload = require("../config/multer-config");
+
 
 if (process.env.NODE_ENV === "development") {
     router.post("/create", async (req, res) => {
