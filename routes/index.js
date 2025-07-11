@@ -2,10 +2,13 @@ const express = require("express");
 const router = express.Router();
 const isLoggedin = require("../middlewares/isLoggedIn");
 const productModel = require("../models/product-model");
+const axios = require("axios");
+const contactMessageModel = require("../models/contactMessage-model");
+const { sendContactMail } = require("../utils/mailer");
 
 router.get("/", (req, res) => {
-    let error = req.flash("error");
-    res.render("index", { error });
+  let error = req.flash("error");
+  res.render("index", { error });
 });
 
 router.get("/shop", isLoggedin, async (req, res) => {
@@ -40,6 +43,47 @@ router.get("/shop", isLoggedin, async (req, res) => {
     res.redirect("/");
   }
 });
+
+router.get("/contact", (req, res) => {
+  const success = req.flash("success");
+  const error = req.flash("error");
+  res.render("contact", { success, error });
+});
+
+router.post("/contact", async (req, res) => {
+  const { name, email, message, "g-recaptcha-response": token } = req.body;
+
+  if (!name || !email || !message || !token) {
+    req.flash("error", "All fields and CAPTCHA are required.");
+    return res.redirect("/contact");
+  }
+
+  // reCAPTCHA Verification
+  const secret = process.env.RECAPTCHA_SECRET_KEY;
+  const verifyURL = `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`;
+  const { data } = await axios.post(verifyURL);
+
+  if (!data.success) {
+    req.flash("error", "CAPTCHA verification failed.");
+    return res.redirect("/contact");
+  }
+
+  try {
+    // Save to DB
+    await contactMessageModel.create({ name, email, message });
+
+    // Send email
+    await sendContactMail({ name, email, message });
+
+    req.flash("success", "Message sent successfully!");
+    res.redirect("/contact");
+  } catch (err) {
+    console.error("Contact error:", err);
+    req.flash("error", "Failed to send message. Try again later.");
+    res.redirect("/contact");
+  }
+});
+
 
 
 

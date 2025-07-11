@@ -1,0 +1,62 @@
+<%- include("partials/header") %>
+
+<section class="max-w-4xl mx-auto py-12 px-6">
+  <div class="bg-white rounded-2xl shadow-xl p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">Contact Us</h1>
+    <p class="text-gray-600 mb-6">
+      We’d love to hear from you! Fill the form below or email us directly at
+      <strong>support@bagify.com</strong>.
+    </p>
+
+    <% if (success && success.length) { %>
+      <div class="bg-green-100 text-green-800 px-4 py-2 rounded mb-4">
+        <%= success %>
+      </div>
+    <% } %>
+
+    <% if (error && error.length) { %>
+      <div class="bg-red-100 text-red-800 px-4 py-2 rounded mb-4">
+        <%= error %>
+      </div>
+    <% } %>
+
+    <form action="/contact" method="POST" class="space-y-4">
+      <input
+        type="text"
+        name="name"
+        placeholder="Your Name"
+        required
+        class="w-full border px-4 py-2 rounded focus:outline-none focus:ring"
+      />
+      <input
+        type="email"
+        name="email"
+        placeholder="Your Email"
+        required
+        class="w-full border px-4 py-2 rounded focus:outline-none focus:ring"
+      />
+      <textarea
+        name="message"
+        rows="5"
+        placeholder="Your Message"
+        required
+        class="w-full border px-4 py-2 rounded focus:outline-none focus:ring"
+      ></textarea>
+
+      <!-- ✅ Google reCAPTCHA -->
+      <div class="g-recaptcha" data-sitekey="<%= process.env.RECAPTCHA_SITE_KEY %>"></div>
+
+      <button
+        type="submit"
+        class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+      >
+        Send Message
+      </button>
+    </form>
+  </div>
+</section>
+
+<%- include("partials/footer") %>
+
+<!-- ✅ reCAPTCHA Script -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>

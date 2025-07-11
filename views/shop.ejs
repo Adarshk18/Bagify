@@ -3,109 +3,71 @@
 <div class="min-h-screen bg-gray-50 px-6 py-10">
   <div class="flex flex-col lg:flex-row gap-10">
     <!-- Sidebar -->
-    <aside class="w-full lg:w-1/4">
-      <div class="space-y-10">
-        <div>
-          <h3 class="text-lg font-semibold mb-3">Sort by</h3>
-          <form action="/shop">
-            <select
-              class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none"
-              name="sortby"
-            >
-              <option value="popular">Popular</option>
-              <option value="newest">Newest</option>
-            </select>
-          </form>
-        </div>
+    <aside class="w-full lg:w-1/4 space-y-10">
+      <div>
+        <h3 class="text-lg font-semibold mb-3">Sort by</h3>
+        <form action="/shop" method="GET">
+          <select name="sortby" onchange="this.form.submit()" class="w-full border border-gray-300 rounded px-4 py-2">
+            <option value="">Default</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+        </form>
+      </div>
 
-        <div>
-          <h3 class="text-lg font-semibold mb-3">Categories</h3>
-          <ul class="space-y-2 text-sm">
-            <li>
-              <a href="#" class="hover:underline text-gray-700"
-                >New Collection</a
-              >
-            </li>
-            <li>
-              <a href="#" class="hover:underline text-gray-700">All Products</a>
-            </li>
-            <li>
-              <a href="#" class="hover:underline text-gray-700"
-                >Discounted Products</a
-              >
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-lg font-semibold mb-3">Filter by</h3>
-          <ul class="space-y-2 text-sm">
-            <li>
-              <a href="#" class="hover:underline text-gray-700">Availability</a>
-            </li>
-            <li>
-              <a href="#" class="hover:underline text-gray-700">Discount</a>
-            </li>
-          </ul>
-        </div>
+      <div>
+        <h3 class="text-lg font-semibold mb-3">Categories</h3>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/shop" class="hover:underline text-gray-700">All Products</a></li>
+          <li><a href="/shop?discount=yes" class="hover:underline text-gray-700">Discounted Products</a></li>
+        </ul>
       </div>
     </aside>
 
-    <!-- Products Grid -->
+    <!-- Main Content -->
     <main class="w-full lg:w-3/4">
+      <!-- 🔍 Search Bar -->
+      <form action="/shop" method="GET" class="mb-6 flex items-center gap-2">
+        <input type="text" name="search" placeholder="Search products..." value="<%= typeof search !== 'undefined' ? search : '' %>"
+          class="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none" />
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          <i class="ri-search-line text-xl"></i>
+        </button>
+      </form>
+
+      <% if (products.length === 0) { %>
+        <div class="text-center text-gray-500 mt-20">No products found.</div>
+      <% } %>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         <% products.forEach(function(product) { %>
-        <div
-          class="bg-white shadow-md rounded-lg overflow-hidden transition-transform transform hover:scale-105 relative"
-        >
-          <% if ((product.discount + '').trim() !== '') { %>
-          <span
-            class="absolute top-3 left-3 bg-red-600 text-white text-xs px-3 py-1 rounded-full z-10"
-          >
-            ₹ <%= product.discount %> OFF
-          </span>
-          <% } %>
+          <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-transform hover:scale-105">
+            <% if ((product.discount + '').trim() !== '' && product.discount > 0) { %>
+              <span class="absolute top-3 left-3 bg-red-600 text-white text-xs px-3 py-1 rounded-full z-10">
+                ₹<%= product.discount %> OFF
+              </span>
+            <% } %>
 
-          <div
-            class="bg-gradient-to-br from-white via-[<%= product.bgcolor %>] to-white flex items-center justify-center h-48"
-          >
-            <img
-              src="/images/<%= product.image %>"
-              alt="<%= product.name %>"
-              class="h-full object-contain p-4"
-            />
-          </div>
+            <div class="bg-gradient-to-br from-white via-[<%= product.bgcolor %>] to-white flex items-center justify-center h-48">
+              <img src="/images/<%= product.image %>" alt="<%= product.name %>" class="h-full object-contain p-4" />
+            </div>
 
-          <div
-            class="p-4"
-            style="
-              background-color: <%= product.panelcolor %>;
-              color: <%= product.textcolor %>;
-            "
-          >
-            <h3 class="font-semibold text-lg mb-1"><%= product.name %></h3>
-            <div class="flex items-center justify-between text-sm">
-              <span>₹ <%= product.price %></span>
-              <% if ((product.discount + '').trim() !== '') { %>
-              <span class="line-through text-gray-400"
-                >₹ <%= parseInt(product.price) + parseInt(product.discount)
-                %></span
-              >
-              <% } %>
-              <form
-                action="/cart/add/<%= product._id %>"
-                method="POST"
-                style="display: inline"
-              >
-                <button type="submit" style="all: unset; cursor: pointer">
-                  <i
-                    class="ri-add-line text-lg bg-white p-1 rounded-full hover:bg-gray-200"
-                  ></i>
-                </button>
-              </form>
+            <div class="p-4" style="background-color: <%= product.panelcolor %>; color: <%= product.textcolor %>;">
+              <h3 class="font-semibold text-lg mb-1"><%= product.name %></h3>
+              <div class="flex items-center justify-between text-sm">
+                <span>₹<%= product.price %></span>
+                <% if (product.discount > 0) { %>
+                  <span class="line-through text-gray-400">₹<%= parseInt(product.price) + parseInt(product.discount) %></span>
+                <% } %>
+
+                <form action="/cart/add/<%= product._id %>" method="POST" class="inline">
+                  <button type="submit" class="bg-white p-1 rounded-full hover:bg-gray-100" title="Add to Cart">
+                    <i class="ri-shopping-cart-2-line text-lg text-gray-700"></i>
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
         <% }) %>
       </div>
     </main>
@@ -113,3 +75,6 @@
 </div>
 
 <%- include('./partials/footer') %>
+
+<!-- Remix Icons CDN -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">

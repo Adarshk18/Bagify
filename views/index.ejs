@@ -1,96 +1,115 @@
-<!-- <%- include('./partials/header') %> <% if(error.length>0){ %>
-<div
-  class="absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md bg-red-500"
->
-  <span class="inline-block mt-1 mb-1 text-white"> <%= error %> </span>
-</div>
-<% } %>
-<div class="w-full h-screen flex px-20">
-  <div class="w-1/2 flex items-center justify-center h-screen">
-    <div class="w-full px-32">
-      <h3 class="text-4xl">
-        welcome to <span class="text-blue-400 font-semibold">Bagify</span>
-      </h3>
-      <h4 class="text-2xl mb-5">create your account</h4>
-      <form autocomplete="off" action="/users/register" method="post">
-        <input
-          class="bg-zinc-100 block w-full px-3 py-2 border-[1px] rounded-md mb-3 border-zinc-200"
-          type="text"
-          placeholder="Full Name"
-          name="fullname"
-        />
-        <input
-          class="bg-zinc-100 block w-full px-3 py-2 border-[1px] rounded-md mb-3 border-zinc-200"
-          type="email"
-          placeholder="Email"
-          name="email"
-        />
-        <input
-          class="bg-zinc-100 block w-full px-3 py-2 border-[1px] rounded-md mb-3 border-zinc-200"
-          type="password"
-          placeholder="Password"
-          name="password"
-        />
-        <input
-          class="px-5 rounded-full py-3 mt-2 bg-blue-500 text-white"
-          type="submit"
-          value="Create My Account"
-        />
-      </form>
-    </div>
-  </div>
-  <div class="w-1/2 flex items-center justify-center h-screen">
-    <div class="w-full px-32">
-      <h4 class="text-2xl capitalize mb-5">login your account</h4>
-      <form autocomplete="off" action="/users/login" method="post">
-        <input
-          class="block bg-zinc-100 w-full px-3 py-2 border-[1px] rounded-md mb-3 border-zinc-200"
-          type="email"
-          placeholder="Email"
-          name="email"
-        />
-        <input
-          class="block bg-zinc-100 w-full px-3 py-2 border-[1px] rounded-md mb-3 border-zinc-200"
-          type="password"
-          placeholder="Password"
-          name="password"
-        />
-        <input
-          class="px-5 block rounded-full py-3 mt-2 bg-blue-500 text-white"
-          type="submit"
-          value="Login"
-        />
-      </form>
-    </div>
-  </div>
-</div>
-<%- include('./partials/footer') %> -->
-
 <%- include('./partials/header') %>
 
-<section class="min-h-screen flex flex-col items-center justify-center bg-gray-100 py-20">
-  <div class="max-w-3xl text-center px-6">
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<% if (error && error.length > 0) { %>
+  <div class="fixed top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded shadow z-50">
+    <%= error %>
+  </div>
+<% } %>
+
+<!-- Hero Section -->
+<section class="min-h-[60vh] flex flex-col items-center justify-center bg-gray-100 py-20 px-4">
+  <div class="max-w-3xl text-center">
     <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
       Welcome to <span class="text-blue-600">Bagify</span>
     </h1>
     <p class="text-gray-600 text-lg mb-6">
-      Explore the latest collection of premium and stylish bags. Quality and trends in one place.
+      Explore premium, stylish, and affordable bags. <br />Quality & trends, all in one place.
     </p>
-    <div class="flex justify-center gap-4">
+
+    <div class="flex justify-center gap-4 flex-wrap">
       <a href="/shop" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition">
-        Shop Now
+        🛍️ Shop Now
       </a>
       <% if (!user) { %>
-        <a href="/users/login" class="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition">
-          Login
+        <a href="/users" class="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition">
+          🔐 Login / Register
         </a>
       <% } else { %>
         <a href="/users/profile" class="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition">
-          My Profile
+          👤 My Profile
         </a>
       <% } %>
     </div>
   </div>
 </section>
 
+<!-- Swiper Carousel -->
+<section class="w-full px-4 py-10 bg-white">
+  <h2 class="text-center text-2xl font-bold mb-6 text-gray-800">✨ Featured Styles</h2>
+
+  <div class="swiper mySwiper">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide"><img src="/images/slide1.jpg" class="w-full rounded-lg" /></div>
+      <div class="swiper-slide"><img src="/images/slide2.jpg" class="w-full rounded-lg" /></div>
+      <div class="swiper-slide"><img src="/images/slide3.jpg" class="w-full rounded-lg" /></div>
+    </div>
+    <div class="swiper-pagination mt-4"></div>
+  </div>
+</section>
+
+<!-- Featured Products Grid (Static or dynamic as needed) -->
+<section class="py-12 bg-gray-50 px-6">
+  <h2 class="text-center text-2xl font-bold mb-8 text-gray-800">🔥 Featured Products</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+    <div class="bg-white p-4 rounded shadow text-center">
+      <img src="/images/featured1.jpg" class="w-full h-48 object-cover mb-3 rounded" />
+      <h3 class="font-semibold text-lg">Elegant Tote</h3>
+      <p class="text-gray-600 text-sm">₹999</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow text-center">
+      <img src="/images/featured2.jpg" class="w-full h-48 object-cover mb-3 rounded" />
+      <h3 class="font-semibold text-lg">Classic Backpack</h3>
+      <p class="text-gray-600 text-sm">₹799</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow text-center">
+      <img src="/images/featured3.jpg" class="w-full h-48 object-cover mb-3 rounded" />
+      <h3 class="font-semibold text-lg">Sleek Sling</h3>
+      <p class="text-gray-600 text-sm">₹649</p>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials or Brand Story -->
+<section class="bg-white py-16 px-6 text-center">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">Why Choose Bagify?</h2>
+  <p class="text-gray-600 max-w-xl mx-auto mb-10">
+    Bagify isn’t just a brand—it’s a community. We're passionate about delivering quality,
+    fashionable bags that empower your lifestyle. Trusted by 5,000+ customers!
+  </p>
+  <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+    <div class="bg-gray-100 p-6 rounded shadow">
+      <p class="text-gray-700 italic">"Super fast delivery and amazing quality!"</p>
+      <span class="block mt-3 font-semibold text-gray-800">— Priya S.</span>
+    </div>
+    <div class="bg-gray-100 p-6 rounded shadow">
+      <p class="text-gray-700 italic">"The sling bags are trendy AF. Got 3 already!"</p>
+      <span class="block mt-3 font-semibold text-gray-800">— Rohit M.</span>
+    </div>
+    <div class="bg-gray-100 p-6 rounded shadow">
+      <p class="text-gray-700 italic">"Loved the packaging and the color accuracy!"</p>
+      <span class="block mt-3 font-semibold text-gray-800">— Sneha V.</span>
+    </div>
+  </div>
+</section>
+
 <%- include('./partials/footer') %>
+
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+  const swiper = new Swiper('.mySwiper', {
+    slidesPerView: 1,
+    loop: true,
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true
+    },
+    autoplay: {
+      delay: 3000,
+      disableOnInteraction: false
+    }
+  });
+</script>

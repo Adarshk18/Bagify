@@ -1,16 +1,44 @@
-<footer class="bg-gray-900 text-white py-6 mt-10">
+<footer class="bg-gray-900 text-white py-6 mt-10 relative">
   <div class="container mx-auto px-10 flex flex-col md:flex-row justify-between items-center gap-4">
+    
+    <!-- Brand Info -->
     <div>
       <h4 class="text-lg font-bold">Bagify</h4>
       <p class="text-sm text-gray-400">Your trusted online bag store. Trendy & Affordable!</p>
     </div>
-    <div class="flex space-x-4 text-sm">
+
+    <!-- Navigation Links -->
+    <div class="flex flex-wrap gap-4 text-sm justify-center">
       <a href="/" class="hover:underline">Home</a>
       <a href="/shop" class="hover:underline">Shop</a>
       <a href="/cart" class="hover:underline">Cart</a>
       <a href="/orders" class="hover:underline">Orders</a>
       <a href="/users/profile" class="hover:underline">Profile</a>
+      <a href="/about" class="hover:underline">About</a>
+      <a href="/contact" class="hover:underline">Contact</a>
     </div>
-    <div class="text-xs text-gray-400">&copy; <%= new Date().getFullYear() %> Bagify. All rights reserved.</div>
+
+    <!-- Social Links -->
+    <div class="flex gap-4 text-xl text-gray-400">
+      <a href="https://instagram.com" target="_blank" class="hover:text-pink-400"><i class="fab fa-instagram"></i></a>
+      <a href="https://twitter.com" target="_blank" class="hover:text-blue-400"><i class="fab fa-twitter"></i></a>
+      <a href="https://facebook.com" target="_blank" class="hover:text-blue-600"><i class="fab fa-facebook-f"></i></a>
+    </div>
+  </div>
+
+  <!-- Back to Top -->
+  <div class="absolute right-5 bottom-5">
+    <a href="#top" class="bg-white text-black px-3 py-1 rounded-full shadow hover:bg-gray-200 text-xs transition">
+      ↑ Back to Top
+    </a>
+  </div>
+
+  <!-- Footer Bottom -->
+  <div class="text-xs text-center text-gray-500 mt-4">
+    &copy; <%= new Date().getFullYear() %> Bagify. All rights reserved.
   </div>
 </footer>
+
+<!-- Font Awesome CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous"></script>
+

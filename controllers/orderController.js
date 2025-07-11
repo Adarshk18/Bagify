@@ -1,25 +1,41 @@
-const bcrypt = require("bcrypt");
-const ownerModel = require("../models/owner-model");
+const userModel = require("../models/user-model");
+const orderModel = require("../models/order-model");
 
-exports.createOwner = async (req, res) => {
-    try {
-        const owners = await ownerModel.find();
-        if (owners.length > 0) {
-            return res.status(403).send({ error: "Owner already exists" });
-        }
+exports.placeOrder = async (req, res) => {
+  const user = await userModel.findById(req.session.user._id).populate("cart.productId");
 
-        const { fullname, email, password } = req.body;
-        const hashed = await bcrypt.hash(password, 10);
+  if (!user.cart.length) {
+    req.flash("error", "Your cart is empty.");
+    return res.redirect("/cart");
+  }
 
-        const newOwner = await ownerModel.create({ fullname, email, password: hashed });
-        return res.status(201).send(newOwner);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send({ error: "Creation failed" });
-    }
+  const products = user.cart.map(item => ({
+    product: item.productId._id,
+    quantity: item.quantity
+  }));
+
+  const totalAmount = user.cart.reduce((sum, item) => sum + item.productId.price * item.quantity, 0);
+
+  const order = await orderModel.create({
+    user: user._id,
+    products,
+    totalAmount
+  });
+
+  user.orders.push({
+    items: user.cart,
+    totalAmount,
+    status: "pending"
+  });
+
+  user.cart = [];
+  await user.save();
+
+  req.flash("success", "Order placed successfully!");
+  res.redirect("/orders");
 };
 
-exports.renderAdminPage = (req, res) => {
-    const success = req.flash("success");
-    res.render("admin/createproduct", { success });
+exports.viewOrders = async (req, res) => {
+  const userOrders = await orderModel.find({ user: req.session.user._id }).populate("products.product");
+  res.render("orders/view", { orders: userOrders });
 };
