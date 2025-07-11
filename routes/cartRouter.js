@@ -3,6 +3,12 @@ const router = express.Router();
 const isLoggedIn = require("../middlewares/isLoggedIn");
 const userModel = require("../models/user-model");
 
+router.get("/", isLoggedIn, cartController.viewCart);
+router.post("/add/:productId", isLoggedIn, cartController.addToCart);
+router.get("/remove/:productId", isLoggedIn, cartController.removeFromCart);
+router.post("/update", isLoggedIn, cartController.updateQuantity);
+
+
 // 🛒 Add to cart
 router.post("/add/:id", isLoggedIn, async (req, res) => {
   const productId = req.params.id;

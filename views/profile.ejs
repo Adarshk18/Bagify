@@ -1,55 +1,61 @@
 <%- include('./partials/header') %>
 
-<div class="min-h-screen bg-gray-50 px-10 py-10">
+<div class="min-h-screen bg-gray-50 px-6 py-10">
   <div class="bg-white rounded shadow p-6 max-w-3xl mx-auto">
-    <h2 class="text-2xl font-bold mb-4">👤 Your Profile</h2>
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">👤 Your Profile</h2>
 
-    <div class="flex items-center gap-6 mb-6">
+    <div class="flex flex-col sm:flex-row items-center gap-6 mb-6">
       <img
         src="/images/<%= user.picture || 'default-avatar.png' %>"
-        class="w-20 h-20 object-cover rounded-full border"
+        class="w-24 h-24 object-cover rounded-full border"
         alt="Profile Picture"
       />
-      <div>
-        <h3 class="text-xl font-semibold"><%= user.fullname %></h3>
-        <p class="text-gray-600"><%= user.email %></p>
-        <p class="text-gray-600">📞 <%= user.contact || "Not added" %></p>
+      <div class="text-center sm:text-left">
+        <h3 class="text-xl font-semibold text-gray-800"><%= user.fullname %></h3>
+        <p class="text-gray-600 mt-1"><%= user.email %></p>
+        <p class="text-gray-600 mt-1">📞 <%= user.contact || "Not provided" %></p>
       </div>
     </div>
 
-    <hr class="my-6" />
+    <hr class="my-6 border-gray-200" />
 
-    <h3 class="text-xl font-semibold mb-3">Recent Orders</h3>
-    <% if (user.orders.length === 0) { %>
-      <p class="text-gray-500">No orders placed yet.</p>
-    <% } else { %>
-      <div class="space-y-4">
-        <% user.orders.slice(-3).reverse().forEach(order => { %>
-          <div class="border p-3 rounded-md bg-gray-50">
-            <div class="flex justify-between items-center">
-              <span>🧾 Order ID: <%= order._id %></span>
-              <span class="text-sm text-blue-600 font-medium"><%= order.status %></span>
+    <div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-3">🧾 Recent Orders</h3>
+
+      <% if (!user.orders || user.orders.length === 0) { %>
+        <p class="text-gray-500 mb-4">You haven’t placed any orders yet.</p>
+        <a href="/shop" class="text-blue-600 hover:underline">→ Start Shopping</a>
+      <% } else { %>
+        <div class="space-y-4">
+          <% user.orders.slice(-3).reverse().forEach(order => { %>
+            <div class="border border-gray-200 rounded p-4 bg-gray-50">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm text-gray-700 font-mono">#<%= order._id %></span>
+                <span class="text-xs px-2 py-1 rounded-full font-medium 
+                  <%= order.status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' %>">
+                  <%= order.status %>
+                </span>
+              </div>
+
+              <ul class="text-sm text-gray-700 space-y-1">
+                <% order.items.forEach(item => { %>
+                  <li>
+                    👜 <%= item.product.name %> × <%= item.quantity %> — ₹<%= item.product.price - item.product.discount %>
+                  </li>
+                <% }) %>
+              </ul>
+
+              <div class="mt-2 text-right font-semibold text-green-600">
+                Total: ₹<%= order.totalAmount %>
+              </div>
             </div>
-            <ul class="mt-2 text-sm text-gray-700">
-              <% order.items.forEach(item => { %>
-                <li>
-                  👜 <%= item.product.name %> × <%= item.quantity %> – ₹<%= item.product.price - item.product.discount %> each
-                </li>
-              <% }) %>
-            </ul>
-            <p class="mt-2 text-right font-semibold text-green-600">Total: ₹<%= order.totalAmount %></p>
-          </div>
-        <% }) %>
-      </div>
-    <% } %>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
 
-    <div class="mt-10">
-      <a
-        href="/users/logout"
-        class="text-red-500 hover:underline text-sm"
-      >
-        Logout
-      </a>
+    <div class="mt-10 text-center sm:text-left">
+      <a href="/users/logout" class="text-red-500 hover:underline text-sm">← Logout</a>
     </div>
   </div>
 </div>
