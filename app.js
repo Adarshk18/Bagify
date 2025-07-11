@@ -35,7 +35,6 @@ app.use("/", require("./routes/index"));
 app.use("/", require("./routes/ownersRouter"));
 app.use("/users", require("./routes/usersRouter"));
 app.use("/products", require("./routes/productsRouter"));
-app.use("/", require("./routes/authRouter"));
 app.use("/cart", require("./routes/cartRouter"));
 app.use("/orders", require("./routes/ordersRouter"));
 
