@@ -37,11 +37,14 @@ app.use("/users", require("./routes/usersRouter"));
 app.use("/products", require("./routes/productsRouter"));
 app.use("/cart", require("./routes/cartRouter"));
 app.use("/orders", require("./routes/ordersRouter"));
+app.use("/admin", require("./routes/adminRouter"));
 
 // 404 page
 app.use((req, res) => {
   res.status(404).render("404");
 });
+
+
 
 // Start server
 app.listen(3000, () => {
