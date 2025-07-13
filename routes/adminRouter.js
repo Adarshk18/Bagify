@@ -1,17 +1,21 @@
 const express = require("express");
 const router = express.Router();
+const ownerController = require("../controllers/ownerController");
 const isAdmin = require("../middlewares/isAdmin");
-const adminController = require("../controllers/ownerController");
 
-// GET: Admin dashboard
-router.get("/", isAdmin, (req, res) => {
-  res.render("admin/admin"); // your admin.ejs dashboard file
-});
+// 👉 Admin Login Page
+router.get("/login", ownerController.renderAdminLogin);
 
-// GET: Create product form
-router.get("/create", isAdmin, adminController.renderAdminPage);
+// 👉 Admin Login POST
+router.post("/login", ownerController.loginAdmin);
 
-// POST: Create new product
-router.post("/create", isAdmin, require("../controllers/productController").createProduct);
+// 👉 Admin Logout
+router.get("/logout", ownerController.logoutAdmin);
+
+// 👉 Admin Dashboard
+router.get("/", isAdmin, ownerController.renderAdminPage);
+
+// Optional: Product creation page already exists at /admin (admin/createproduct.ejs)
+// You could expand more admin features here as needed
 
 module.exports = router;

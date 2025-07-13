@@ -2,7 +2,7 @@ module.exports = async function isAdmin(req, res, next) {
   
   if (!req.session.user) {
     req.flash("error", "Login required");
-    return res.redirect("/");
+    return res.redirect("/users");
   }
 
   if (req.session.user.role !== "admin") {

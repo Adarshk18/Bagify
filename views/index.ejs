@@ -1,36 +1,73 @@
 <%- include('./partials/header') %>
 
 <!-- Swiper CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+/>
 
 <% if (error && error.length > 0) { %>
-  <div class="fixed top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded shadow z-50">
-    <%= error %>
-  </div>
+<div
+  class="fixed top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded shadow z-50"
+>
+  <%= error %>
+</div>
 <% } %>
 
 <!-- Hero Section -->
-<section class="min-h-[60vh] flex flex-col items-center justify-center bg-gray-100 py-20 px-4">
+<section
+  class="min-h-[60vh] flex flex-col items-center justify-center bg-gray-100 py-20 px-4"
+>
   <div class="max-w-3xl text-center">
     <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
       Welcome to <span class="text-blue-600">Bagify</span>
     </h1>
     <p class="text-gray-600 text-lg mb-6">
-      Explore premium, stylish, and affordable bags. <br />Quality & trends, all in one place.
+      Explore premium, stylish, and affordable bags. <br />Quality & trends, all
+      in one place.
     </p>
 
     <div class="flex justify-center gap-4 flex-wrap">
-      <a href="/shop" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition">
+      <a
+        href="/shop"
+        class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition"
+      >
         🛍️ Shop Now
       </a>
       <% if (!user) { %>
-        <a href="/users" class="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition">
-          🔐 Login / Register
-        </a>
-      <% } else { %>
-        <a href="/users/profile" class="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition">
-          👤 My Profile
-        </a>
+      <a
+        href="/users"
+        class="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition"
+      >
+        🔐 Login / Register
+      </a>
+      <a
+        href="/admin/login"
+        class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition"
+      >
+        🛡️ Admin Login
+      </a>
+      <% } else if (user.role === 'admin') { %>
+    <a
+      href="/admin"
+      class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition"
+    >
+      🧭 Admin Panel
+    </a>
+    <a
+      href="/admin/logout"
+      class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 transition"
+    >
+      🔒 Logout
+    </a>
+  <% }
+  else { %>
+      <a
+        href="/users/profile"
+        class="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition"
+      >
+        👤 My Profile
+      </a>
       <% } %>
     </div>
   </div>
@@ -38,13 +75,21 @@
 
 <!-- Swiper Carousel -->
 <section class="w-full px-4 py-10 bg-white">
-  <h2 class="text-center text-2xl font-bold mb-6 text-gray-800">✨ Featured Styles</h2>
+  <h2 class="text-center text-2xl font-bold mb-6 text-gray-800">
+    ✨ Featured Styles
+  </h2>
 
   <div class="swiper mySwiper">
     <div class="swiper-wrapper">
-      <div class="swiper-slide"><img src="/images/slide1.webp" class="w-full rounded-lg" /></div>
-      <div class="swiper-slide"><img src="/images/slide2.webp" class="w-full rounded-lg" /></div>
-      <div class="swiper-slide"><img src="/images/slide3.webp" class="w-full rounded-lg" /></div>
+      <div class="swiper-slide">
+        <img src="/images/slide1.webp" class="w-full rounded-lg" />
+      </div>
+      <div class="swiper-slide">
+        <img src="/images/slide2.webp" class="w-full rounded-lg" />
+      </div>
+      <div class="swiper-slide">
+        <img src="/images/slide3.webp" class="w-full rounded-lg" />
+      </div>
     </div>
     <div class="swiper-pagination mt-4"></div>
   </div>
@@ -52,20 +97,33 @@
 
 <!-- Featured Products Grid (Static or dynamic as needed) -->
 <section class="py-12 bg-gray-50 px-6">
-  <h2 class="text-center text-2xl font-bold mb-8 text-gray-800">🔥 Featured Products</h2>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+  <h2 class="text-center text-2xl font-bold mb-8 text-gray-800">
+    🔥 Featured Products
+  </h2>
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
+  >
     <div class="bg-white p-4 rounded shadow text-center">
-      <img src="/images/featured1.webp" class="w-full h-48 object-cover mb-3 rounded" />
+      <img
+        src="/images/featured1.webp"
+        class="w-full h-48 object-cover mb-3 rounded"
+      />
       <h3 class="font-semibold text-lg">Elegant Tote</h3>
       <p class="text-gray-600 text-sm">₹999</p>
     </div>
     <div class="bg-white p-4 rounded shadow text-center">
-      <img src="/images/featured2.webp" class="w-full h-48 object-cover mb-3 rounded" />
+      <img
+        src="/images/featured2.webp"
+        class="w-full h-48 object-cover mb-3 rounded"
+      />
       <h3 class="font-semibold text-lg">Classic Backpack</h3>
       <p class="text-gray-600 text-sm">₹799</p>
     </div>
     <div class="bg-white p-4 rounded shadow text-center">
-      <img src="/images/slide3.webp" class="w-full h-48 object-cover mb-3 rounded" />
+      <img
+        src="/images/slide3.webp"
+        class="w-full h-48 object-cover mb-3 rounded"
+      />
       <h3 class="font-semibold text-lg">Sleek Sling</h3>
       <p class="text-gray-600 text-sm">₹649</p>
     </div>
@@ -76,20 +134,27 @@
 <section class="bg-white py-16 px-6 text-center">
   <h2 class="text-2xl font-bold text-gray-800 mb-6">Why Choose Bagify?</h2>
   <p class="text-gray-600 max-w-xl mx-auto mb-10">
-    Bagify isn’t just a brand—it’s a community. We're passionate about delivering quality,
-    fashionable bags that empower your lifestyle. Trusted by 5,000+ customers!
+    Bagify isn’t just a brand—it’s a community. We're passionate about
+    delivering quality, fashionable bags that empower your lifestyle. Trusted by
+    5,000+ customers!
   </p>
   <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
     <div class="bg-gray-100 p-6 rounded shadow">
-      <p class="text-gray-700 italic">"Super fast delivery and amazing quality!"</p>
+      <p class="text-gray-700 italic">
+        "Super fast delivery and amazing quality!"
+      </p>
       <span class="block mt-3 font-semibold text-gray-800">— Priya S.</span>
     </div>
     <div class="bg-gray-100 p-6 rounded shadow">
-      <p class="text-gray-700 italic">"The sling bags are trendy AF. Got 3 already!"</p>
+      <p class="text-gray-700 italic">
+        "The sling bags are trendy AF. Got 3 already!"
+      </p>
       <span class="block mt-3 font-semibold text-gray-800">— Rohit M.</span>
     </div>
     <div class="bg-gray-100 p-6 rounded shadow">
-      <p class="text-gray-700 italic">"Loved the packaging and the color accuracy!"</p>
+      <p class="text-gray-700 italic">
+        "Loved the packaging and the color accuracy!"
+      </p>
       <span class="block mt-3 font-semibold text-gray-800">— Sneha V.</span>
     </div>
   </div>
@@ -100,16 +165,16 @@
 <!-- Swiper JS -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-  const swiper = new Swiper('.mySwiper', {
+  const swiper = new Swiper(".mySwiper", {
     slidesPerView: 1,
     loop: true,
     pagination: {
-      el: '.swiper-pagination',
-      clickable: true
+      el: ".swiper-pagination",
+      clickable: true,
     },
     autoplay: {
       delay: 3000,
-      disableOnInteraction: false
-    }
+      disableOnInteraction: false,
+    },
   });
 </script>
