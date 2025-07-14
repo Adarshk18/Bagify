@@ -14,7 +14,7 @@
       <% cartItems.forEach(item => { %>
         <div class="bg-white rounded shadow p-4 flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <img src="/images/<%= item.product.image %>" alt="<%= item.product.name %>" class="w-20 h-20 object-contain rounded" />
+            <img src="<%= item.product.image %>" alt="<%= item.product.name %>" class="w-20 h-20 object-contain rounded" />
             <div>
               <h4 class="text-lg font-semibold"><%= item.product.name %></h4>
               <p class="text-sm text-gray-600">
