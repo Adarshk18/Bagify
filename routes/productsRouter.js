@@ -32,6 +32,7 @@ router.post("/create", isAdmin, upload.single("image"), async (req, res) => {
     const { name, price, discount, bgcolor, panelcolor, textcolor } = req.body;
     const image = req.file ? "/images/" + req.file.filename : null;
 
+    //checking the dicounted price should not be less than actual price
     if (Number(discount) > Number(price)) {
       req.flash("error", "Discount cannot be greater than price");
       return res.redirect("/admin");

@@ -1,5 +1,4 @@
 const userModel = require("../models/user-model");
-const productModel = require("../models/product-model");
 
 exports.viewCart = async (req, res) => {
   try {
