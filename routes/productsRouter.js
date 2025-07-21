@@ -22,8 +22,11 @@ const upload = multer({ storage });
 
 // 🛒 Shop Page (User Side)
 router.get("/shop", isLoggedIn, async (req, res) => {
-  const products = await productModel.find();
-  res.render("shop", { products, user: req.user });
+  const query = req.query.search || "";
+  const products = await productModel.find({
+    name: { $regex: query, $options: "i" },
+  });
+  res.render("shop", { products, user: req.user, search: query });
 });
 
 // ➕ Product Creation (Admin Only)

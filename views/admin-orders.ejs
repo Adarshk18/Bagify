@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+
+<div class="container mt-5">
+  <h2 class="mb-4">All Orders</h2>
+
+  <% if (orders.length === 0) { %>
+    <p>No orders found.</p>
+  <% } else { %>
+    <% orders.forEach(order => { %>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5>User: <%= order.user.fullname %> (<%= order.user.email %>)</h5>
+          <p>Order ID: <%= order._id %></p>
+          <p>Status: <%= order.status %></p>
+          <p>Total: ₹<%= order.totalAmount %></p>
+          <ul>
+            <% order.products.forEach(p => { %>
+              <li>
+                <strong><%= p.product.name %></strong> - Quantity: <%= p.quantity %>
+              </li>
+            <% }) %>
+          </ul>
+
+          <!-- Optional form to update order status -->
+          <form action="/admin/orders/update/<%= order._id %>" method="POST">
+            <select name="status" class="form-select form-select-sm w-auto d-inline">
+              <option <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+              <option <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+              <option <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-primary">Update</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

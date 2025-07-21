@@ -27,6 +27,10 @@ router.get("/admin", isAdmin, async (req, res) => {
 router.post("/admin/create", isAdmin, upload.single("image"), async (req, res) => {
   const data = req.body;
   data.image = req.file?.filename;
+  if (!data.image) {
+    req.flash("error", "Image is required");
+    return res.redirect("/admin");
+  }
   await productModel.create(data);
   req.flash("success", "Product Created");
   res.redirect("/admin");
@@ -53,9 +57,19 @@ router.get("/admin/delete/:id", isAdmin, async (req, res) => {
 
 // Admin Order Dashboard
 router.get("/admin/orders", isAdmin, async (req, res) => {
-  const orders = await orderModel.find().populate("products.product user");
-  res.render("admin-orders", { orders });
+  try {
+    const orders = await orderModel
+      .find()
+      .populate("products.product")
+      .populate("user");
+
+    res.render("admin-orders", { orders });
+  } catch (err) {
+    console.error("Admin Orders Error:", err.message);
+    res.status(500).send("Internal Server Error");
+  }
 });
+
 
 router.post("/admin/orders/update/:id", isAdmin, async (req, res) => {
   const { status } = req.body;
