@@ -49,7 +49,7 @@
             <% } %>
 
             <div class="bg-gradient-to-br from-white via-[<%= product.bgcolor %>] to-white flex items-center justify-center h-48">
-              <img src="<%= product.image %>" alt="<%= product.name %>" class="h-full object-contain p-4" />
+              <img src="<%= product.image.startsWith('/images') ? product.image : '/images/' + product.image %>" alt="<%= product.name %>" class="h-full object-contain p-4" />
             </div>
 
             <div class="p-4" style="background-color: <%= product.panelcolor %>; color: <%= product.textcolor %>;">

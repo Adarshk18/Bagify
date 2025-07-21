@@ -26,11 +26,12 @@ router.get("/admin", isAdmin, async (req, res) => {
 
 router.post("/admin/create", isAdmin, upload.single("image"), async (req, res) => {
   const data = req.body;
-  data.image = req.file?.filename;
-  if (!data.image) {
+  
+  if (!req.file) {
     req.flash("error", "Image is required");
     return res.redirect("/admin");
   }
+  data.image = "/images/" + req.file.filename;
   await productModel.create(data);
   req.flash("success", "Product Created");
   res.redirect("/admin");

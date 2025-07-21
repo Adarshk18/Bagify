@@ -22,12 +22,38 @@ const upload = multer({ storage });
 
 // 🛒 Shop Page (User Side)
 router.get("/shop", isLoggedIn, async (req, res) => {
-  const query = req.query.search || "";
-  const products = await productModel.find({
-    name: { $regex: query, $options: "i" },
-  });
-  res.render("shop", { products, user: req.user, search: query });
+  let filter = {};
+  let sort = {};
+
+  // ✅ Keyword search
+  if (req.query.search && req.query.search.trim() !== "") {
+    filter.name = { $regex: req.query.search.trim(), $options: "i" };
+  }
+
+  // ✅ Discount filter
+  if (req.query.discount === "yes") {
+    filter.discount = { $gt: 0 };
+  }
+
+  // ✅ Price sorting
+  if (req.query.sortby === "price_asc") sort.price = 1;
+  else if (req.query.sortby === "price_desc") sort.price = -1;
+
+  try {
+    const products = await productModel.find(filter).sort(sort);
+    res.render("shop", {
+      products,
+      user: req.user,
+      search: req.query.search || "",
+    });
+  } catch (err) {
+    console.error("Shop Page Error:", err.message);
+    res.status(500).send("Server Error");
+  }
 });
+
+
+
 
 // ➕ Product Creation (Admin Only)
 router.post("/create", isAdmin, upload.single("image"), async (req, res) => {
