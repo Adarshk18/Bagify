@@ -25,11 +25,10 @@
         />
         <div>
           <h4 class="text-lg font-semibold"><%= item.product.name %></h4>
-          <% const finalPrice = Math.max(item.product.price -
-          item.product.discount, 0); %>
+          <% const price = Math.max(0, item.product.price -
+          item.product.discount); %>
           <p class="text-sm text-gray-600">
-            <% if (finalPrice === 0) { %> Free <% } else { %> ₹ <%= finalPrice
-            %> × <%= item.quantity %> <% } %>
+            <%= price === 0 ? "Free" : `₹ ${price}` %> × <%= item.quantity %>
           </p>
 
           <div class="flex gap-2 mt-2">
