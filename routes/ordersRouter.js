@@ -15,7 +15,7 @@ router.get("/", isLoggedIn, async (req, res) => {
 });
 
 router.get("/checkout", isLoggedIn, async (req, res) => {
-  const user = await userModel.findById(req.user._id).populate("cart.product");
+  const user = await userModel.findById(req.user._id).populate("cart.productId");
 
   if (!user.cart.length) {
     req.flash("error", "Your cart is empty.");
@@ -23,11 +23,17 @@ router.get("/checkout", isLoggedIn, async (req, res) => {
   }
 
   let total = 0;
-  const orderItems = user.cart.map((item) => {
-    const price = item.product.price - item.product.discount;
+  const orderItems = user.cart
+  .filter(item => item.productId)
+  .map((item) => {
+    const price = item.productId.price - item.productId.discount;
     total += price * item.quantity;
-    return { product: item.product._id, quantity: item.quantity };
+    return {
+      product: item.productId._id,
+      quantity: item.quantity
+    };
   });
+
 
   const newOrder = await orderModel.create({
     user: user._id,
@@ -44,7 +50,7 @@ router.get("/checkout", isLoggedIn, async (req, res) => {
 });
 
 router.post("/pay", isLoggedIn, async (req, res) => {
-  const user = await userModel.findById(req.user._id).populate("cart.product");
+  const user = await userModel.findById(req.user._id).populate("cart.productId");
 
   if (!user.cart.length) {
     req.flash("error", "Cart is empty.");
@@ -52,14 +58,17 @@ router.post("/pay", isLoggedIn, async (req, res) => {
   }
 
   let total = 0;
-  const orderItems = user.cart.map((item) => {
-    const price = item.product.price - item.product.discount;
+  const orderItems = user.cart
+  .filter(item => item.productId)
+  .map((item) => {
+    const price = item.productId.price - item.productId.discount;
     total += price * item.quantity;
     return {
-      product: item.product._id,
+      product: item.productId._id,
       quantity: item.quantity,
     };
   });
+
 
   const options = {
     amount: total * 100, // in paise

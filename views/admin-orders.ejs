@@ -1,35 +1,58 @@
 <%- include('partials/header') %>
 
-<div class="container mt-5">
-  <h2 class="mb-4">All Orders</h2>
+<div class="container my-5">
+  <h2 class="mb-4">📦 All Orders</h2>
 
   <% if (orders.length === 0) { %>
-    <p>No orders found.</p>
+    <div class="alert alert-info">No orders found.</div>
   <% } else { %>
     <% orders.forEach(order => { %>
-      <div class="card mb-4">
+      <div class="card shadow-sm mb-4 border-0">
         <div class="card-body">
-          <h5>User: <%= order.user.fullname %> (<%= order.user.email %>)</h5>
-          <p>Order ID: <%= order._id %></p>
-          <p>Status: <%= order.status %></p>
-          <p>Total: ₹<%= order.totalAmount %></p>
-          <ul>
+          <!-- 🧍 User Info -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <h5 class="mb-1">👤 <%= order.user.fullname %> (<%= order.user.email %>)</h5>
+              <p class="mb-0 text-muted">Order ID: <%= order._id %></p>
+            </div>
+            <span class="badge 
+              <% if (order.status === 'Pending') { %> bg-warning 
+              <% } else if (order.status === 'Shipped') { %> bg-info 
+              <% } else if (order.status === 'Out for Delivery') { %> bg-primary 
+              <% } else if (order.status === 'Delivered') { %> bg-success 
+              <% } else if (order.status === 'Cancelled') { %> bg-danger 
+              <% } else { %> bg-secondary <% } %> 
+              fs-6">
+              <%= order.status %>
+            </span>
+          </div>
+
+          <!-- 🛍️ Products List -->
+          <ul class="list-group mb-3">
             <% order.products.forEach(p => { %>
-              <li>
-                <strong><%= p.product.name %></strong> - Quantity: <%= p.quantity %>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <strong><%= p.product.name %></strong>
+                <span>Qty: <%= p.quantity %></span>
               </li>
             <% }) %>
           </ul>
 
-          <!-- Optional form to update order status -->
-          <form action="/admin/orders/update/<%= order._id %>" method="POST">
-            <select name="status" class="form-select form-select-sm w-auto d-inline">
-              <option <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-              <option <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-              <option <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-            </select>
-            <button type="submit" class="btn btn-sm btn-primary">Update</button>
-          </form>
+          <!-- 💰 Total & Status Update -->
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">💰 Total: ₹<%= order.totalAmount %></h5>
+
+            <form action="/admin/orders/update/<%= order._id %>" method="POST" class="d-flex align-items-center gap-2">
+              <select name="status" class="form-select form-select-sm">
+                <% const statuses = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled']; %>
+                <% statuses.forEach(stat => { %>
+                  <option value="<%= stat %>" <%= order.status === stat ? 'selected' : '' %>>
+                    <%= stat %>
+                  </option>
+                <% }) %>
+              </select>
+              <button type="submit" class="btn btn-sm btn-primary">Update</button>
+            </form>
+          </div>
         </div>
       </div>
     <% }) %>

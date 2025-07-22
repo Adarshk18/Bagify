@@ -1,5 +1,8 @@
 const bcrypt = require("bcrypt");
 const ownerModel = require("../models/owner-model");
+const orderModel = require("../models/order-model");
+const productModel = require("../models/product-model");
+const userModel = require("../models/user-model");
 
 // 👤 Admin Registration (One-time setup)
 exports.createOwner = async (req, res) => {
@@ -22,6 +25,36 @@ exports.createOwner = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send({ error: "Creation failed" });
+  }
+};
+
+exports.viewAllOrders = async (req, res) => {
+  try {
+    const orders = await orderModel
+      .find()
+      .populate("user", "fullname email")
+      .populate("products.product");
+
+    res.render("admin/admin-orders", { orders });
+  } catch (err) {
+    console.error("❌ Failed to fetch orders:", err.message);
+    req.flash("error", "Could not load orders.");
+    res.redirect("/admin");
+  }
+};
+
+exports.updateOrderStatus = async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  try {
+    await orderModel.findByIdAndUpdate(orderId, { status });
+    req.flash("success", "Order status updated!");
+    res.redirect("/admin/orders");
+  } catch (err) {
+    console.error("❌ Error updating status:", err.message);
+    req.flash("error", "Failed to update status.");
+    res.redirect("/admin/orders");
   }
 };
 
