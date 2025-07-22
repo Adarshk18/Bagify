@@ -25,10 +25,13 @@
         />
         <div>
           <h4 class="text-lg font-semibold"><%= item.product.name %></h4>
-          <% const price = Math.max(0, item.product.price -
-          item.product.discount); %>
+
+          <% const discountedPrice = Math.max(0, item.product.price -
+          (item.product.discount || 0)); %>
           <p class="text-sm text-gray-600">
-            <%= price === 0 ? "Free" : `₹ ${price}` %> × <%= item.quantity %>
+            <% if (item.labelFree) { %> ₹ 0 (Free) × <%= item.quantity %> <% }
+            else { %> ₹ <%= item.effectivePrice %> × <%= item.quantity %> <% }
+            %>
           </p>
 
           <div class="flex gap-2 mt-2">
