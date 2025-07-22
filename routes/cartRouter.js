@@ -42,14 +42,13 @@ router.get("/", isLoggedIn, async (req, res) => {
 
   const cartItems = user.cart;
   let total = 0;
-
-  cartItems.forEach((item) => {
-    const price = item.productId.price;
-    const discount = item.productId.discount || 0;
-    total += (price - discount) * item.quantity;
+  cartItems.forEach(item => {
+    const effectivePrice = Math.max(0, item.productId.price - item.productId.discount);
+    total += effectivePrice * item.quantity;
   });
+
 
   res.render("cart", { cartItems, total, user });
 });
 
-module.exports = router;
+module.exports = router; 
