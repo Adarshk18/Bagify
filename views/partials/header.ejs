@@ -1,19 +1,20 @@
 <!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Heroicons CDN -->
-<script src="https://unpkg.com/heroicons@2.0.16/20/outline/index.min.js"></script>
 
-<header class="w-full bg-white shadow-sm px-6 py-4 flex items-center justify-between relative z-20">
-  <a href="/" class="text-2xl font-bold text-blue-600">Bagify</a>
+<!-- Font Awesome for sun/moon icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<header class="w-full bg-white dark:bg-gray-800 shadow-sm px-6 py-4 flex items-center justify-between relative z-20">
+  <a href="/" class="text-2xl font-bold text-blue-600 dark:text-blue-300">Bagify</a>
 
   <!-- Desktop Navigation -->
-  <nav class="hidden md:flex gap-6 items-center text-sm font-medium">
-    <a href="/shop" class="text-gray-700 hover:text-blue-600">Shop</a>
-    <a href="/cart" class="text-gray-700 hover:text-blue-600">Cart</a>
+  <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+    <a href="/shop" class="hover:text-blue-600">Shop</a>
+    <a href="/cart" class="hover:text-blue-600">Cart</a>
 
     <% if (typeof user !== 'undefined' && user) { %>
-      <a href="/orders" class="text-gray-700 hover:text-blue-600">Orders</a>
-      <a href="/users/profile" class="text-gray-700 hover:text-blue-600">Profile</a>
+      <a href="/orders" class="hover:text-blue-600">Orders</a>
+      <a href="/users/profile" class="hover:text-blue-600">Profile</a>
 
       <% if (user.role === "admin") { %>
         <a href="/admin" class="text-purple-600 font-semibold hover:underline">Admin Panel</a>
@@ -26,23 +27,28 @@
     <% } %>
   </nav>
 
+  <!-- 🌙 Theme Toggle Icon -->
+  <button id="themeToggleBtn" class="ml-4 text-xl text-gray-600 dark:text-white">
+    <i id="themeIcon" class="fas fa-moon"></i>
+  </button>
+
   <!-- Mobile Menu Button -->
-  <button id="mobileMenuBtn" class="md:hidden focus:outline-none">
-    <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" stroke-width="2"
+  <button id="mobileMenuBtn" class="md:hidden focus:outline-none ml-4">
+    <svg class="w-6 h-6 text-gray-800 dark:text-white" fill="none" stroke="currentColor" stroke-width="2"
       viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
       <path d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   </button>
 
   <!-- Mobile Menu -->
-  <div id="mobileMenu" class="hidden absolute top-full left-0 w-full bg-white shadow-md md:hidden">
-    <div class="flex flex-col p-4 space-y-2 text-sm font-medium">
-      <a href="/shop" class="text-gray-700 hover:text-blue-600">Shop</a>
-      <a href="/cart" class="text-gray-700 hover:text-blue-600">Cart</a>
+  <div id="mobileMenu" class="hidden absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-md md:hidden text-sm font-medium text-gray-700 dark:text-gray-300">
+    <div class="flex flex-col p-4 space-y-2">
+      <a href="/shop" class="hover:text-blue-600">Shop</a>
+      <a href="/cart" class="hover:text-blue-600">Cart</a>
 
       <% if (typeof user !== 'undefined' && user) { %>
-        <a href="/orders" class="text-gray-700 hover:text-blue-600">Orders</a>
-        <a href="/users/profile" class="text-gray-700 hover:text-blue-600">Profile</a>
+        <a href="/orders" class="hover:text-blue-600">Orders</a>
+        <a href="/users/profile" class="hover:text-blue-600">Profile</a>
 
         <% if (user.role === "admin") { %>
           <a href="/admin" class="text-purple-600 font-semibold hover:underline">Admin Panel</a>
@@ -57,10 +63,33 @@
   </div>
 </header>
 
-<!-- Mobile Toggle Script -->
+<!-- Scripts -->
 <script>
+  // Mobile Nav Toggle
   document.getElementById('mobileMenuBtn').addEventListener('click', () => {
     const menu = document.getElementById('mobileMenu');
     menu.classList.toggle('hidden');
   });
+
+  // Theme Toggle
+  const toggleBtn = document.getElementById('themeToggleBtn');
+  const icon = document.getElementById('themeIcon');
+  const userPrefersDark = localStorage.getItem('theme') === 'dark';
+
+  if (userPrefersDark) {
+    document.documentElement.classList.add('dark');
+    icon.classList.remove('fa-moon');
+    icon.classList.add('fa-sun');
+  }
+
+  toggleBtn?.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    icon.classList.toggle('fa-sun');
+    icon.classList.toggle('fa-moon');
+  });
+   if (localStorage.getItem("theme") === "dark") {
+    document.documentElement.classList.add("dark");
+  }
 </script>

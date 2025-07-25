@@ -1,26 +1,20 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const ownerModel = require("../models/owner-model");
 const orderModel = require("../models/order-model");
 const productModel = require("../models/product-model");
 const userModel = require("../models/user-model");
+const sendMail = require("../utils/mailer"); // create this file if you haven't
 
-// 👤 Admin Registration (One-time setup)
+// 🧑 Admin Registration (One-time setup)
 exports.createOwner = async (req, res) => {
   try {
     const owners = await ownerModel.find();
-    if (owners.length > 0) {
-      return res.status(403).send({ error: "Owner already exists" });
-    }
+    if (owners.length > 0) return res.status(403).send({ error: "Owner already exists" });
 
     const { fullname, email, password } = req.body;
     const hashed = await bcrypt.hash(password, 10);
-
-    const newOwner = await ownerModel.create({
-      fullname,
-      email,
-      password: hashed,
-    });
-
+    const newOwner = await ownerModel.create({ fullname, email, password: hashed });
     return res.status(201).send(newOwner);
   } catch (err) {
     console.error(err);
@@ -28,6 +22,7 @@ exports.createOwner = async (req, res) => {
   }
 };
 
+// 📦 View All Orders
 exports.viewAllOrders = async (req, res) => {
   try {
     const orders = await orderModel
@@ -43,6 +38,7 @@ exports.viewAllOrders = async (req, res) => {
   }
 };
 
+// 🔄 Update Order Status
 exports.updateOrderStatus = async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
@@ -58,13 +54,13 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
-// 👨‍💼 Render Admin Dashboard
+// 👨‍💼 Admin Dashboard
 exports.renderAdminPage = (req, res) => {
   const success = req.flash("success");
   res.render("admin/createproduct", { success });
 };
 
-// 🔐 Admin Login POST
+// 🔐 Admin Login
 exports.loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -76,16 +72,15 @@ exports.loginAdmin = async (req, res) => {
     }
 
     const match = await bcrypt.compare(password, owner.password);
-
     if (!match) {
       req.flash("error", "Incorrect password");
       return res.redirect("/admin/login");
     }
 
     req.session.user = owner;
-    req.session.user.role = "admin"; // Mark this session as admin
+    req.session.user.role = "admin";
     req.flash("success", "Welcome Admin!");
-    return res.redirect("/admin");
+    res.redirect("/admin");
   } catch (err) {
     console.error(err.message);
     req.flash("error", "Something went wrong");
@@ -93,7 +88,7 @@ exports.loginAdmin = async (req, res) => {
   }
 };
 
-// 🔓 Logout Admin
+// 🔓 Logout
 exports.logoutAdmin = (req, res) => {
   req.session.destroy((err) => {
     if (err) {
@@ -104,9 +99,103 @@ exports.logoutAdmin = (req, res) => {
   });
 };
 
-// 🖥️ Admin Login Form View
+// 🖥️ Login View
 exports.renderAdminLogin = (req, res) => {
   const error = req.flash("error");
   const success = req.flash("success");
   res.render("owner-login", { error, success });
+};
+
+// 📧 Forgot Password Request
+exports.requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+  const owner = await ownerModel.findOne({ email });
+
+  if (!owner) {
+    req.flash("error", "No admin with this email.");
+    return res.redirect("/admin/login");
+  }
+
+  const token = crypto.randomBytes(20).toString("hex");
+  owner.resetPasswordToken = token;
+  owner.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+  await owner.save();
+
+
+  const resetURL = `${req.protocol}://${req.get("host")}/admin/reset-password/${token}`;
+
+  await sendMail({
+    to: email,
+    subject: "Password Reset - Bagify Admin",
+    html: `<p>Click <a href="${resetURL}">here</a> to reset your password.</p>`,
+  });
+
+  req.flash("success", "Reset link sent to your email.");
+  res.redirect("/admin/login");
+};
+
+// 🔑 Render Reset Password Page
+exports.renderResetPasswordForm = async (req, res) => {
+  const token = req.params.token;
+  const owner = await ownerModel.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!owner) {
+    req.flash("error", "Invalid or expired reset link.");
+    return res.redirect("/admin/login");
+  }
+
+  res.render("reset-password", {
+    token: req.params.token,
+    formAction: `/admin/reset-password/${req.params.token}`,
+    success: req.flash("success"),
+    error: req.flash("error"),
+  });
+};
+
+// 🔐 Reset Password Submit
+exports.resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  const owner = await ownerModel.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!owner) {
+    req.flash("error", "Token expired or invalid.");
+    return res.redirect("/admin/login");
+  }
+
+  const hashed = await bcrypt.hash(password, 10);
+  owner.password = hashed;
+  owner.resetPasswordToken = undefined;
+  owner.resetPasswordExpires = undefined;
+  await owner.save();
+
+  req.flash("success", "Password updated successfully!");
+  res.redirect("/admin/login");
+};
+
+// 🔐 Google OAuth Login (used in Passport callback)
+exports.loginWithGoogle = async (profile, done) => {
+  try {
+    let owner = await ownerModel.findOne({ googleId: profile.id });
+
+    if (!owner) {
+      owner = await ownerModel.create({
+        googleId: profile.id,
+        email: profile.emails[0].value,
+        fullname: profile.displayName,
+        picture: profile.photos[0].value,
+      });
+    }
+
+    return done(null, owner);
+  } catch (err) {
+    return done(err, null);
+  }
 };

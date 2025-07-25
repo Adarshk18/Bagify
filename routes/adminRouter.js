@@ -20,4 +20,9 @@ router.post("/orders/update/:orderId", isAdmin, ownerController.updateOrderStatu
 // Optional: Product creation page already exists at /admin (admin/createproduct.ejs)
 // You could expand more admin features here as needed
 
+router.post("/forgot-password", ownerController.requestPasswordReset);
+router.get("/reset-password/:token", ownerController.renderResetPasswordForm);
+router.post("/reset-password/:token", ownerController.resetPassword);
+
+
 module.exports = router;

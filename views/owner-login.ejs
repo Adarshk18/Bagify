@@ -1,42 +1,49 @@
 <%- include('./partials/header') %>
 
-<section class="min-h-screen bg-gray-100 flex items-center justify-center px-6 py-16">
-  <div class="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
-    <h2 class="text-3xl font-bold text-blue-600 mb-6 text-center">Admin Access</h2>
+<section class="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-6 py-16 relative">
+  <!-- 🌗 Global Theme Toggle Icon -->
+  
+
+  <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 w-full max-w-md">
+    <h2 class="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-6 text-center">Admin Access</h2>
 
     <% if (error && error.length > 0) { %>
-      <div class="bg-red-100 text-red-800 px-4 py-2 rounded mb-4 text-center">
+      <div class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 px-4 py-2 rounded mb-4 text-center">
         <%= error %>
       </div>
     <% } %>
 
     <% if (success && success.length > 0) { %>
-      <div class="bg-green-100 text-green-800 px-4 py-2 rounded mb-4 text-center">
+      <div class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-4 py-2 rounded mb-4 text-center">
         <%= success %>
       </div>
     <% } %>
 
     <form action="/admin/login" method="POST" class="space-y-4">
       <div>
-        <label class="block mb-1 font-medium">Email</label>
+        <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Email</label>
         <input
           type="email"
           name="email"
           placeholder="Enter your admin email"
           required
-          class="w-full border px-4 py-2 rounded focus:outline-none focus:ring focus:border-blue-300"
+          class="w-full border px-4 py-2 rounded focus:outline-none focus:ring focus:border-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         />
       </div>
 
       <div>
-        <label class="block mb-1 font-medium">Password</label>
+        <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Password</label>
         <input
           type="password"
           name="password"
           placeholder="Enter your password"
           required
-          class="w-full border px-4 py-2 rounded focus:outline-none focus:ring focus:border-blue-300"
+          class="w-full border px-4 py-2 rounded focus:outline-none focus:ring focus:border-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         />
+      </div>
+
+      <div class="flex justify-between items-center text-sm">
+        <a href="/admin/forgot-password" class="text-blue-600 dark:text-blue-400 hover:underline">Forgot password?</a>
       </div>
 
       <button
@@ -46,7 +53,41 @@
         Login
       </button>
     </form>
+
+    <!-- 🔐 Social Login -->
+    <div class="text-center mt-6">
+      <p class="text-sm text-gray-500 dark:text-gray-400">or login using</p>
+      <div class="flex justify-center gap-6 mt-3">
+        <a href="/auth/google" class="bg-white dark:bg-gray-100 border rounded-full p-3 shadow hover:shadow-md transition">
+          <i class="fab fa-google text-red-600 text-xl"></i>
+        </a>
+        <a href="/auth/github" class="bg-white dark:bg-gray-100 border rounded-full p-3 shadow hover:shadow-md transition">
+          <i class="fab fa-github text-gray-800 text-xl"></i>
+        </a>
+      </div>
+    </div>
   </div>
 </section>
+
+<script>
+  const themeToggle = document.getElementById("themeToggle");
+  const icon = document.getElementById("themeIcon");
+
+  function setTheme(dark) {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("theme", dark ? "dark" : "light");
+    icon.className = dark ? "fas fa-sun" : "fas fa-moon";
+  }
+
+  // Initial theme setup
+  const savedTheme = localStorage.getItem("theme");
+  setTheme(savedTheme === "dark");
+
+  // Toggle logic
+  themeToggle.addEventListener("click", () => {
+    const isDark = document.documentElement.classList.contains("dark");
+    setTheme(!isDark);
+  });
+</script>
 
 <%- include('./partials/footer') %>
