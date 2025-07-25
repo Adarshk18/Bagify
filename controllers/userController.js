@@ -7,7 +7,7 @@ const Mailer = require("../utils/mailer"); // You already have this
 exports.renderForgotPassword = (req, res) => {
   const error = req.flash("error");
   const success = req.flash("success");
-  res.render("users/forgot-password", { error, success });
+  res.render("forgot-password", { error, success });
 };
 
 // 👉 Forgot Password - Handle Form POST
