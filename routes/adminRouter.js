@@ -21,6 +21,7 @@ router.post("/orders/update/:orderId", isAdmin, ownerController.updateOrderStatu
 // You could expand more admin features here as needed
 
 router.post("/forgot-password", ownerController.requestPasswordReset);
+router.get("/forgot-password", ownerController.renderForgotPasswordForm);
 router.get("/reset-password/:token", ownerController.renderResetPasswordForm);
 router.post("/reset-password/:token", ownerController.resetPassword);
 

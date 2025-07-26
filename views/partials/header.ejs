@@ -7,61 +7,42 @@
 <header class="w-full bg-white dark:bg-gray-800 shadow-sm px-6 py-4 flex items-center justify-between relative z-20">
   <a href="/" class="text-2xl font-bold text-blue-600 dark:text-blue-300">Bagify</a>
 
-  <!-- Desktop Navigation -->
-  <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-    <a href="/shop" class="hover:text-blue-600">Shop</a>
-    <a href="/cart" class="hover:text-blue-600">Cart</a>
+  <% if (url.startsWith("/admin/login")) { %>
+    <!-- 💼 Admin Login Page Only -->
+    <nav class="text-sm font-medium text-gray-700 dark:text-gray-300">
+      <a href="/users" class="text-blue-500 hover:underline">Not an Admin? User Login</a>
+    </nav>
 
-    <% if (typeof user !== 'undefined' && user) { %>
-      <a href="/orders" class="hover:text-blue-600">Orders</a>
-      <a href="/users/profile" class="hover:text-blue-600">Profile</a>
+  <% } else if (user && user.role === 'admin') { %>
+    <!-- 🛠️ Admin Logged In -->
+    <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+      <a href="/admin" class="text-purple-600 font-semibold hover:underline">Admin Panel</a>
+      <a href="/admin/orders" class="text-purple-600 font-semibold hover:underline">All Orders</a>
+      <a href="/admin/logout" class="text-red-500 hover:underline">Logout</a>
+    </nav>
 
-      <% if (user.role === "admin") { %>
-        <a href="/admin" class="text-purple-600 font-semibold hover:underline">Admin Panel</a>
-        <a href="/admin/orders" class="text-purple-600 font-semibold hover:underline">All Orders</a>
+  <% } else { %>
+    <!-- 👤 Regular Users -->
+    <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+      <a href="/shop" class="hover:text-blue-600">Shop</a>
+      <a href="/cart" class="hover:text-blue-600">Cart</a>
+
+      <% if (user) { %>
+        <a href="/orders" class="hover:text-blue-600">Orders</a>
+        <a href="/users/profile" class="hover:text-blue-600">Profile</a>
+        <a href="/users/logout" class="text-red-500 hover:underline">Logout</a>
+      <% } else { %>
+        <a href="/users" class="text-blue-500 hover:underline">Login</a>
       <% } %>
-
-      <a href="/users/logout" class="text-red-500 hover:underline">Logout</a>
-    <% } else { %>
-      <a href="/users" class="text-blue-500 hover:underline">Login</a>
-    <% } %>
-  </nav>
+    </nav>
+  <% } %>
 
   <!-- 🌙 Theme Toggle Icon -->
   <button id="themeToggleBtn" class="ml-4 text-xl text-gray-600 dark:text-white">
     <i id="themeIcon" class="fas fa-moon"></i>
   </button>
-
-  <!-- Mobile Menu Button -->
-  <button id="mobileMenuBtn" class="md:hidden focus:outline-none ml-4">
-    <svg class="w-6 h-6 text-gray-800 dark:text-white" fill="none" stroke="currentColor" stroke-width="2"
-      viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  </button>
-
-  <!-- Mobile Menu -->
-  <div id="mobileMenu" class="hidden absolute top-full left-0 w-full bg-white dark:bg-gray-900 shadow-md md:hidden text-sm font-medium text-gray-700 dark:text-gray-300">
-    <div class="flex flex-col p-4 space-y-2">
-      <a href="/shop" class="hover:text-blue-600">Shop</a>
-      <a href="/cart" class="hover:text-blue-600">Cart</a>
-
-      <% if (typeof user !== 'undefined' && user) { %>
-        <a href="/orders" class="hover:text-blue-600">Orders</a>
-        <a href="/users/profile" class="hover:text-blue-600">Profile</a>
-
-        <% if (user.role === "admin") { %>
-          <a href="/admin" class="text-purple-600 font-semibold hover:underline">Admin Panel</a>
-          <a href="/admin/orders" class="text-purple-600 font-semibold hover:underline">All Orders</a>
-        <% } %>
-
-        <a href="/users/logout" class="text-red-500 hover:underline">Logout</a>
-      <% } else { %>
-        <a href="/users" class="text-blue-500 hover:underline">Login</a>
-      <% } %>
-    </div>
-  </div>
 </header>
+
 
 <!-- Scripts -->
 <script>

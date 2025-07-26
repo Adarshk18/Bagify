@@ -2,9 +2,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const ownerModel = require("../models/owner-model");
 const orderModel = require("../models/order-model");
-const productModel = require("../models/product-model");
-const userModel = require("../models/user-model");
-const sendMail = require("../utils/mailer"); // create this file if you haven't
+const { sendPasswordResetMail } = require("../utils/mailer");
 
 // 🧑 Admin Registration (One-time setup)
 exports.createOwner = async (req, res) => {
@@ -124,11 +122,11 @@ exports.requestPasswordReset = async (req, res) => {
 
   const resetURL = `${req.protocol}://${req.get("host")}/admin/reset-password/${token}`;
 
-  await sendMail({
-    to: email,
-    subject: "Password Reset - Bagify Admin",
-    html: `<p>Click <a href="${resetURL}">here</a> to reset your password.</p>`,
-  });
+  await sendPasswordResetMail({
+  to: email,
+  name: owner.fullname,
+  link: resetURL,
+});
 
   req.flash("success", "Reset link sent to your email.");
   res.redirect("/admin/login");
@@ -147,7 +145,7 @@ exports.renderResetPasswordForm = async (req, res) => {
     return res.redirect("/admin/login");
   }
 
-  res.render("reset-password", {
+  res.render("admin-reset-password", {
     token: req.params.token,
     formAction: `/admin/reset-password/${req.params.token}`,
     success: req.flash("success"),
@@ -179,6 +177,16 @@ exports.resetPassword = async (req, res) => {
   req.flash("success", "Password updated successfully!");
   res.redirect("/admin/login");
 };
+
+// 🧾 Show Forgot Password Form
+exports.renderForgotPasswordForm = (req, res) => {
+  res.render("admin-forgot-password", {
+    error: req.flash("error"),
+    success: req.flash("success")
+  });
+};
+
+
 
 // 🔐 Google OAuth Login (used in Passport callback)
 exports.loginWithGoogle = async (profile, done) => {

@@ -14,7 +14,12 @@
         <div class="flex justify-between items-center mb-4">
           <div>
             <h3 class="text-lg font-semibold text-gray-800">
-              👤 <%= order.user.fullname %> (<%= order.user.email %>)
+              <% if (order.user) { %>
+  👤 <%= order.user.fullname %> (<%= order.user.email %>)
+<% } else { %>
+  <span class="text-gray-500 italic">Unknown User (possibly deleted)</span>
+<% } %>
+
             </h3>
             <p class="text-sm text-gray-500">Order ID: <%= order._id %></p>
           </div>
