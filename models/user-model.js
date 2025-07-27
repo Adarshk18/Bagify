@@ -48,6 +48,28 @@ const userSchema = new mongoose.Schema({
   },
   picture: String,
 
+  addresses: [
+  {
+    fullname: String,
+    phone: String,
+    street: String,
+    city: String,
+    state: String,
+    pincode: String,
+    country: String,
+    landmark: String,
+    coordinates: {
+      lat: Number,
+      lng: Number,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }
+],
+
+
   // 🛒 Embed Cart Items
   cart: [cartItemSchema],
 

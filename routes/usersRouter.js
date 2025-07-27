@@ -43,6 +43,7 @@ router.get("/profile", isLoggedIn, async (req, res) => {
   }
 });
 
+router.post("/user/address/save", isLoggedIn, userController.saveAddress);
 router.get("/forgot-password", userController.renderForgotPassword);
 router.post("/forgot-password", userController.handleForgotPassword);
 router.get("/reset-password/:token", userController.renderResetForm);

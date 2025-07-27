@@ -1,0 +1,25 @@
+<form action="/user/address/save" method="POST" class="space-y-4" id="address-form">
+  <div class="grid grid-cols-2 gap-4">
+    <input name="fullname" required placeholder="Full Name" class="form-input" />
+    <input name="phone" required placeholder="Phone Number" class="form-input" />
+  </div>
+
+  <input name="street" required placeholder="Street Address" class="form-input" />
+  <div class="grid grid-cols-2 gap-4">
+    <input name="city" required placeholder="City" class="form-input" />
+    <input name="state" required placeholder="State" class="form-input" />
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <input name="pincode" required placeholder="PIN Code" class="form-input" />
+    <input name="country" required placeholder="Country" class="form-input" />
+  </div>
+
+  <input name="landmark" placeholder="Landmark (Optional)" class="form-input" />
+  <input type="hidden" name="lat" id="lat" />
+  <input type="hidden" name="lng" id="lng" />
+
+  <div class="flex justify-between">
+    <button type="button" class="btn-secondary" onclick="detectLocation()">📍 Auto Detect</button>
+    <button type="submit" class="btn-primary">Save Address</button>
+  </div>
+</form>

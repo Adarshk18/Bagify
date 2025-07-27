@@ -1,0 +1,82 @@
+<%- include('../partials/header') %>
+
+<div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4">
+  <div class="bg-white dark:bg-gray-800 shadow-lg p-8 rounded-lg max-w-2xl w-full">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">📝 Checkout</h2>
+
+    <form action="/orders/submit" method="POST">
+      <input type="hidden" name="paymentMode" value="<%= payOnline ? 'razorpay' : 'cod' %>" />
+      <input type="hidden" name="lat" id="lat" />
+      <input type="hidden" name="lng" id="lng" />
+
+      <script src="/js/location.js"></script>
+
+      <h3 class="font-semibold text-lg mb-2 text-gray-800 dark:text-gray-200">Delivery Address</h3>
+
+      <% if (user && user.addresses && user.addresses.length > 0) { %>
+        <div class="mb-4">
+          <label class="block mb-1 font-medium text-gray-700 dark:text-gray-300">Choose Saved Address</label>
+          <select
+            name="selectedAddress"
+            id="savedAddressSelect"
+            class="w-full border px-4 py-2 rounded bg-white dark:bg-gray-700 dark:text-white"
+            onchange="fillAddressForm(this.value)"
+          >
+            <option value="">-- Select an Address --</option>
+            <% user.addresses.forEach((addr, index) => { %>
+              <option value="<%= index %>">
+                <%= addr.name %> - <%= addr.city %>, <%= addr.pincode %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+      <% } %>
+
+      <!-- 📦 Manual Address Form -->
+      <%- include('../address-form') %>
+
+      <!-- 🌍 Auto-Detect Button -->
+      <div class="mt-4 flex items-center justify-between">
+        <button
+          type="button"
+          onclick="detectLocation()"
+          class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+        >
+          📍 Auto-Detect Location
+        </button>
+
+        <a href="/profile" class="text-blue-500 hover:underline text-sm">Manage Addresses</a>
+      </div>
+
+      <!-- 🛍️ Order Button -->
+      <div class="mt-6 text-right">
+        <button
+          type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded"
+        >
+          Place Order
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 📌 Script to Fill Address Fields from Saved List -->
+<script>
+  const userAddresses = <%- JSON.stringify(user.addresses || []) %>;
+
+  function fillAddressForm(index) {
+    if (!userAddresses || !userAddresses[index]) return;
+
+    const addr = userAddresses[index];
+    document.querySelector('input[name="name"]').value = addr.name || '';
+    document.querySelector('input[name="phone"]').value = addr.phone || '';
+    document.querySelector('input[name="street"]').value = addr.street || '';
+    document.querySelector('input[name="city"]').value = addr.city || '';
+    document.querySelector('input[name="state"]').value = addr.state || '';
+    document.querySelector('input[name="pincode"]').value = addr.pincode || '';
+    document.querySelector('input[name="country"]').value = addr.country || '';
+  }
+</script>
+
+<%- include('../partials/footer') %>

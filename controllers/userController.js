@@ -10,6 +10,32 @@ exports.renderForgotPassword = (req, res) => {
   res.render("forgot-password", { error, success });
 };
 
+exports.saveAddress = async (req, res) => {
+  const userId = req.session.user._id;
+  const {
+    fullname, phone, street, city, state, pincode, country, landmark, lat, lng
+  } = req.body;
+
+  try {
+    await userModel.findByIdAndUpdate(userId, {
+      $push: {
+        addresses: {
+          fullname, phone, street, city, state, pincode, country, landmark,
+          coordinates: { lat, lng },
+        },
+      },
+    });
+
+    req.flash("success", "Address saved successfully!");
+    res.redirect("/checkout");
+  } catch (err) {
+    console.error("❌ Failed to save address:", err.message);
+    req.flash("error", "Could not save address.");
+    res.redirect("/checkout");
+  }
+};
+
+
 // 👉 Forgot Password - Handle Form POST
 exports.handleForgotPassword = async (req, res) => {
   const { email } = req.body;
