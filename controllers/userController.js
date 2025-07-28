@@ -62,14 +62,7 @@ exports.addAddress = async (req, res) => {
   }
 };
 
-exports.saveAddress = async (req, res) => {
-  const { name, phone, street, city, state, pincode, country, landmark, lat, lng } = req.body;
-  await userModel.findByIdAndUpdate(userId, {
-    $push: {
-      addresses: { name, phone, street, city, state, pincode, country, landmark, coordinates: { lat, lng } }
-    }
-  });
-}
+
 
 
 // ✅ 🗑️ Delete Address

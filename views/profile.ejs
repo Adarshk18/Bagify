@@ -116,7 +116,7 @@
         >
           <input
             type="text"
-            name="fullname"
+            name="name"
             placeholder="Full Name"
             required
             class="input"
@@ -138,6 +138,7 @@
           <input
             type="text"
             name="city"
+            id="city"
             placeholder="City"
             required
             class="input"
@@ -152,9 +153,11 @@
           <input
             type="text"
             name="pincode"
+            id="pincode"
             placeholder="Pincode"
             required
             class="input"
+            onchange="fetchAddressFromPincode(this.value)"
           />
           <input
             type="text"

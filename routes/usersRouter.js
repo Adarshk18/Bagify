@@ -45,6 +45,8 @@ router.get("/profile", isLoggedIn, async (req, res) => {
 
 // 🏠 Address Add/Delete
 router.post("/address/add", isLoggedIn, userController.addAddress);
+// router.post("/address/save", isLoggedIn, userController.saveAddress);
+
 router.post("/address/delete/:index", isLoggedIn, userController.deleteAddress);
 
 router.get("/forgot-password", userController.renderForgotPassword);
