@@ -1,14 +1,16 @@
 <footer class="bg-gray-900 dark:bg-gray-950 text-white py-6 mt-10 relative">
-  <div class="container mx-auto px-10 flex flex-col md:flex-row justify-between items-center gap-4">
+  <div class="container mx-auto px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
     
     <!-- Brand Info -->
-    <div>
+    <div class="text-center md:text-left">
       <h4 class="text-lg font-bold text-blue-400">Bagify</h4>
-      <p class="text-sm text-gray-400 dark:text-gray-500">Your trusted online bag store. Trendy & Affordable!</p>
+      <p class="text-sm text-gray-400 dark:text-gray-500">
+        Your trusted online bag store. Trendy & Affordable!
+      </p>
     </div>
 
     <!-- Navigation Links -->
-    <div class="flex flex-wrap gap-4 text-sm justify-center">
+    <div class="flex flex-wrap gap-3 text-sm justify-center">
       <a href="/" class="hover:underline text-gray-300 dark:text-gray-400 hover:text-white">Home</a>
       <a href="/shop" class="hover:underline text-gray-300 dark:text-gray-400 hover:text-white">Shop</a>
       <a href="/cart" class="hover:underline text-gray-300 dark:text-gray-400 hover:text-white">Cart</a>
@@ -22,7 +24,6 @@
     <div class="flex gap-4 text-xl text-gray-400 dark:text-gray-500">
       <a href="https://instagram.com" target="_blank" class="hover:text-pink-400"><i class="fab fa-instagram"></i></a>
       <a href="https://twitter.com" target="_blank" class="hover:text-blue-400"><i class="fab fa-twitter"></i></a>
-      
     </div>
   </div>
 
@@ -39,5 +40,45 @@
   </div>
 </footer>
 
-<!-- Font Awesome CDN -->
+<!-- Font Awesome -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous"></script>
+
+<!-- 🧠 AI Chatbot (Basic Frontend) -->
+<div id="chatWidget" class="fixed bottom-6 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50">
+  <div class="bg-blue-600 text-white p-3 flex justify-between items-center">
+    <span>🤖 Bagify Assistant</span>
+    <button onclick="document.getElementById('chatWidget').style.display='none'" class="text-white">✖</button>
+  </div>
+  <div id="chatMessages" class="p-3 h-64 overflow-y-auto text-sm space-y-2 text-gray-800 dark:text-white">
+    <div>👋 Hi! I can help with orders, tracking, and more.</div>
+  </div>
+  <form id="chatForm" class="flex border-t border-gray-200 dark:border-gray-600">
+    <input type="text" id="chatInput" class="flex-1 p-2 text-sm bg-white dark:bg-gray-700 dark:text-white" placeholder="Type your message..." />
+    <button type="submit" class="px-3 bg-blue-600 text-white">Send</button>
+  </form>
+</div>
+
+<script>
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+  const chatMessages = document.getElementById('chatMessages');
+
+  chatForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const msg = chatInput.value.trim();
+    if (!msg) return;
+
+    // User Message
+    const userDiv = document.createElement('div');
+    userDiv.innerHTML = `🧑: ${msg}`;
+    chatMessages.appendChild(userDiv);
+
+    // Simulated Bot Reply
+    const botReply = document.createElement('div');
+    botReply.innerHTML = `🤖: Thank you! I'm still learning. Please visit the <a href="/orders" class="text-blue-600 underline">Orders</a> page for tracking.`;
+    chatMessages.appendChild(botReply);
+
+    chatInput.value = '';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  });
+</script>

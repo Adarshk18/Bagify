@@ -3,6 +3,8 @@ const crypto = require("crypto");
 const ownerModel = require("../models/owner-model");
 const orderModel = require("../models/order-model");
 const { sendPasswordResetMail } = require("../utils/mailer");
+const { Parser } = require('json2csv');
+
 
 // 🧑 Admin Registration (One-time setup)
 exports.createOwner = async (req, res) => {
@@ -49,6 +51,24 @@ exports.updateOrderStatus = async (req, res) => {
     console.error("❌ Error updating status:", err.message);
     req.flash("error", "Failed to update status.");
     res.redirect("/admin/orders");
+  }
+};
+
+exports.exportOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.find().populate('user');
+
+    const fields = ['_id', 'user.fullname', 'user.email', 'totalAmount', 'status', 'createdAt'];
+    const opts = { fields };
+    const parser = new Parser(opts);
+    const csv = parser.parse(orders);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('orders.csv');
+    return res.send(csv);
+  } catch (err) {
+    console.error("Export error:", err);
+    res.status(500).send("Failed to export orders.");
   }
 };
 

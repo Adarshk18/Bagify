@@ -15,10 +15,28 @@ const orderSchema = mongoose.Schema({
     },
   ],
   totalAmount: Number,
+
+  // ✅ NEW: Embedded Delivery Address at time of order
+  address: {
+    name: String,
+    phone: String,
+    street: String,
+    city: String,
+    state: String,
+    pincode: String,
+    country: String,
+    landmark: String,
+    coordinates: {
+      lat: Number,
+      lng: Number,
+    },
+  },
+
   status: {
     type: String,
     default: "Pending", // Pending, Paid, Cancelled, Shipped
   },
+
   createdAt: {
     type: Date,
     default: Date.now,

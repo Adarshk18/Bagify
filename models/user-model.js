@@ -48,9 +48,9 @@ const userSchema = new mongoose.Schema({
   },
   picture: String,
 
-  addresses: [
+addresses: [
   {
-    fullname: String,
+    name: String, // 👈 changed from fullname to name
     phone: String,
     street: String,
     city: String,
@@ -68,6 +68,7 @@ const userSchema = new mongoose.Schema({
     }
   }
 ],
+
 
 
   // 🛒 Embed Cart Items

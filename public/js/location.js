@@ -3,6 +3,7 @@ function detectLocation() {
 
   navigator.geolocation.getCurrentPosition(async (position) => {
     const { latitude, longitude } = position.coords;
+    // const data = await fetch(reverse geocode);
     document.getElementById("lat").value = latitude;
     document.getElementById("lng").value = longitude;
 

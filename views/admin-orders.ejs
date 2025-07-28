@@ -3,6 +3,11 @@
 <div class="max-w-6xl mx-auto px-4 py-10">
   <h2 class="text-3xl font-bold text-gray-800 mb-8">📦 All Orders</h2>
 
+  <!-- ✅ Export Orders Button -->
+  <a href="/admin/orders/export" class="bg-green-600 text-white px-4 py-2 rounded text-sm float-right mb-4 hover:bg-green-700">
+    ⬇️ Export Orders
+  </a>
+
   <% if (orders.length === 0) { %>
     <div class="bg-blue-50 text-blue-700 px-6 py-4 rounded text-center shadow">
       No orders found.
@@ -15,11 +20,10 @@
           <div>
             <h3 class="text-lg font-semibold text-gray-800">
               <% if (order.user) { %>
-  👤 <%= order.user.fullname %> (<%= order.user.email %>)
-<% } else { %>
-  <span class="text-gray-500 italic">Unknown User (possibly deleted)</span>
-<% } %>
-
+                👤 <%= order.user.fullname %> (<%= order.user.email %>)
+              <% } else { %>
+                <span class="text-gray-500 italic">Unknown User (possibly deleted)</span>
+              <% } %>
             </h3>
             <p class="text-sm text-gray-500">Order ID: <%= order._id %></p>
           </div>
@@ -43,6 +47,19 @@
             </li>
           <% }) %>
         </ul>
+
+        <!-- 🏠 Delivery Address -->
+        <% if (order.address) { %>
+          <div class="mb-4 text-sm text-gray-700 bg-gray-50 rounded p-4 border">
+            <p class="font-semibold mb-1">🏠 Delivery Address</p>
+            <p><%= order.address.fullname %> (<%= order.address.phone %>)</p>
+            <p><%= order.address.street %>, <%= order.address.city %> - <%= order.address.pincode %></p>
+            <p><%= order.address.state %>, <%= order.address.country %></p>
+            <% if (order.address.landmark) { %>
+              <p>📍 Landmark: <%= order.address.landmark %></p>
+            <% } %>
+          </div>
+        <% } %>
 
         <!-- 💰 Total & Status Update -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">

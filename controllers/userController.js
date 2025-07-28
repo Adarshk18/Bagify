@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const userModel = require("../models/user-model");
 const Mailer = require("../utils/mailer"); // You already have this
+const bcrypt = require("bcrypt");
 
 
 // 👉 Forgot Password - Render Form
@@ -10,28 +11,89 @@ exports.renderForgotPassword = (req, res) => {
   res.render("forgot-password", { error, success });
 };
 
-exports.saveAddress = async (req, res) => {
+// ✅ 📌 Add Address
+exports.addAddress = async (req, res) => {
   const userId = req.session.user._id;
   const {
-    fullname, phone, street, city, state, pincode, country, landmark, lat, lng
+    name,
+    phone,
+    street,
+    city,
+    state,
+    pincode,
+    country,
+    landmark,
+    lat,
+    lng,
   } = req.body;
+
+  // Simple validation (you can make this stricter as needed)
+  if (!name || !phone || !street || !city || !state || !pincode || !country) {
+    req.flash("error", "All fields except landmark must be filled.");
+    return res.redirect("/users/profile");
+  }
 
   try {
     await userModel.findByIdAndUpdate(userId, {
       $push: {
         addresses: {
-          fullname, phone, street, city, state, pincode, country, landmark,
-          coordinates: { lat, lng },
+          name,
+          phone,
+          street,
+          city,
+          state,
+          pincode,
+          country,
+          landmark,
+          coordinates: {
+            lat: lat || null,
+            lng: lng || null,
+          },
         },
       },
     });
 
     req.flash("success", "Address saved successfully!");
-    res.redirect("/checkout");
+    res.redirect("/users/profile");
   } catch (err) {
     console.error("❌ Failed to save address:", err.message);
     req.flash("error", "Could not save address.");
-    res.redirect("/checkout");
+    res.redirect("/users/profile");
+  }
+};
+
+exports.saveAddress = async (req, res) => {
+  const { name, phone, street, city, state, pincode, country, landmark, lat, lng } = req.body;
+  await userModel.findByIdAndUpdate(userId, {
+    $push: {
+      addresses: { name, phone, street, city, state, pincode, country, landmark, coordinates: { lat, lng } }
+    }
+  });
+}
+
+
+// ✅ 🗑️ Delete Address
+exports.deleteAddress = async (req, res) => {
+  const userId = req.session.user._id;
+  const addressIndex = parseInt(req.params.index);
+
+  try {
+    const user = await userModel.findById(userId);
+    if (!user || !user.addresses || user.addresses.length <= addressIndex) {
+      req.flash("error", "Invalid address index.");
+      return res.redirect("/users/profile");
+    }
+
+    // Remove the address at index
+    user.addresses.splice(addressIndex, 1);
+    await user.save();
+
+    req.flash("success", "Address deleted.");
+    res.redirect("/users/profile");
+  } catch (err) {
+    console.error("❌ Failed to delete address:", err.message);
+    req.flash("error", "Could not delete address.");
+    res.redirect("/users/profile");
   }
 };
 

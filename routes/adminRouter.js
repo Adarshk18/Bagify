@@ -16,6 +16,7 @@ router.get("/logout", ownerController.logoutAdmin);
 router.get("/", isAdmin, ownerController.renderAdminPage);
 router.get("/orders", isAdmin, ownerController.viewAllOrders);
 router.post("/orders/update/:orderId", isAdmin, ownerController.updateOrderStatus);
+router.get("/orders/export", isAdmin, ownerController.exportOrders);
 
 // Optional: Product creation page already exists at /admin (admin/createproduct.ejs)
 // You could expand more admin features here as needed

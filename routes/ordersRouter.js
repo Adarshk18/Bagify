@@ -5,6 +5,8 @@ const userModel = require("../models/user-model");
 const orderModel = require("../models/order-model");
 const razorpay = require("../utils/razorpay");
 const crypto = require("crypto");
+const orderController = require("../controllers/orderController");
+
 
 
 router.get("/", isLoggedIn, async (req, res) => {
@@ -106,6 +108,8 @@ router.post("/payment-success", isLoggedIn, async (req, res) => {
   req.flash("success", "Payment successful & order placed!");
   res.status(200).end(); // Responds to fetch() in razorpay-checkout
 });
+
+router.post("/cancel/:id", isLoggedIn, orderController.cancelOrder);
 
 
 module.exports = router;
