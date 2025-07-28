@@ -52,7 +52,7 @@
         <% if (order.address) { %>
           <div class="mb-4 text-sm text-gray-700 bg-gray-50 rounded p-4 border">
             <p class="font-semibold mb-1">🏠 Delivery Address</p>
-            <p><%= order.address.fullname %> (<%= order.address.phone %>)</p>
+            <p><%= order.address.name %> (<%= order.address.phone %>)</p>
             <p><%= order.address.street %>, <%= order.address.city %> - <%= order.address.pincode %></p>
             <p><%= order.address.state %>, <%= order.address.country %></p>
             <% if (order.address.landmark) { %>

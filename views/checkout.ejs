@@ -52,7 +52,8 @@
       <div class="mt-6 text-right">
         <button
           type="submit"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded"
+          onclick="return validateAddress()"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded"
         >
           Place Order
         </button>
@@ -94,6 +95,26 @@
       }
     }
   });
+
+  function validateAddress() {
+    const selectedIndex = document.querySelector("select[name='selectedAddress']");
+    const street = document.querySelector("input[name='street']").value.trim();
+    const city = document.querySelector("input[name='city']").value.trim();
+    const pincode = document.querySelector("input[name='pincode']").value.trim();
+
+    // Check if saved address is selected
+    if (selectedIndex && selectedIndex.value !== "") {
+      return true;
+    }
+
+    // If not selected, check manual address input
+    if (!street || !city || !pincode) {
+      alert("⚠️ Please enter or select a valid delivery address.");
+      return false;
+    }
+
+    return true;
+  }
 </script>
 
 <%- include('../partials/footer') %>

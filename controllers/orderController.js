@@ -21,8 +21,8 @@ exports.placeOrder = async (req, res) => {
     let finalAddress = null;
 
     // 1️⃣ If a saved address is selected
-    if (selectedAddress && user.addresses[selectedAddress]) {
-      finalAddress = user.addresses[selectedAddress];
+    if (selectedAddress !== undefined && user.addresses[parseInt(selectedAddress)]) {
+      finalAddress = user.addresses[parseInt(selectedAddress)];
     }
     // 2️⃣ Otherwise use manual form (validate first)
     else {
@@ -32,13 +32,14 @@ exports.placeOrder = async (req, res) => {
       }
 
       finalAddress = {
-        name,
+        fullname: name,
         phone,
         street,
         city,
         state,
         pincode,
         country,
+        landmark: req.body.landmark || "",
         coordinates: {
           lat: parseFloat(lat) || null,
           lng: parseFloat(lng) || null
