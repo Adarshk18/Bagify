@@ -62,6 +62,7 @@
 </div>
 
 <!-- 📌 Script to Fill Address Fields from Saved List -->
+<!-- 📌 Script to Fill Address Fields from Saved List -->
 <script>
   const userAddresses = <%- JSON.stringify(user.addresses || []) %>;
 
@@ -77,6 +78,22 @@
     document.querySelector('input[name="pincode"]').value = addr.pincode || '';
     document.querySelector('input[name="country"]').value = addr.country || '';
   }
+
+  // 🚫 Prevent submission without valid address
+  document.querySelector("form").addEventListener("submit", function (e) {
+    const requiredFields = [
+      "name", "phone", "street", "city", "state", "pincode", "country"
+    ];
+
+    for (const field of requiredFields) {
+      const value = document.querySelector(`input[name="${field}"]`).value.trim();
+      if (!value) {
+        e.preventDefault();
+        alert(`Please fill in your ${field} before placing the order.`);
+        return;
+      }
+    }
+  });
 </script>
 
 <%- include('../partials/footer') %>
