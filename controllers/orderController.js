@@ -13,7 +13,7 @@ exports.placeOrder = async (req, res) => {
 
     // 📦 Extract fields
     const {
-      name, phone, street, city, state,
+      fullname, phone, street, city, state,
       pincode, country, lat, lng, selectedAddress
     } = req.body;
 
@@ -26,13 +26,13 @@ exports.placeOrder = async (req, res) => {
     }
     // 2️⃣ Otherwise use manual form (validate first)
     else {
-      if (!name || !phone || !street || !city || !state || !pincode || !country) {
+      if (!fullname || !phone || !street || !city || !state || !pincode || !country) {
         req.flash("error", "Please fill in all address fields.");
         return res.redirect("/cart");
       }
 
       finalAddress = {
-        fullname: name,
+        fullname,
         phone,
         street,
         city,
