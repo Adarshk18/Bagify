@@ -25,30 +25,17 @@ router.get("/checkout", isLoggedIn, async (req, res) => {
   }
 
   let total = 0;
-  const orderItems = user.cart
-  .filter(item => item.productId)
-  .map((item) => {
+  user.cart.forEach((item) => {
     const price = item.productId.price - item.productId.discount;
     total += price * item.quantity;
-    return {
-      product: item.productId._id,
-      quantity: item.quantity
-    };
   });
 
 
-  const newOrder = await orderModel.create({
-    user: user._id,
-    products: orderItems,
-    totalAmount: total,
+  res.render("checkout", {
+    user,
+    total,
+    payOnline: false, // 👈 important so it sets COD in hidden input
   });
-
-  // Clear user cart
-  user.cart = [];
-  await user.save();
-
-  req.flash("success", "Order placed successfully!");
-  res.redirect("/orders");
 });
 
 router.post("/pay", isLoggedIn, async (req, res) => {
@@ -108,6 +95,7 @@ router.post("/payment-success", isLoggedIn, async (req, res) => {
   req.flash("success", "Payment successful & order placed!");
   res.status(200).end(); // Responds to fetch() in razorpay-checkout
 });
+router.post("/submit", isLoggedIn, orderController.placeOrder);
 
 router.post("/cancel/:id", isLoggedIn, orderController.cancelOrder);
 
