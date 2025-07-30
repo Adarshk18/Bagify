@@ -83,11 +83,19 @@ exports.placeOrder = async (req, res) => {
 
     // 📝 Optional: Store summary in user's orders
     user.orders.push({
-      items: user.cart,
+      items: user.cart.map(item => ({
+        product: {
+          name: item.productId.name,
+          price: item.productId.price,
+          discount: item.productId.discount || 0
+        },
+        quantity: item.quantity
+      })),
       totalAmount,
       status: "Pending",
       address: finalAddress
     });
+
 
     user.cart = [];
     await user.save();

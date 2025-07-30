@@ -47,8 +47,9 @@
           <ul class="text-sm text-gray-700 space-y-1">
             <% order.items.forEach(item => { %>
             <li>
-              👜 <%= item.product.name %> × <%= item.quantity %> — ₹<%=
-              item.product.price - item.product.discount %>
+              👜 <%= item.product?.name || '[Product Removed]' %> × <%=
+              item.quantity %> — ₹<%= item.product?.price ? (item.product.price
+              - (item.product.discount || 0)) : '0' %>
             </li>
             <% }) %>
           </ul>

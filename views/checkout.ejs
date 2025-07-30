@@ -1,4 +1,4 @@
-<%- include('../partials/header') %>
+<%- include('partials/header') %>
 
 <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center px-4">
   <div class="bg-white dark:bg-gray-800 shadow-lg p-8 rounded-lg max-w-2xl w-full">
@@ -33,7 +33,7 @@
       <% } %>
 
       <!-- 📦 Manual Address Form -->
-      <%- include('../address-form') %>
+      <%- include('./address-form') %>
 
       <!-- 🌍 Auto-Detect Button -->
       <div class="mt-4 flex items-center justify-between">
@@ -45,19 +45,10 @@
           📍 Auto-Detect Location
         </button>
 
-        <a href="/profile" class="text-blue-500 hover:underline text-sm">Manage Addresses</a>
+     
       </div>
 
-      <!-- 🛍️ Order Button -->
-      <div class="mt-6 text-right">
-        <button
-          type="submit"
-          onclick="return validateAddress()"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded"
-        >
-          Place Order
-        </button>
-      </div>
+      
     </form>
   </div>
 </div>
@@ -117,4 +108,4 @@
   }
 </script>
 
-<%- include('../partials/footer') %>
+<%- include('partials/footer') %>
