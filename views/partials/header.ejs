@@ -1,76 +1,96 @@
+<script>
+  tailwind.config = {
+    darkMode: "class",
+  };
+</script>
+
 <!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 
 <!-- Font Awesome for sun/moon icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+/>
 
-<header class="w-full bg-white dark:bg-gray-800 shadow-sm px-6 py-4 flex items-center justify-between relative z-20">
-  <a href="/" class="text-2xl font-bold text-blue-600 dark:text-blue-300">Bagify</a>
+<header
+  class="w-full bg-white dark:bg-gray-800 shadow-sm px-6 py-4 flex items-center justify-between relative z-20"
+>
+  <a href="/" class="text-2xl font-bold text-blue-600 dark:text-blue-300"
+    >Bagify</a
+  >
 
   <% if (url.startsWith("/admin/login")) { %>
-    <!-- 💼 Admin Login Page Only -->
-    <nav class="text-sm font-medium text-gray-700 dark:text-gray-300">
-      <a href="/users" class="text-blue-500 hover:underline">Not an Admin? User Login</a>
-    </nav>
+  <!-- 💼 Admin Login Page Only -->
+  <nav class="text-sm font-medium text-gray-700 dark:text-gray-300">
+    <a href="/users" class="text-blue-500 hover:underline"
+      >Not an Admin? User Login</a
+    >
+  </nav>
 
   <% } else if (user && user.role === 'admin') { %>
-    <!-- 🛠️ Admin Logged In -->
-    <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-      <a href="/admin" class="text-purple-600 font-semibold hover:underline">Admin Panel</a>
-      <a href="/admin/orders" class="text-purple-600 font-semibold hover:underline">All Orders</a>
-      <a href="/admin/logout" class="text-red-500 hover:underline">Logout</a>
-    </nav>
+  <!-- 🛠️ Admin Logged In -->
+  <nav
+    class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300"
+  >
+    <a href="/admin" class="text-purple-600 font-semibold hover:underline"
+      >Admin Panel</a
+    >
+    <a
+      href="/admin/orders"
+      class="text-purple-600 font-semibold hover:underline"
+      >All Orders</a
+    >
+    <a href="/admin/logout" class="text-red-500 hover:underline">Logout</a>
+  </nav>
 
   <% } else { %>
-    <!-- 👤 Regular Users -->
-    <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-      <a href="/shop" class="hover:text-blue-600">Shop</a>
-      <a href="/cart" class="hover:text-blue-600">Cart</a>
+  <!-- 👤 Regular Users -->
+  <nav
+    class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300"
+  >
+    <a href="/shop" class="hover:text-blue-600">Shop</a>
+    <a href="/cart" class="hover:text-blue-600">Cart</a>
 
-      <% if (user) { %>
-        <a href="/orders" class="hover:text-blue-600">Orders</a>
-        <a href="/users/profile" class="hover:text-blue-600">Profile</a>
-        <a href="/users/logout" class="text-red-500 hover:underline">Logout</a>
-      <% } else { %>
-        <a href="/users" class="text-blue-500 hover:underline">Login</a>
-      <% } %>
-    </nav>
+    <% if (user) { %>
+    <a href="/orders" class="hover:text-blue-600">Orders</a>
+    <a href="/users/profile" class="hover:text-blue-600">Profile</a>
+    <a href="/users/logout" class="text-red-500 hover:underline">Logout</a>
+    <% } else { %>
+    <a href="/users" class="text-blue-500 hover:underline">Login</a>
+    <% } %>
+  </nav>
   <% } %>
 
-  <!-- 🌙 Theme Toggle Icon -->
+ <!-- 🌙 Theme Toggle Icon -->
   <button id="themeToggleBtn" class="ml-4 text-xl text-gray-600 dark:text-white">
     <i id="themeIcon" class="fas fa-moon"></i>
   </button>
 </header>
 
-
 <!-- Scripts -->
 <script>
-  // Mobile Nav Toggle
-  document.getElementById('mobileMenuBtn').addEventListener('click', () => {
-    const menu = document.getElementById('mobileMenu');
-    menu.classList.toggle('hidden');
-  });
+  const toggleBtn = document.getElementById("themeToggleBtn");
+  const icon = document.getElementById("themeIcon");
 
-  // Theme Toggle
-  const toggleBtn = document.getElementById('themeToggleBtn');
-  const icon = document.getElementById('themeIcon');
-  const userPrefersDark = localStorage.getItem('theme') === 'dark';
-
+  // Apply user's saved theme on initial load
+  const userPrefersDark = localStorage.getItem("theme") === "dark";
   if (userPrefersDark) {
-    document.documentElement.classList.add('dark');
-    icon.classList.remove('fa-moon');
-    icon.classList.add('fa-sun');
+    document.documentElement.classList.add("dark");
+    icon.classList.remove("fa-moon");
+    icon.classList.add("fa-sun");
+  } else {
+    document.documentElement.classList.remove("dark");
+    icon.classList.remove("fa-sun");
+    icon.classList.add("fa-moon");
   }
 
-  toggleBtn?.addEventListener('click', () => {
-    document.documentElement.classList.toggle('dark');
-    const isDark = document.documentElement.classList.contains('dark');
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    icon.classList.toggle('fa-sun');
-    icon.classList.toggle('fa-moon');
+  // Toggle Theme
+  toggleBtn?.addEventListener("click", () => {
+    const isDark = document.documentElement.classList.toggle("dark");
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+    icon.classList.toggle("fa-moon");
+    icon.classList.toggle("fa-sun");
   });
-   if (localStorage.getItem("theme") === "dark") {
-    document.documentElement.classList.add("dark");
-  }
 </script>
+
