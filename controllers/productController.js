@@ -30,11 +30,41 @@ exports.createProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await productModel.find({});
-    res.render("products/shop", { products });
+    const { search, sortby, discount } = req.query;
+    const query = {};
+
+    if (search && search.trim() !== "") {
+      const regex = new RegExp(search.trim(), "i");
+      query.name = { $regex: regex };
+      console.log("Search keyword:", search);
+      console.log("Search regex:", regex);
+    }
+
+    if (discount === "yes") {
+      query.discount = { $gt: 0 };
+    }
+
+    let sortOption = {};
+    if (sortby === "price_asc") {
+      sortOption.price = 1;
+    } else if (sortby === "price_desc") {
+      sortOption.price = -1;
+    }
+
+    console.log("Final query:", query);
+    const products = await productModel.find(query).sort(sortOption);
+    console.log("Products found:", products.length);
+
+    res.render("products/shop", {
+      products,
+      search,
+    });
   } catch (err) {
-    console.error(err);
+    console.error("Product fetch error:", err);
+    
     req.flash("error", "Failed to load products");
     res.redirect("/");
   }
 };
+
+

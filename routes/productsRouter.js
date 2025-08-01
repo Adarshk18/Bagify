@@ -5,6 +5,7 @@ const isLoggedIn = require("../middlewares/isLoggedIn");
 const isAdmin = require("../middlewares/isAdmin");
 const multer = require("multer");
 const path = require("path");
+const productController = require("../controllers/productController")
 
 // 🖼️ Multer config for file upload
 const storage = multer.diskStorage({
@@ -20,37 +21,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// 🛒 Shop Page (User Side)
-router.get("/shop", isLoggedIn, async (req, res) => {
-  let filter = {};
-  let sort = {};
+router.get("/shop", productController.getAllProducts);
 
-  // ✅ Keyword search
-  if (req.query.search && req.query.search.trim() !== "") {
-    filter.name = { $regex: req.query.search.trim(), $options: "i" };
-  }
-
-  // ✅ Discount filter
-  if (req.query.discount === "yes") {
-    filter.discount = { $gt: 0 };
-  }
-
-  // ✅ Price sorting
-  if (req.query.sortby === "price_asc") sort.price = 1;
-  else if (req.query.sortby === "price_desc") sort.price = -1;
-
-  try {
-    const products = await productModel.find(filter).sort(sort);
-    res.render("shop", {
-      products,
-      user: req.user,
-      search: req.query.search || "",
-    });
-  } catch (err) {
-    console.error("Shop Page Error:", err.message);
-    res.status(500).send("Server Error");
-  }
-});
 
 
 

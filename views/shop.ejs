@@ -7,7 +7,11 @@
       <div>
         <h3 class="text-lg font-semibold mb-3">Sort by</h3>
         <form action="/shop" method="GET">
-          <select name="sortby" onchange="this.form.submit()" class="w-full border border-gray-300 rounded px-4 py-2">
+          <select
+            name="sortby"
+            onchange="this.form.submit()"
+            class="w-full border border-gray-300 rounded px-4 py-2"
+          >
             <option value="">Default</option>
             <option value="price_asc">Price: Low to High</option>
             <option value="price_desc">Price: High to Low</option>
@@ -18,56 +22,136 @@
       <div>
         <h3 class="text-lg font-semibold mb-3">Categories</h3>
         <ul class="space-y-2 text-sm">
-          <li><a href="/shop" class="hover:underline text-gray-700">All Products</a></li>
-          <li><a href="/shop?discount=yes" class="hover:underline text-gray-700">Discounted Products</a></li>
+          <li>
+            <a href="/shop" class="hover:underline text-gray-700"
+              >All Products</a
+            >
+          </li>
+          <li>
+            <a href="/shop?discount=yes" class="hover:underline text-gray-700"
+              >Discounted Products</a
+            >
+          </li>
         </ul>
       </div>
     </aside>
 
     <!-- Main Content -->
     <main class="w-full lg:w-3/4">
+      <!-- Flash Messages -->
+      <% if (error && error.length > 0) { %>
+      <div
+        id="flash-error"
+        class="mb-4 bg-red-500 text-white px-4 py-2 rounded shadow flex items-center justify-between"
+      >
+        <span><%= error[0] %></span>
+        <button
+          onclick="document.getElementById('flash-error').remove()"
+          class="text-white text-xl leading-none"
+        >
+          &times;
+        </button>
+      </div>
+      <% } %> <% if (success && success.length > 0) { %>
+      <div
+        id="flash-success"
+        class="mb-4 bg-green-500 text-white px-4 py-2 rounded shadow flex items-center justify-between"
+      >
+        <span><%= success[0] %></span>
+        <button
+          onclick="document.getElementById('flash-success').remove()"
+          class="text-white text-xl leading-none"
+        >
+          &times;
+        </button>
+      </div>
+      <% } %>
+
+      <script>
+        setTimeout(() => {
+          document.getElementById("flash-error")?.remove();
+          document.getElementById("flash-success")?.remove();
+        }, 4000);
+      </script>
+
       <!-- 🔍 Search Bar -->
       <form action="/shop" method="GET" class="mb-6 flex items-center gap-2">
-        <input type="text" name="search" placeholder="Search products..." value="<%= typeof search !== 'undefined' ? search : '' %>"
-          class="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none" />
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <input
+          type="text"
+          name="search"
+          placeholder="Search products..."
+          value="<%= typeof search !== 'undefined' ? search : '' %>"
+          class="w-full border border-gray-300 px-4 py-2 rounded-md focus:outline-none"
+        />
+        <button
+          type="submit"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
           <i class="ri-search-line text-xl"></i>
         </button>
       </form>
 
       <% if (products.length === 0) { %>
-        <div class="text-center text-gray-500 mt-20">No products found.</div>
+      <div class="text-center text-gray-500 mt-20">No products found.</div>
       <% } %>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         <% products.forEach(function(product) { %>
-          <div class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-transform hover:scale-105">
-            <% if ((product.discount + '').trim() !== '' && product.discount > 0) { %>
-              <span class="absolute top-3 left-3 bg-red-600 text-white text-xs px-3 py-1 rounded-full z-10">
-                ₹<%= product.discount %> OFF
-              </span>
-            <% } %>
+        <div
+          class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-transform hover:scale-105"
+        >
+          <% if ((product.discount + '').trim() !== '' && product.discount > 0)
+          { %>
+          <span
+            class="absolute top-3 left-3 bg-red-600 text-white text-xs px-3 py-1 rounded-full z-10"
+          >
+            ₹<%= product.discount %> OFF
+          </span>
+          <% } %>
 
-            <div class="bg-gradient-to-br from-white via-[<%= product.bgcolor %>] to-white flex items-center justify-center h-48">
-              <img src="<%= product.image.startsWith('/images') ? product.image : '/images/' + product.image %>" alt="<%= product.name %>" class="h-full object-contain p-4" />
-            </div>
+          <div
+            class="bg-gradient-to-br from-white via-[<%= product.bgcolor %>] to-white flex items-center justify-center h-48"
+          >
+            <img
+              src="<%= product.image.startsWith('/images') ? product.image : '/images/' + product.image %>"
+              alt="<%= product.name %>"
+              class="h-full object-contain p-4"
+            />
+          </div>
 
-            <div class="p-4" style="background-color: <%= product.panelcolor %>; color: <%= product.textcolor %>;">
-              <h3 class="font-semibold text-lg mb-1"><%= product.name %></h3>
-              <div class="flex items-center justify-between text-sm">
-                <span>₹<%= product.price %></span>
-                <% if (product.discount > 0) { %>
-                  <span class="line-through text-gray-400">₹<%= parseInt(product.price) + parseInt(product.discount) %></span>
-                <% } %>
+          <div
+            class="p-4"
+            style="
+              background-color: <%= product.panelcolor %>;
+              color: <%= product.textcolor %>;
+            "
+          >
+            <h3 class="font-semibold text-lg mb-1"><%= product.name %></h3>
+            <div class="flex items-center justify-between text-sm">
+              <span>₹<%= product.price %></span>
+              <% if (product.discount > 0) { %>
+              <span class="line-through text-gray-400"
+                >₹<%= parseInt(product.price) + parseInt(product.discount)
+                %></span
+              >
+              <% } %>
 
-                <form action="/cart/add/<%= product._id %>" method="POST" class="inline">
-                  <button type="submit" class="bg-white p-1 rounded-full hover:bg-gray-100" title="Add to Cart">
-                    <i class="ri-shopping-cart-2-line text-lg text-gray-700"></i>
-                  </button>
-                </form>
-              </div>
+              <form
+                action="/cart/add/<%= product._id %>"
+                method="POST"
+                class="inline"
+              >
+                <button
+                  type="submit"
+                  class="bg-white p-1 rounded-full hover:bg-gray-100"
+                  title="Add to Cart"
+                >
+                  <i class="ri-shopping-cart-2-line text-lg text-gray-700"></i>
+                </button>
+              </form>
             </div>
           </div>
+        </div>
         <% }) %>
       </div>
     </main>
@@ -77,4 +161,7 @@
 <%- include('./partials/footer') %>
 
 <!-- Remix Icons CDN -->
-<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+<link
+  href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+  rel="stylesheet"
+/>
