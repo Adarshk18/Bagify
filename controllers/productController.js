@@ -2,22 +2,42 @@ const productModel = require("../models/product-model");
 const fs = require("fs");
 const path = require("path");
 
+// Render the admin product creation form
 exports.renderCreateForm = (req, res) => {
   res.render("admin/createproduct", { success: "" });
 };
 
+// Handle product creation
 exports.createProduct = async (req, res) => {
   try {
-    const { name, price, discount, bgcolor, panelcolor, textcolor } = req.body;
-
-    const product = await productModel.create({
+    const {
       name,
-      price,
-      discount,
+      originalPrice,
+      discount = 0,
       bgcolor,
       panelcolor,
       textcolor,
-      image: req.file.filename
+    } = req.body;
+
+    const numericOriginal = Number(originalPrice) || 0;
+    const numericDiscount = Number(discount) || 0;
+    const finalPrice = Math.max(0, numericOriginal - numericDiscount);
+
+    // Ensure discount is not more than original price
+    if (numericDiscount >= numericOriginal) {
+      req.flash("error", "Discount cannot be more than or equal to original price.");
+      return res.redirect("/admin/create");
+    }
+
+    const product = await productModel.create({
+      name,
+      price: finalPrice,
+      originalPrice: numericOriginal,
+      discount: numericDiscount,
+      bgcolor,
+      panelcolor,
+      textcolor,
+      image: req.file.filename,
     });
 
     req.flash("success", "Product Created");
@@ -28,6 +48,7 @@ exports.createProduct = async (req, res) => {
   }
 };
 
+// Get all products (for /shop page with search/filter)
 exports.getAllProducts = async (req, res) => {
   try {
     const { search, sortby, discount } = req.query;
@@ -36,8 +57,6 @@ exports.getAllProducts = async (req, res) => {
     if (search && search.trim() !== "") {
       const regex = new RegExp(search.trim(), "i");
       query.name = { $regex: regex };
-      console.log("Search keyword:", search);
-      console.log("Search regex:", regex);
     }
 
     if (discount === "yes") {
@@ -51,20 +70,15 @@ exports.getAllProducts = async (req, res) => {
       sortOption.price = -1;
     }
 
-    console.log("Final query:", query);
     const products = await productModel.find(query).sort(sortOption);
-    console.log("Products found:", products.length);
 
-    res.render("products/shop", {
+    res.render("shop", {
       products,
       search,
     });
   } catch (err) {
     console.error("Product fetch error:", err);
-    
     req.flash("error", "Failed to load products");
     res.redirect("/");
   }
 };
-
-

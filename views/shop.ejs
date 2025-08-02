@@ -75,7 +75,11 @@
       </script>
 
       <!-- 🔍 Search Bar -->
-      <form action="/shop" method="GET" class="mb-6 flex items-center gap-2">
+      <form
+        action="/products/shop"
+        method="GET"
+        class="mb-6 flex items-center gap-2"
+      >
         <input
           type="text"
           name="search"
@@ -100,12 +104,13 @@
         <div
           class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-transform hover:scale-105"
         >
-          <% if ((product.discount + '').trim() !== '' && product.discount > 0)
-          { %>
+          <% if (product.discount > 0 && product.originalPrice &&
+          product.originalPrice > product.price) { const discountPercent =
+          Math.round((product.discount / product.originalPrice) * 100); %>
           <span
             class="absolute top-3 left-3 bg-red-600 text-white text-xs px-3 py-1 rounded-full z-10"
           >
-            ₹<%= product.discount %> OFF
+            <%= discountPercent %>% OFF
           </span>
           <% } %>
 

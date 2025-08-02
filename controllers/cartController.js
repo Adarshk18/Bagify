@@ -5,22 +5,25 @@ exports.viewCart = async (req, res) => {
     const user = await userModel.findById(req.session.user._id).populate("cart.productId");
 
     const cartItems = user.cart
-      .filter(item => item.productId) // Skip broken refs
+      .filter(item => item.productId)
       .map(item => {
-        const price = Number(item.productId.price) || 0;
-        const discount = Number(item.productId.discount) || 0;
-        const finalPrice = price - discount;
+        const product = item.productId;
+        const discountedPrice = Number(product.price) || 0; // This is the final price after discount
+        const originalPrice = Number(product.originalPrice) || discountedPrice;
+        const discountAmount = originalPrice - discountedPrice;
+        const discountPercentage = originalPrice > 0 ? Math.round((discountAmount / originalPrice) * 100) : 0;
 
         return {
-          product: item.productId,
+          product,
           quantity: item.quantity,
-          effectivePrice: finalPrice < 0 ? 0 : finalPrice, // Prevent negative values
-          labelFree: finalPrice <= 0
+          effectivePrice: discountedPrice,
+          discountPercentage,
+          labelFree: discountedPrice === 0,
         };
       });
 
-    const total = cartItems.reduce((sum, item) => {
-      return sum + item.effectivePrice * item.quantity;
+    const total = cartItems.reduce((acc, item) => {
+      return acc + item.effectivePrice * item.quantity;
     }, 0);
 
     res.render("cart", {
@@ -34,6 +37,9 @@ exports.viewCart = async (req, res) => {
     res.redirect("/");
   }
 };
+
+
+
 
 
 

@@ -27,12 +27,29 @@
           <h4 class="text-lg font-semibold"><%= item.product.name %></h4>
 
           <% const discountedPrice = Math.max(0, item.product.price -
-          (item.product.discount || 0)); %>
-          <p class="text-sm text-gray-600">
-            <% if (item.labelFree) { %> ₹ 0 (Free) × <%= item.quantity %> <% }
-            else { %> ₹ <%= item.effectivePrice %> × <%= item.quantity %> <% }
-            %>
-          </p>
+          (item.product.discount || 0)); %> <% const hasDiscount =
+          item.product.originalPrice && item.product.discount > 0; const
+          original = item.product.originalPrice || (item.product.price +
+          item.product.discount); const discountPercent = hasDiscount ?
+          Math.round((item.product.discount / original) * 100) : 0; %>
+          <div class="text-sm text-gray-700">
+            <span class="font-bold text-lg text-gray-800"
+              >₹<%= item.product.price %></span
+            >
+
+            <% if (hasDiscount) { %>
+            <span class="line-through text-gray-500 ml-2"
+              >₹<%= original %></span
+            >
+            <span class="ml-2 text-red-500 text-xs"
+              >(<%= discountPercent %>% OFF)</span
+            >
+            <% } %>
+
+            <span class="ml-2 text-sm text-gray-600"
+              >× <%= item.quantity %></span
+            >
+          </div>
 
           <div class="flex gap-2 mt-2">
             <form action="/cart/update" method="POST">
@@ -97,5 +114,3 @@
 </div>
 
 <%- include('./partials/footer') %>
-
-

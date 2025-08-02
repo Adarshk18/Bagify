@@ -1,7 +1,6 @@
 const userModel = require("../models/user-model");
 const orderModel = require("../models/order-model");
 
-
 exports.placeOrder = async (req, res) => {
   try {
     const user = await userModel.findById(req.session.user._id).populate("cart.productId");
@@ -11,35 +10,31 @@ exports.placeOrder = async (req, res) => {
       return res.redirect("/cart");
     }
 
-    // 📦 Extract fields
     const {
       fullname, phone, street, city, state,
       pincode, country, lat, lng, selectedAddress
     } = req.body;
 
-    // 🧾 Final address to use in order
+    // ✅ Address selection logic
     let finalAddress = null;
 
-    // 1️⃣ If a saved address is selected
     if (selectedAddress !== undefined && user.addresses[parseInt(selectedAddress)]) {
       finalAddress = user.addresses[parseInt(selectedAddress)];
-    }
-    // 2️⃣ Otherwise use manual form (validate first)
-    else {
+    } else {
       if (!fullname || !phone || !street || !city || !state || !pincode || !country) {
         req.flash("error", "Please fill in all address fields.");
         return res.redirect("/cart");
       }
 
       finalAddress = {
-        fullname,
-        phone,
-        street,
-        city,
-        state,
-        pincode,
-        country,
-        landmark: req.body.landmark || "",
+        fullname: fullname.trim(),
+        phone: phone.trim(),
+        street: street.trim(),
+        city: city.trim(),
+        state: state.trim(),
+        pincode: pincode.trim(),
+        country: country.trim(),
+        landmark: (req.body.landmark || "").trim(),
         coordinates: {
           lat: parseFloat(lat) || null,
           lng: parseFloat(lng) || null
@@ -47,31 +42,37 @@ exports.placeOrder = async (req, res) => {
         createdAt: new Date()
       };
 
-      // 🧠 Check if similar address already exists
+
+      // Optional: Save this address if new
       const duplicate = user.addresses.find(addr =>
         addr.street === street &&
         addr.city === city &&
         addr.pincode === pincode
       );
 
-      if (!duplicate) {
-        user.addresses.push(finalAddress);
-      }
+      if (!duplicate) user.addresses.push(finalAddress);
     }
 
-    // 💰 Total and product details
-    const products = user.cart.map(item => ({
+    // ✅ Only keep valid products
+    const validCartItems = user.cart.filter(item => item.productId);
+
+    // 📦 Order product structure for DB
+    const products = validCartItems.map(item => ({
       product: item.productId._id,
       quantity: item.quantity
     }));
 
-    const totalAmount = user.cart.reduce(
-      (sum, item) =>
-        sum + ((item.productId.price - (item.productId.discount || 0)) * item.quantity),
-      0
-    );
+    // 💰 Accurate price after discount
+    const totalAmount = validCartItems.reduce((sum, item) => {
+      const price = Math.max(0, (item.productId.price || 0));
+      return sum + price * item.quantity;
+    }, 0);
 
-    // 📦 Create order in DB
+    console.log("🛒 Products:", products);
+    console.log("💰 Total Amount:", totalAmount);
+    console.log("📦 Address:", finalAddress);
+
+    // ✅ Save order in DB
     await orderModel.create({
       user: user._id,
       products,
@@ -81,27 +82,15 @@ exports.placeOrder = async (req, res) => {
       paymentMode: req.body.paymentMode || "cod"
     });
 
-    // 📝 Optional: Store summary in user's orders
-    user.orders.push({
-      items: user.cart.map(item => ({
-        product: {
-          name: item.productId.name,
-          price: item.productId.price,
-          discount: item.productId.discount || 0
-        },
-        quantity: item.quantity
-      })),
-      totalAmount,
-      status: "Pending",
-      address: finalAddress
-    });
+    console.log("✅ Order created in DB");
 
-
+    // ✅ Clear cart and save new address if added
     user.cart = [];
     await user.save();
 
     req.flash("success", "✅ Order placed successfully!");
     res.redirect("/orders");
+
   } catch (err) {
     console.error("❌ Error placing order:", err.message);
     req.flash("error", "Something went wrong while placing the order.");

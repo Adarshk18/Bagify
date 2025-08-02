@@ -13,6 +13,9 @@ router.get("/", isLoggedIn, async (req, res) => {
   const orders = await orderModel
     .find({ user: req.user._id })
     .populate("products.product");
+    // Check if the product field actually resolves
+  console.log("Orders:", JSON.stringify(orders, null, 2));
+
   res.render("orders", { orders });
 });
 
@@ -25,18 +28,27 @@ router.get("/checkout", isLoggedIn, async (req, res) => {
   }
 
   let total = 0;
-  user.cart.forEach((item) => {
-    const price = item.productId.price - item.productId.discount;
-    total += price * item.quantity;
-  });
+  const validCart = user.cart.filter(item => item.productId); // ✅ filter invalid product refs
 
+  if (validCart.length === 0) {
+    req.flash("error", "Some products in your cart are no longer available.");
+    return res.redirect("/cart");
+  }
+
+  validCart.forEach((item) => {
+    const price = item.productId.price || 0;
+    const discount = item.productId.discount || 0;
+    const finalPrice = Math.max(0, price - discount); // prevent negatives
+    total += finalPrice * item.quantity;
+  });
 
   res.render("checkout", {
     user,
     total,
-    payOnline: false, // 👈 important so it sets COD in hidden input
+    payOnline: false, // 👈 for COD
   });
 });
+
 
 router.post("/pay", isLoggedIn, async (req, res) => {
   const user = await userModel.findById(req.user._id).populate("cart.productId");
