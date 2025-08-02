@@ -3,7 +3,6 @@
 <div class="max-w-6xl mx-auto px-4 py-10">
   <h2 class="text-3xl font-bold text-gray-800 mb-8">📦 All Orders</h2>
 
-  <!-- ✅ Export Orders Button -->
   <a href="/admin/orders/export" class="bg-green-600 text-white px-4 py-2 rounded text-sm float-right mb-4 hover:bg-green-700">
     ⬇️ Export Orders
   </a>
@@ -14,7 +13,8 @@
     </div>
   <% } else { %>
     <% orders.forEach(order => { %>
-      <div class="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200">
+      <div class="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200 <%= order.status === 'Cancelled' ? 'opacity-60 line-through bg-gray-50' : '' %>">
+        
         <!-- 👤 User Info -->
         <div class="flex justify-between items-center mb-4">
           <div>
@@ -40,9 +40,18 @@
 
         <!-- 🛍️ Products List -->
         <ul class="divide-y divide-gray-200 mb-4">
-          <% order.products.forEach(p => { %>
-            <li class="py-2 flex justify-between text-gray-700">
-              <span class="font-medium"><%= p.product.name %></span>
+          <% order.products.forEach(p => { 
+            const prod = p.product;
+          %>
+            <li class="py-2 flex justify-between items-center text-gray-700">
+              <% if (prod) { %>
+                <div class="flex items-center gap-3">
+                  <img src="<%= prod.image %>" alt="Product" class="w-10 h-10 object-cover rounded" />
+                  <span class="font-medium"><%= prod.name %></span>
+                </div>
+              <% } else { %>
+                <span class="italic text-red-500">[Product Removed]</span>
+              <% } %>
               <span class="text-sm">Qty: <%= p.quantity %></span>
             </li>
           <% }) %>
@@ -52,7 +61,7 @@
         <% if (order.address) { %>
           <div class="mb-4 text-sm text-gray-700 bg-gray-50 rounded p-4 border">
             <p class="font-semibold mb-1">🏠 Delivery Address</p>
-            <p><%= order.address.name %> (<%= order.address.phone %>)</p>
+            <p><%= order.address.fullname %> (<%= order.address.phone %>)</p>
             <p><%= order.address.street %>, <%= order.address.city %> - <%= order.address.pincode %></p>
             <p><%= order.address.state %>, <%= order.address.country %></p>
             <% if (order.address.landmark) { %>
@@ -61,9 +70,12 @@
           </div>
         <% } %>
 
-        <!-- 💰 Total & Status Update -->
+        <!-- 💰 Total & Payment & Status Update -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h4 class="text-lg font-semibold text-gray-900">💰 Total: ₹<%= order.totalAmount %></h4>
+          <div>
+            <h4 class="text-lg font-semibold text-gray-900">💰 Total: ₹<%= order.totalAmount %></h4>
+            <p class="text-sm text-gray-500">💳 Payment: <%= order.paymentMode || 'N/A' %></p>
+          </div>
 
           <form action="/admin/orders/update/<%= order._id %>" method="POST" class="flex items-center gap-3">
             <select name="status" class="border border-gray-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
