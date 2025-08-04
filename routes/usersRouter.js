@@ -45,10 +45,10 @@ router.get("/profile", isLoggedIn, async (req, res) => {
 
 // 🏠 Address Add/Delete
 router.post("/address/add", isLoggedIn, userController.addAddress);
-// router.post("/address/save", isLoggedIn, userController.saveAddress);
-
+router.post("/address/save", isLoggedIn, userController.saveAddress); // ✅ Now active
 router.post("/address/delete/:index", isLoggedIn, userController.deleteAddress);
 
+// 🔐 Forgot/Reset Password
 router.get("/forgot-password", userController.renderForgotPassword);
 router.post("/forgot-password", userController.handleForgotPassword);
 router.get("/reset-password/:token", userController.renderResetForm);

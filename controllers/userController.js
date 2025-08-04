@@ -30,7 +30,7 @@ exports.addAddress = async (req, res) => {
   // Simple validation (you can make this stricter as needed)
   if (!name || !phone || !street || !city || !state || !pincode || !country) {
     req.flash("error", "All fields except landmark must be filled.");
-    return res.redirect("/users/profile");
+    return res.redirect("/cart");
   }
 
   try {
@@ -54,7 +54,7 @@ exports.addAddress = async (req, res) => {
     });
 
     req.flash("success", "Address saved successfully!");
-    res.redirect("/users/profile");
+    res.redirect("/cart");
   } catch (err) {
     console.error("❌ Failed to save address:", err.message);
     req.flash("error", "Could not save address.");
@@ -62,6 +62,18 @@ exports.addAddress = async (req, res) => {
   }
 };
 
+exports.saveAddress = (req, res) => {
+  const { selectedAddress } = req.body;
+
+  if (!selectedAddress) {
+    req.flash("error", "Please select a saved address.");
+    return res.redirect("/orders/checkout");
+  }
+
+  req.session.selectedAddressIndex = selectedAddress;
+  req.flash("success", "Address selected successfully!");
+  res.redirect("/cart"); // same as manual form behavior
+};
 
 
 
@@ -77,7 +89,6 @@ exports.deleteAddress = async (req, res) => {
       return res.redirect("/users/profile");
     }
 
-    // Remove the address at index
     user.addresses.splice(addressIndex, 1);
     await user.save();
 
@@ -103,15 +114,11 @@ exports.handleForgotPassword = async (req, res) => {
       return res.redirect("/users/forgot-password");
     }
 
-    // Generate token
     const token = crypto.randomBytes(20).toString("hex");
-
-    // Set expiration: 1 hour
     user.resetPasswordToken = token;
     user.resetPasswordExpires = Date.now() + 3600000;
     await user.save();
 
-    // Send email
     const resetLink = `http://${req.headers.host}/users/reset-password/${token}`;
     await Mailer.sendPasswordResetMail({
       to: user.email,
@@ -119,10 +126,8 @@ exports.handleForgotPassword = async (req, res) => {
       link: resetLink,
     });
 
-
     req.flash("success", "Reset link sent to your email.");
     res.redirect("/users/forgot-password");
-
   } catch (err) {
     console.error("Error in handleForgotPassword:", err.message);
     req.flash("error", "Something went wrong.");
@@ -171,10 +176,7 @@ exports.resetPassword = async (req, res) => {
     return res.redirect("/users/forgot-password");
   }
 
-  // Save new password
-  const bcrypt = require("bcrypt");
   user.password = await bcrypt.hash(password, 10);
-
   user.resetPasswordToken = undefined;
   user.resetPasswordExpires = undefined;
   await user.save();
