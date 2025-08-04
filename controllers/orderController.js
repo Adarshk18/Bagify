@@ -12,29 +12,30 @@ exports.placeOrder = async (req, res) => {
 
     const {
       fullname, phone, street, city, state,
-      pincode, country, lat, lng, selectedAddress
+      pincode, country, landmark, lat, lng, selectedAddress
     } = req.body;
 
-    // ✅ Address selection logic
     let finalAddress = null;
 
-    if (selectedAddress !== undefined && user.addresses[parseInt(selectedAddress)]) {
+    if (selectedAddress !== undefined && selectedAddress !== "" && user.addresses[parseInt(selectedAddress)]) {
+      // ✅ Use selected saved address
       finalAddress = user.addresses[parseInt(selectedAddress)];
     } else {
+      // ✅ Manual form validation
       if (!fullname || !phone || !street || !city || !state || !pincode || !country) {
-        req.flash("error", "Please fill in all address fields.");
-        return res.redirect("/cart");
+        req.flash("error", "Please fill in all required address fields.");
+        return res.redirect("/orders/checkout");
       }
 
       finalAddress = {
-        fullname: fullname.trim(),
+        name: fullname.trim(),
         phone: phone.trim(),
         street: street.trim(),
         city: city.trim(),
         state: state.trim(),
         pincode: pincode.trim(),
         country: country.trim(),
-        landmark: (req.body.landmark || "").trim(),
+        landmark: (landmark || "").trim(),
         coordinates: {
           lat: parseFloat(lat) || null,
           lng: parseFloat(lng) || null
@@ -42,37 +43,36 @@ exports.placeOrder = async (req, res) => {
         createdAt: new Date()
       };
 
-
-      // Optional: Save this address if new
+      // ✅ Save address if not already in user's profile
       const duplicate = user.addresses.find(addr =>
-        addr.street === street &&
-        addr.city === city &&
-        addr.pincode === pincode
+        addr.name?.toLowerCase() === fullname.trim().toLowerCase() &&
+        addr.phone?.trim() === phone.trim() &&
+        addr.street?.toLowerCase() === street.trim().toLowerCase() &&
+        addr.city?.toLowerCase() === city.trim().toLowerCase() &&
+        addr.state?.toLowerCase() === state.trim().toLowerCase() &&
+        addr.pincode?.trim() === pincode.trim() &&
+        addr.country?.toLowerCase() === country.trim().toLowerCase()
       );
 
-      if (!duplicate) user.addresses.push(finalAddress);
+      if (!duplicate) {
+        user.addresses.push(finalAddress);
+      }
     }
 
-    // ✅ Only keep valid products
+    // ✅ Filter out invalid cart items
     const validCartItems = user.cart.filter(item => item.productId);
 
-    // 📦 Order product structure for DB
     const products = validCartItems.map(item => ({
       product: item.productId._id,
       quantity: item.quantity
     }));
 
-    // 💰 Accurate price after discount
     const totalAmount = validCartItems.reduce((sum, item) => {
       const price = Math.max(0, (item.productId.price || 0));
       return sum + price * item.quantity;
     }, 0);
 
-    console.log("🛒 Products:", products);
-    console.log("💰 Total Amount:", totalAmount);
-    console.log("📦 Address:", finalAddress);
-
-    // ✅ Save order in DB
+    // ✅ Create the order
     await orderModel.create({
       user: user._id,
       products,
@@ -82,9 +82,7 @@ exports.placeOrder = async (req, res) => {
       paymentMode: req.body.paymentMode || "cod"
     });
 
-    console.log("✅ Order created in DB");
-
-    // ✅ Clear cart and save new address if added
+    // ✅ Clear cart and save address if needed
     user.cart = [];
     await user.save();
 
@@ -94,9 +92,10 @@ exports.placeOrder = async (req, res) => {
   } catch (err) {
     console.error("❌ Error placing order:", err.message);
     req.flash("error", "Something went wrong while placing the order.");
-    res.redirect("/cart");
+    res.redirect("/orders/checkout");
   }
 };
+
 
 exports.viewOrders = async (req, res) => {
   try {
