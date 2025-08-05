@@ -85,7 +85,13 @@ addresses: [
   },
     // Forgot Password
   resetPasswordToken: String,
-  resetPasswordExpires: Date
+  resetPasswordExpires: Date,
+
+  avatar: {
+  type: String,
+  default: "/images/default-avatar.png"
+}
+
 
 }, { timestamps: true });
 

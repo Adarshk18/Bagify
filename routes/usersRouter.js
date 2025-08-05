@@ -4,6 +4,7 @@ const userModel = require("../models/user-model");
 const { registerUser, loginUser, logoutUser } = require("../controllers/authController");
 const isLoggedIn = require("../middlewares/isLoggedIn");
 const userController = require("../controllers/userController");
+const upload = require("../middlewares/upload");
 
 // Auth form page (Login + Register)
 router.get("/", (req, res) => {
@@ -40,6 +41,19 @@ router.get("/profile", isLoggedIn, async (req, res) => {
     console.error("Error fetching user profile:", err.message);
     req.flash("error", "Something went wrong.");
     res.redirect("/users");
+  }
+});
+
+router.post("/profile/upload-photo", isLoggedIn, upload.single("photo"), async (req, res) => {
+  try {
+    const avatarPath = `/uploads/avatars/${req.file.filename}`;
+    await userModel.findByIdAndUpdate(req.session.user._id, { avatar: avatarPath });
+    req.session.user.avatar = avatarPath;
+    res.redirect("/users/profile");
+  } catch (err) {
+    console.error("Upload failed:", err.message);
+    req.flash("error", "Upload failed.");
+    res.redirect("/users/profile");
   }
 });
 

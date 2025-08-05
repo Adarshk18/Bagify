@@ -5,11 +5,13 @@
     <h2 class="text-3xl font-bold text-gray-800 mb-6">👤 Your Profile</h2>
 
     <div class="flex flex-col sm:flex-row items-center gap-6 mb-6">
-      <img
-        src="/images/<%= user.picture || 'default-avatar.png' %>"
-        class="w-24 h-24 object-cover rounded-full border"
-        alt="Profile Picture"
-      />
+      <form action="/users/profile/upload-photo" method="POST" enctype="multipart/form-data">
+  <label>
+    <img src="<%= user.avatar || '/images/default-avatar.png' %>" class="w-20 h-20 rounded-full object-cover" />
+    <input type="file" name="photo" class="hidden" onchange="this.form.submit()" />
+  </label>
+</form>
+
       <div class="text-center sm:text-left">
         <h3 class="text-xl font-semibold text-gray-800">
           <%= user.fullname %>
