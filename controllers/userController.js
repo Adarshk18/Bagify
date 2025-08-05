@@ -11,6 +11,30 @@ exports.renderForgotPassword = (req, res) => {
   res.render("forgot-password", { error, success });
 };
 
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.session.user._id)
+      .populate({
+        path: "orders",
+        options: { sort: { createdAt: -1 }, limit: 3 },
+        populate: {
+          path: "products.product",
+          model: "Product"
+        }
+      });
+
+    res.render("profile", {
+      user,
+      success: req.flash("success"),
+      error: req.flash("error")
+    });
+  } catch (err) {
+    console.error("❌ Error loading profile:", err.message);
+    req.flash("error", "Failed to load profile.");
+    res.redirect("/");
+  }
+};
+
 // ✅ 📌 Add Address
 exports.addAddress = async (req, res) => {
   const userId = req.session.user._id;

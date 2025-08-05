@@ -61,6 +61,8 @@ router.post("/profile/upload-photo", isLoggedIn, upload.single("photo"), async (
   }
 });
 
+router.get("/profile", isLoggedIn, userController.getProfile);
+
 
 // 🏠 Address Add/Delete
 router.post("/address/add", isLoggedIn, userController.addAddress);
