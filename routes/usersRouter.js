@@ -46,16 +46,21 @@ router.get("/profile", isLoggedIn, async (req, res) => {
 
 router.post("/profile/upload-photo", isLoggedIn, upload.single("photo"), async (req, res) => {
   try {
-    const avatarPath = `/uploads/avatars/${req.file.filename}`;
-    await userModel.findByIdAndUpdate(req.session.user._id, { avatar: avatarPath });
-    req.session.user.avatar = avatarPath;
+    const filePath = `/uploads/avatars/${req.file.filename}`;
+    const updatedUser = await userModel.findByIdAndUpdate(
+      req.user._id,
+      { avatar: filePath },
+      { new: true }
+    );
+    req.session.user.avatar = updatedUser.avatar; // update session
     res.redirect("/users/profile");
   } catch (err) {
-    console.error("Upload failed:", err.message);
-    req.flash("error", "Upload failed.");
+    console.error("Avatar upload failed:", err.message);
+    req.flash("error", "Profile photo upload failed.");
     res.redirect("/users/profile");
   }
 });
+
 
 // 🏠 Address Add/Delete
 router.post("/address/add", isLoggedIn, userController.addAddress);

@@ -101,7 +101,10 @@ exports.viewOrders = async (req, res) => {
   try {
     const orders = await orderModel
       .find({ user: req.session.user._id })
-      .populate("products.product");
+      .populate({
+        path: 'products.product',
+        options: { strictPopulate: false }
+      });
 
     res.render("orders", {
       orders,
@@ -135,3 +138,5 @@ exports.cancelOrder = async (req, res) => {
     res.redirect("/orders");
   }
 };
+
+
