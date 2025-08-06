@@ -13,18 +13,21 @@ exports.renderForgotPassword = (req, res) => {
 
 exports.getProfile = async (req, res) => {
   try {
-    const user = await userModel.findById(req.session.user._id)
+    const user = await userModel.findById(req.session.user._id).lean();
+
+    const orders = await orderModel
+      .find({ user: req.session.user._id })
+      .sort({ createdAt: -1 })
+      .limit(3)
       .populate({
-        path: "orders",
-        options: { sort: { createdAt: -1 }, limit: 3 },
-        populate: {
-          path: "products.product",
-          model: "Product"
-        }
-      });
+        path: "products.product",
+        
+        options: { strictPopulate: false }
+      })
+      .lean();
 
     res.render("profile", {
-      user,
+      user: { ...user.toObject(), orders },
       success: req.flash("success"),
       error: req.flash("error")
     });

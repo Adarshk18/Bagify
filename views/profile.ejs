@@ -58,8 +58,8 @@
       <a href="/shop" class="text-blue-600 hover:underline">→ Start Shopping</a>
       <% } else { %>
       <div class="space-y-4">
-        <% user.orders.slice(-2).reverse().forEach(order => { %>
-        <div class="border border-gray-200 rounded p-4 bg-white shadow-sm">
+        <% user.orders.slice(0, 2).forEach(order => { %>
+        <div class="border border-gray-200 rounded p-4 bg-gray-50 shadow-sm">
           <div class="flex justify-between items-center mb-2">
             <span class="text-sm text-gray-700 font-mono"
               >#<%= order._id %></span
@@ -72,13 +72,16 @@
           </div>
 
           <ul class="text-sm text-gray-700 space-y-1">
-            <% order.items.forEach(item => { %>
+            <% if (order.products && order.products.length > 0) { %> <%
+            order.products.forEach(item => { %>
             <li>
               👜 <%= item.product?.name || '[Product Removed]' %> × <%=
               item.quantity %> — ₹ <%= item.product?.price ? (item.product.price
               - (item.product.discount || 0)) : '0' %>
             </li>
-            <% }) %>
+            <% }) %> <% } else { %>
+            <li>👜 [No Products Found]</li>
+            <% } %>
           </ul>
 
           <div class="mt-2 text-right font-semibold text-green-600">
