@@ -1,28 +1,32 @@
+const axios = require('axios');
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
 
 router.post('/api/chat', async (req, res) => {
   const { message } = req.body;
 
   try {
     const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
+     'https://openrouter.ai/api/v1/chat/completions',
       {
-        model: 'gpt-4',
+        model: 'mistralai/mixtral-8x7b',// or 'gpt-3.5-turbo' if you're not on GPT-4 access
         messages: [{ role: 'user', content: message }],
       },
       {
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
       }
     );
 
-    res.json({ reply: response.data.choices[0].message.content });
+    const reply = response.data.choices[0].message.content;
+    console.log("User said:", message);
+    console.log("Bot replied:", reply);
+    res.json({ reply: "Hi! I'm Bagify Assistant. How can I help you today?" });
   } catch (error) {
-    console.error("GPT Error:", error.message);
-    res.status(500).json({ error: "GPT API failed" });
+    console.error("GPT Error:", error.response?.data || error.message);
+    res.status(500).json({ reply: "Sorry, something went wrong." });
   }
 });
 
