@@ -43,11 +43,16 @@
 <!-- Font Awesome -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous"></script>
 
-<!-- 🧠 AI Chatbot (Basic Frontend) -->
-<div id="chatWidget" class="fixed bottom-6 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50">
+<!-- 💬 Chatbot Toggle Button -->
+<div id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-3 rounded-full shadow-lg cursor-pointer">
+  💬
+</div>
+
+<!-- 🧠 AI Chatbot Widget -->
+<div id="chatWidget" class="hidden fixed bottom-20 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50">
   <div class="bg-blue-600 text-white p-3 flex justify-between items-center">
     <span>🤖 Bagify Assistant</span>
-    <button onclick="document.getElementById('chatWidget').style.display='none'" class="text-white">✖</button>
+    <button id="chat-close" class="text-white">✖</button>
   </div>
   <div id="chatMessages" class="p-3 h-64 overflow-y-auto text-sm space-y-2 text-gray-800 dark:text-white">
     <div>👋 Hi! I can help with orders, tracking, and more.</div>
@@ -58,27 +63,73 @@
   </form>
 </div>
 
+<!-- 🧠 Chatbot Script -->
 <script>
+  const chatToggle = document.getElementById('chat-toggle');
+  const chatWidget = document.getElementById('chatWidget');
   const chatForm = document.getElementById('chatForm');
   const chatInput = document.getElementById('chatInput');
   const chatMessages = document.getElementById('chatMessages');
+  const chatClose = document.getElementById('chat-close');
 
-  chatForm.addEventListener('submit', function (e) {
+  // Toggle chatbot visibility
+  chatToggle.addEventListener('click', () => {
+    chatWidget.classList.toggle('hidden');
+  });
+
+  // Close button
+  chatClose.addEventListener('click', () => {
+    chatWidget.classList.add('hidden');
+  });
+
+  // Load chat history from localStorage
+  function loadHistory() {
+    const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+    chats.forEach(({ sender, text }) => {
+      appendMessage(sender, text);
+    });
+  }
+
+  // Save chat message
+  function saveMessage(sender, text) {
+    const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+    chats.push({ sender, text });
+    localStorage.setItem('chatHistory', JSON.stringify(chats));
+  }
+
+  // Append message to chat window
+  function appendMessage(sender, text) {
+    const div = document.createElement('div');
+    div.innerHTML = `${sender === 'You' ? '🧑' : '🤖'}: ${text}`;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Submit message
+  chatForm.addEventListener('submit', async function (e) {
     e.preventDefault();
     const msg = chatInput.value.trim();
     if (!msg) return;
 
-    // User Message
-    const userDiv = document.createElement('div');
-    userDiv.innerHTML = `🧑: ${msg}`;
-    chatMessages.appendChild(userDiv);
-
-    // Simulated Bot Reply
-    const botReply = document.createElement('div');
-    botReply.innerHTML = `🤖: Thank you! I'm still learning. Please visit the <a href="/orders" class="text-blue-600 underline">Orders</a> page for tracking.`;
-    chatMessages.appendChild(botReply);
-
+    appendMessage('You', msg);
+    saveMessage('You', msg);
     chatInput.value = '';
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg }),
+      });
+
+      const data = await res.json();
+      appendMessage('Bot', data.reply);
+      saveMessage('Bot', data.reply);
+    } catch (err) {
+      appendMessage('Bot', '❌ GPT API Error. Please try again later.');
+    }
   });
+
+  loadHistory();
 </script>

@@ -13,7 +13,8 @@ exports.renderForgotPassword = (req, res) => {
 
 exports.getProfile = async (req, res) => {
   try {
-    const user = await userModel.findById(req.session.user._id).lean();
+    const user = await userModel.findById(req.session.user._id)
+      .populate('addresses');
 
     const orders = await orderModel
       .find({ user: req.session.user._id })
@@ -21,22 +22,28 @@ exports.getProfile = async (req, res) => {
       .limit(3)
       .populate({
         path: "products.product",
-        
+        model: 'Product',
         options: { strictPopulate: false }
+       
       })
       .lean();
 
     res.render("profile", {
-      user: { ...user.toObject(), orders },
+      user: { ...user},
+      orders: orders || [],  // ✅ safer
       success: req.flash("success"),
       error: req.flash("error")
     });
+    console.log("Logged in user ID:", req.session.user._id);
+console.log("Fetched Orders:", orders);
+
   } catch (err) {
     console.error("❌ Error loading profile:", err.message);
     req.flash("error", "Failed to load profile.");
     res.redirect("/");
   }
 };
+
 
 // ✅ 📌 Add Address
 exports.addAddress = async (req, res) => {
