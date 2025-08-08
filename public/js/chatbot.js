@@ -9,21 +9,26 @@ chatToggle.onclick = () => chatBox.classList.toggle('hidden');
 chatInput.addEventListener('keydown', async (e) => {
   if (e.key === 'Enter' && chatInput.value.trim()) {
     const message = chatInput.value.trim();
-    appendMessage('You', message);
+    appendMessage('🧑', message);
     chatInput.value = '';
 
     // Persist
-    saveMessage('You', message);
+    const typing = appendMessage('🤖', 'Typing...');
+    saveMessage('🧑', message);
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message }),
-    });
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
 
-    const data = await res.json();
-    appendMessage('Bot', data.reply);
-    saveMessage('Bot', data.reply);
+      const data = await res.json();
+      typing.innerHTML = `<strong>🤖:</strong> ${data.reply}`;
+      saveMessage('Bot', data.reply);
+    } catch {
+      typing.innerHTML = `<strong>🤖:</strong> Sorry, something went wrong.`;
+    }
   }
 });
 
@@ -32,6 +37,7 @@ function appendMessage(sender, text) {
   div.innerHTML = `<strong>${sender}:</strong> ${text}`;
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
+  return div;
 }
 
 function saveMessage(sender, text) {
