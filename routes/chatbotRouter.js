@@ -14,18 +14,19 @@ router.post('/api/chat', async (req, res) => {
       },
       {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          'HTTP-Referer': 'https://localhost:3000',
+          'Content-Type': 'application/json',
         },
       }
     );
 
-    const reply = response.data.choices[0].message.content;
+    const reply = response.data.choices[0]?.message?.content || "No reply";
     console.log("User said:", message);
     console.log("Bot replied:", reply);
-    res.json({ reply: "Hi! I'm Bagify Assistant. How can I help you today?" });
+    res.json({ reply});
   } catch (error) {
-    console.error("GPT Error:", error.response?.data || error.message);
+    console.error("OpenRouter Error:", error?.response?.data || error.message);
     res.status(500).json({ reply: "Sorry, something went wrong." });
   }
 });
