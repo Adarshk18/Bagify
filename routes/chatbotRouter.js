@@ -27,7 +27,7 @@ router.post('/api/chat', async (req, res) => {
     res.json({ reply});
   } catch (error) {
     console.error("OpenRouter Error:", error?.response?.data || error.message);
-    res.status(500).json({ reply: "Sorry, something went wrong." });
+    res.status(500).json({ error: "Sorry, Chatbot service unavailable." });
   }
 });
 
