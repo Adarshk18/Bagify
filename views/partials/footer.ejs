@@ -58,12 +58,11 @@
     <div>👋 Hi! I can help with orders, tracking, and more.</div>
   </div>
   <form id="chatForm" class="flex border-t border-gray-200 dark:border-gray-600">
-    <input type="text" id="chatInput" class="flex-1 p-2 text-sm bg-white dark:bg-gray-700 dark:text-white" placeholder="Type your message..." />
+    <input type="text" id="chatInput" class="flex-1 p-2 text-sm bg-white dark:bg-gray-700 dark:text-white" placeholder="Type your message..." autocomplete="off" />
     <button type="submit" class="px-3 bg-blue-600 text-white">Send</button>
   </form>
 </div>
 
-<!-- 🧠 Chatbot Script -->
 <script>
   const chatToggle = document.getElementById('chat-toggle');
   const chatWidget = document.getElementById('chatWidget');
@@ -72,41 +71,35 @@
   const chatMessages = document.getElementById('chatMessages');
   const chatClose = document.getElementById('chat-close');
 
-  // Toggle chatbot visibility
-  chatToggle.addEventListener('click', () => {
-    chatWidget.classList.toggle('hidden');
-  });
+  // Show/Hide widget
+  chatToggle.addEventListener('click', () => chatWidget.classList.toggle('hidden'));
+  chatClose.addEventListener('click', () => chatWidget.classList.add('hidden'));
 
-  // Close button
-  chatClose.addEventListener('click', () => {
-    chatWidget.classList.add('hidden');
-  });
-
-  // Load chat history from localStorage
-  function loadHistory() {
-    const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-    chats.forEach(({ sender, text }) => {
-      appendMessage(sender, text);
-    });
+  // Append message to chat window
+  function appendMessage(sender, text) {
+    const div = document.createElement('div');
+    div.innerHTML = `<strong>${sender === 'You' ? '🧑 You' : '🤖 Bot'}:</strong> ${text}`;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return div; // For editing "Typing..." later
   }
 
-  // Save chat message
+  // Save chat in localStorage
   function saveMessage(sender, text) {
     const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
     chats.push({ sender, text });
     localStorage.setItem('chatHistory', JSON.stringify(chats));
   }
 
-  // Append message to chat window
-  function appendMessage(sender, text) {
-    const div = document.createElement('div');
-    div.innerHTML = `${sender === 'You' ? '🧑' : '🤖'}: ${text}`;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+  // Load history on page load
+  function loadHistory() {
+    const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+    chatMessages.innerHTML = ''; // Avoid duplicates
+    chats.forEach(({ sender, text }) => appendMessage(sender, text));
   }
 
-  // Submit message
-  chatForm.addEventListener('submit', async function (e) {
+  // Handle send
+  chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const msg = chatInput.value.trim();
     if (!msg) return;
@@ -114,7 +107,9 @@
     appendMessage('You', msg);
     saveMessage('You', msg);
     chatInput.value = '';
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Typing indicator
+    const typingEl = appendMessage('Bot', 'Typing...');
 
     try {
       const res = await fetch('/api/chat', {
@@ -124,10 +119,10 @@
       });
 
       const data = await res.json();
-      appendMessage('Bot', data.reply);
+      typingEl.innerHTML = `<strong>🤖 Bot:</strong> ${data.reply}`;
       saveMessage('Bot', data.reply);
-    } catch (err) {
-      appendMessage('Bot', '❌ GPT API Error. Please try again later.');
+    } catch {
+      typingEl.innerHTML = `<strong>🤖 Bot:</strong> ❌ GPT API Error. Please try again later.`;
     }
   });
 
