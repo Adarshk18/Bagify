@@ -5,6 +5,10 @@ const router = express.Router();
 router.post('/api/chat', async (req, res) => {
   const { message } = req.body;
 
+  if (!message) {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
   try {
     const response = await axios.post(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -13,23 +17,13 @@ router.post('/api/chat', async (req, res) => {
         messages: [
           { 
             role: 'system', 
-            content: `
-              You are Bagify Assistant, a chatbot for an e-commerce store named Bagify.
-              You can only answer questions related to:
-              - Order placement
-              - Order status & tracking
-              - Delivery updates
-              - Product details from our site
-              If a user asks about anything outside this scope, politely say:
-              "I’m here to assist only with Bagify store-related queries."
-              Do NOT answer unrelated questions.
-            `
+            content: "You are Bagify Assistant, a chatbot for an e-commerce store named Bagify. You can only answer questions related to:\n- Order placement\n- Order status & tracking\n- Delivery updates\n- Product details from our site\nIf a user asks anything outside this scope, reply: 'I’m here to assist only with Bagify store-related queries.' Do not answer unrelated questions."
           },{ role: 'user', content: message }],
       },
       {
         headers: {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          'HTTP-Referer': 'https://localhost:3000',
+          'HTTP-Referer': 'http://localhost:3000',
           'X-Title': 'Bagify Assistant'
         },
       }
