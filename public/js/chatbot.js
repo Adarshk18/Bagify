@@ -1,20 +1,24 @@
-// In public/js/chatbot.js (include this file in layout)
+// public/js/chatbot.js
+// Make sure this file is included in your EJS layout or page
+
 const chatToggle = document.getElementById('chat-toggle');
 const chatBox = document.getElementById('chatbox');
 const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
 
+// Toggle chat visibility
 chatToggle.onclick = () => chatBox.classList.toggle('hidden');
 
+// Handle sending a message
 chatInput.addEventListener('keydown', async (e) => {
   if (e.key === 'Enter' && chatInput.value.trim()) {
     const message = chatInput.value.trim();
-    appendMessage('🧑', message);
     chatInput.value = '';
 
-    // Persist
-    const typing = appendMessage('🤖', 'Typing...');
+    appendMessage('🧑', message);
     saveMessage('🧑', message);
+
+    const typing = appendMessage('🤖', 'Typing...');
 
     try {
       const res = await fetch('/api/chat', {
@@ -23,15 +27,21 @@ chatInput.addEventListener('keydown', async (e) => {
         body: JSON.stringify({ message }),
       });
 
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+
       const data = await res.json();
-      typing.innerHTML = `<strong>🤖:</strong> ${data.reply}`;
-      saveMessage('Bot', data.reply);
-    } catch {
+      const replyText = data.reply || "Sorry, I couldn't process that.";
+      typing.innerHTML = `<strong>🤖:</strong> ${replyText}`;
+      saveMessage('🤖', replyText);
+    } catch (err) {
+      console.error("Chatbot fetch error:", err);
       typing.innerHTML = `<strong>🤖:</strong> Sorry, something went wrong.`;
+      saveMessage('🤖', 'Sorry, something went wrong.');
     }
   }
 });
 
+// Append a message to chat window
 function appendMessage(sender, text) {
   const div = document.createElement('div');
   div.innerHTML = `<strong>${sender}:</strong> ${text}`;
@@ -40,12 +50,14 @@ function appendMessage(sender, text) {
   return div;
 }
 
+// Save message history in localStorage
 function saveMessage(sender, text) {
   const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
   chats.push({ sender, text });
   localStorage.setItem('chatHistory', JSON.stringify(chats));
 }
 
+// Load chat history from localStorage
 function loadHistory() {
   const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
   chats.forEach(c => appendMessage(c.sender, c.text));
