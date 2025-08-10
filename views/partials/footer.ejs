@@ -49,82 +49,84 @@
 </div>
 
 <!-- 🧠 AI Chatbot Widget -->
-<div id="chatWidget" class="hidden fixed bottom-20 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50">
+<div id="chatbox" class="hidden fixed bottom-20 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50">
   <div class="bg-blue-600 text-white p-3 flex justify-between items-center">
     <span>🤖 Bagify Assistant</span>
     <button id="chat-close" class="text-white">✖</button>
   </div>
-  <div id="chatMessages" class="p-3 h-64 overflow-y-auto text-sm space-y-2 text-gray-800 dark:text-white">
+  <div id="chat-messages" class="p-3 max-h-96 overflow-y-auto text-sm space-y-2 text-gray-800 dark:text-white">
     <div>👋 Hi! I can help with orders, tracking, and more.</div>
   </div>
-  <form id="chatForm" class="flex border-t border-gray-200 dark:border-gray-600">
-    <input type="text" id="chatInput" class="flex-1 p-2 text-sm bg-white dark:bg-gray-700 dark:text-white" placeholder="Type your message..." autocomplete="off" />
-    <button type="submit" class="px-3 bg-blue-600 text-white">Send</button>
-  </form>
+  <div class="flex border-t border-gray-200 dark:border-gray-600">
+    <input type="text" id="chat-input" class="flex-1 p-2 text-sm bg-white dark:bg-gray-700 dark:text-white" placeholder="Type your message..." autocomplete="off" />
+  </div>
 </div>
 
+<!-- Include chatbot scripts -->
 <script>
-  const chatToggle = document.getElementById('chat-toggle');
-  const chatWidget = document.getElementById('chatWidget');
-  const chatForm = document.getElementById('chatForm');
-  const chatInput = document.getElementById('chatInput');
-  const chatMessages = document.getElementById('chatMessages');
-  const chatClose = document.getElementById('chat-close');
+const chatToggle = document.getElementById("chat-toggle");
+  const chatWidget = document.getElementById("chatbox"); // changed
+  const chatInput = document.getElementById("chat-input"); // changed
+  const chatMessages = document.getElementById("chat-messages"); // changed
+  const chatClose = document.getElementById("chat-close");
 
-  // Show/Hide widget
-  chatToggle.addEventListener('click', () => chatWidget.classList.toggle('hidden'));
-  chatClose.addEventListener('click', () => chatWidget.classList.add('hidden'));
+  const userId = "<%= user ? user._id : '' %>"; // Inject from backend EJS
 
-  // Append message to chat window
+  chatToggle.addEventListener("click", () => {
+    chatWidget.classList.toggle("hidden");
+    console.log("Chat toggle clicked");
+  });
+
+  chatClose.addEventListener("click", () => {
+    chatWidget.classList.add("hidden");
+    console.log("Chat closed");
+  });
+
   function appendMessage(sender, text) {
-    const div = document.createElement('div');
-    div.innerHTML = `<strong>${sender === 'You' ? '🧑 You' : '🤖 Bot'}:</strong> ${text}`;
+    const div = document.createElement("div");
+    div.innerHTML = `<strong>${sender === "You" ? "🧑 You" : "🤖 Bot"}:</strong> ${text}`;
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    return div; // For editing "Typing..." later
+    return div;
   }
 
-  // Save chat in localStorage
   function saveMessage(sender, text) {
-    const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+    const chats = JSON.parse(localStorage.getItem("chatHistory") || "[]");
     chats.push({ sender, text });
-    localStorage.setItem('chatHistory', JSON.stringify(chats));
+    localStorage.setItem("chatHistory", JSON.stringify(chats));
   }
 
-  // Load history on page load
   function loadHistory() {
-    const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-    chatMessages.innerHTML = ''; // Avoid duplicates
+    const chats = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+    chatMessages.innerHTML = "";
     chats.forEach(({ sender, text }) => appendMessage(sender, text));
   }
 
-  // Handle send
-  chatForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const msg = chatInput.value.trim();
-    if (!msg) return;
+  chatInput.addEventListener("keydown", async (e) => {
+    if (e.key === "Enter" && chatInput.value.trim()) {
+      const msg = chatInput.value.trim();
+      chatInput.value = "";
 
-    appendMessage('You', msg);
-    saveMessage('You', msg);
-    chatInput.value = '';
+      appendMessage("You", msg);
+      saveMessage("You", msg);
 
-    // Typing indicator
-    const typingEl = appendMessage('Bot', 'Typing...');
+      const typingEl = appendMessage("Bot", "Typing...");
 
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg }),
-      });
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg, userId }),
+        });
 
-      const data = await res.json();
-      typingEl.innerHTML = `<strong>🤖 Bot:</strong> ${data.reply}`;
-      saveMessage('Bot', data.reply);
-    } catch {
-      typingEl.innerHTML = `<strong>🤖 Bot:</strong> ❌ GPT API Error. Please try again later.`;
+        const data = await res.json();
+        typingEl.innerHTML = `<strong>🤖 Bot:</strong> ${data.reply}`;
+        saveMessage("Bot", data.reply);
+      } catch {
+        typingEl.innerHTML = `<strong>🤖 Bot:</strong> ❌ GPT API Error. Please try again later.`;
+      }
     }
   });
-
   loadHistory();
 </script>
+

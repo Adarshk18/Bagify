@@ -1,11 +1,9 @@
-// public/js/api.js
-
-async function sendMessageToBot(message) {
+async function sendMessageToBot(message, userId) {
   try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message })
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, userId }),
     });
 
     const data = await res.json();

@@ -29,7 +29,7 @@ app.use(
   })
 );
 
-app.use('/', chatbotRouter); 
+app.use('/api/chatbot', chatbotRouter); 
 // Passport setup
 app.use(passport.initialize());
 app.use(passport.session());
