@@ -1,17 +1,6 @@
 // public/js/chatbot.js
-// Make sure this file is included in your EJS layout or page
 
 console.log("📌 Chatbot script loaded.");
-
-
-
-const chatToggle = document.getElementById('chat-toggle');
-const chatBox = document.getElementById('chatbox');
-const chatInput = document.getElementById('chat-input');
-const chatMessages = document.getElementById('chat-messages');
-
-// Toggle chat visibility
-chatToggle.onclick = () => chatBox.classList.toggle('hidden');
 
 document.addEventListener('DOMContentLoaded', () => {
   const chatToggle = document.getElementById('chat-toggle');
@@ -20,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatMessages = document.getElementById('chat-messages');
 
   if (!chatToggle || !chatBox || !chatInput || !chatMessages) {
-    console.error("Chatbot elements not found in DOM");
+    console.error("❌ Chatbot elements not found in DOM");
     return;
   }
 
@@ -61,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Append a message to chat window
   function appendMessage(sender, text) {
     const div = document.createElement('div');
     div.innerHTML = `<strong>${sender}:</strong> ${text}`;
@@ -70,14 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
     return div;
   }
 
-  // Save message history in localStorage
   function saveMessage(sender, text) {
     const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
     chats.push({ sender, text });
     localStorage.setItem('chatHistory', JSON.stringify(chats));
   }
 
-  // Load chat history from localStorage
   function loadHistory() {
     const chats = JSON.parse(localStorage.getItem('chatHistory') || '[]');
     chats.forEach(c => appendMessage(c.sender, c.text));
