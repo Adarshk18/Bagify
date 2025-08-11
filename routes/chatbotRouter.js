@@ -5,8 +5,35 @@ const fetch = (...args) =>
 
 const Order = require("../models/order-model.js");
 const Product = require("../models/product-model.js");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 const router = express.Router();
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, "../public/uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + "-" + file.originalname.replace(/\s+/g, "_");
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ storage });
+
+// File upload route
+router.post("/upload", upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+  const fileUrl = `/uploads/${req.file.filename}`;
+  res.json({
+    url: fileUrl,
+    fileType: req.file.mimetype
+  });
+});
 
 /**
  * ✅ New: Greeting message with emoji + card-style options

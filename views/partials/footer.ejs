@@ -112,6 +112,11 @@
   <div
     class="flex items-center gap-2 p-2 border-t border-gray-300 dark:border-gray-700"
   >
+  <label for="chatFile" class="cursor-pointer p-2 bg-gray-200 dark:bg-gray-600 rounded-full hover:bg-gray-300 dark:hover:bg-gray-500">
+    📎
+  </label>
+  <input type="file" id="chatFile" class="hidden" accept="image/*,.pdf,.doc,.docx" />
+  
     <textarea
       id="chatInput"
       class="flex-grow p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
@@ -138,6 +143,7 @@
     const chatMessages = document.getElementById("chat-messages");
     const chatClose = document.getElementById("chat-close");
     const chatSend = document.getElementById("sendButton");
+    const fileInput = document.getElementById("chatFile");
 
     if (!chatToggle || !chatBox || !chatInput || !chatMessages) {
       console.error("❌ Chatbot HTML elements missing.");
@@ -304,6 +310,48 @@
         console.error("❌ Failed to load options", err);
       }
     }
+
+    fileInput?.addEventListener("change", async () => {
+    if (!fileInput.files.length) return;
+
+    const file = fileInput.files[0];
+    appendMessage("You", `📤 Uploading: ${file.name}...`);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("userId", userId);
+
+    try {
+      const res = await fetch("/chatbot/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        appendMessage("🤖 Bot", `❌ Upload failed: ${json.error || res.statusText}`);
+        return;
+      }
+
+      if (json.fileType.startsWith("image/")) {
+        appendMessage("You", `<img src="${json.url}" class="max-w-full rounded-lg" />`);
+      } else {
+        appendMessage("You", `📄 <a href="${json.url}" target="_blank">${file.name}</a>`);
+      }
+
+      saveMessage("You", `[Uploaded file](${json.url})`);
+
+      // Let bot process the uploaded file
+      sendMessage(`I have uploaded a file: ${json.url}`);
+
+    } catch (err) {
+      console.error("Upload error:", err);
+      appendMessage("🤖 Bot", "❌ File upload failed.");
+    } finally {
+      fileInput.value = "";
+    }
+  });
 
     chatToggle.addEventListener("click", () => {
       chatBox.classList.toggle("hidden");
