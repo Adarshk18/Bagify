@@ -4,10 +4,10 @@ console.log("📌 Chatbot script loaded.");
 document.addEventListener("DOMContentLoaded", () => {
   const chatToggle = document.getElementById("chat-toggle");
   const chatBox = document.getElementById("chatbox");
-  const chatInput = document.getElementById("chat-input");
+  const chatInput = document.getElementById("chatInput");
   const chatMessages = document.getElementById("chat-messages");
   const chatClose = document.getElementById("chat-close");
-  const chatSend = document.getElementById("chat-send"); // ✅ Send button
+  const chatSend = document.getElementById("sendButton"); // ✅ Send button
 
   if (!chatToggle) return console.error("chat-toggle not found");
   if (!chatBox) return console.error("chatbox not found");
