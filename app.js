@@ -8,7 +8,7 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const ownerModel = require("./models/owner-model");
-const chatbotRouter = require('./routes/chatbotRouter');
+
 
 require("dotenv").config();
 
@@ -29,7 +29,7 @@ app.use(
   })
 );
 
-app.use('/api/chatbot', chatbotRouter); 
+app.use('/chatbot', require('./routes/chatbotRouter')); 
 // Passport setup
 app.use(passport.initialize());
 app.use(passport.session());

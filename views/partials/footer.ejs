@@ -1,6 +1,5 @@
 <footer class="bg-gray-900 dark:bg-gray-950 text-white py-6 mt-10 relative">
   <div class="container mx-auto px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
-    
     <!-- Brand Info -->
     <div class="text-center md:text-left">
       <h4 class="text-lg font-bold text-blue-400">Bagify</h4>
@@ -57,20 +56,24 @@
   <div id="chat-messages" class="p-3 max-h-96 overflow-y-auto text-sm space-y-2 text-gray-800 dark:text-white">
     <div>👋 Hi! I can help with orders, tracking, and more.</div>
   </div>
-  <div class="flex border-t border-gray-200 dark:border-gray-600">
-    <input type="text" id="chat-input" class="flex-1 p-2 text-sm bg-white dark:bg-gray-700 dark:text-white" placeholder="Type your message..." autocomplete="off" />
-  </div>
+<div class="flex items-center gap-2 p-2 border-t border-gray-300 dark:border-gray-700">
+  <textarea id="chatInput" 
+    class="flex-grow p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none" 
+    rows="1" placeholder="Type your message..."></textarea>
+  
+  <button id="sendButton" 
+    class="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center">
+    <i class="fas fa-paper-plane"></i>
+  </button>
 </div>
 
-<!-- Include chatbot scripts -->
-<script>
-const chatToggle = document.getElementById("chat-toggle");
-  const chatWidget = document.getElementById("chatbox"); // changed
-  const chatInput = document.getElementById("chat-input"); // changed
-  const chatMessages = document.getElementById("chat-messages"); // changed
-  const chatClose = document.getElementById("chat-close");
+</div>
 
-  const userId = "<%= user ? user._id : '' %>"; // Inject from backend EJS
+<!-- Footer Script: Only UI Handling -->
+<script>
+  const chatToggle = document.getElementById("chat-toggle");
+  const chatWidget = document.getElementById("chatbox");
+  const chatClose = document.getElementById("chat-close");
 
   chatToggle.addEventListener("click", () => {
     chatWidget.classList.toggle("hidden");
@@ -81,52 +84,4 @@ const chatToggle = document.getElementById("chat-toggle");
     chatWidget.classList.add("hidden");
     console.log("Chat closed");
   });
-
-  function appendMessage(sender, text) {
-    const div = document.createElement("div");
-    div.innerHTML = `<strong>${sender === "You" ? "🧑 You" : "🤖 Bot"}:</strong> ${text}`;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    return div;
-  }
-
-  function saveMessage(sender, text) {
-    const chats = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-    chats.push({ sender, text });
-    localStorage.setItem("chatHistory", JSON.stringify(chats));
-  }
-
-  function loadHistory() {
-    const chats = JSON.parse(localStorage.getItem("chatHistory") || "[]");
-    chatMessages.innerHTML = "";
-    chats.forEach(({ sender, text }) => appendMessage(sender, text));
-  }
-
-  chatInput.addEventListener("keydown", async (e) => {
-    if (e.key === "Enter" && chatInput.value.trim()) {
-      const msg = chatInput.value.trim();
-      chatInput.value = "";
-
-      appendMessage("You", msg);
-      saveMessage("You", msg);
-
-      const typingEl = appendMessage("Bot", "Typing...");
-
-      try {
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: msg, userId }),
-        });
-
-        const data = await res.json();
-        typingEl.innerHTML = `<strong>🤖 Bot:</strong> ${data.reply}`;
-        saveMessage("Bot", data.reply);
-      } catch {
-        typingEl.innerHTML = `<strong>🤖 Bot:</strong> ❌ GPT API Error. Please try again later.`;
-      }
-    }
-  });
-  loadHistory();
 </script>
-
