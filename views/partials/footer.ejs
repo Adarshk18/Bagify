@@ -151,36 +151,101 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function loadQueryOptions() {
-    try {
-      const res = await fetch("/chatbot/options");
-      const options = await res.json();
+  async function loadGreeting() {
+  try {
+    const res = await fetch("/chatbot/greeting");
+    const data = await res.json();
 
-      const optionsContainer = document.createElement("div");
-      optionsContainer.className = "chat-options";
+    // Show greeting message
+    appendMessage("🤖 Bot", data.message);
 
-      options.forEach(opt => {
-        const btn = document.createElement("button");
-        btn.textContent = opt;
-        btn.className = "chat-option-btn";
-        btn.addEventListener("click", () => {
-          optionsContainer.remove();
-          sendMessage(opt);
+    // Render cards if available
+    if (Array.isArray(data.cards) && data.cards.length > 0) {
+      const cardsContainer = document.createElement("div");
+      cardsContainer.className = "grid grid-cols-1 gap-3 mt-3";
+
+      data.cards.forEach(cardData => {
+        const card = document.createElement("div");
+        card.className =
+          "cursor-pointer p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition hover:scale-[1.02] flex items-center gap-3";
+
+        const iconSpan = document.createElement("span");
+        iconSpan.className = "text-2xl";
+        iconSpan.textContent = cardData.label.charAt(0); // first emoji from label
+
+        const textSpan = document.createElement("span");
+        textSpan.className = "font-medium text-gray-800 dark:text-gray-200";
+        textSpan.textContent = cardData.label;
+
+        card.appendChild(iconSpan);
+        card.appendChild(textSpan);
+
+        card.addEventListener("click", () => {
+          cardsContainer.remove();
+          sendMessage(cardData.query);
         });
-        optionsContainer.appendChild(btn);
+
+        cardsContainer.appendChild(card);
       });
 
-      chatMessages.appendChild(optionsContainer);
-    } catch (err) {
-      console.error("❌ Failed to load options", err);
+      chatMessages.appendChild(cardsContainer);
     }
+  } catch (err) {
+    console.error("❌ Failed to load greeting", err);
   }
+}
+
+
+async function loadQueryOptions() {
+  try {
+    const res = await fetch("/chatbot/options");
+    const options = await res.json();
+
+    const optionsContainer = document.createElement("div");
+    optionsContainer.className = "grid grid-cols-1 gap-3 mt-3";
+
+    options.forEach(opt => {
+      const card = document.createElement("div");
+      card.className =
+        "cursor-pointer p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition hover:scale-[1.02] flex items-center gap-3";
+
+      // Icon (randomized or based on keyword)
+      const iconSpan = document.createElement("span");
+      iconSpan.className = "text-2xl";
+      iconSpan.textContent =
+        opt.includes("order") ? "📦" :
+        opt.includes("discount") ? "💸" :
+        opt.includes("recommend") ? "✨" :
+        opt.includes("cancel") ? "❌" :
+        "🛍️";
+
+      const textSpan = document.createElement("span");
+      textSpan.className = "font-medium text-gray-800 dark:text-gray-200";
+      textSpan.textContent = opt;
+
+      card.appendChild(iconSpan);
+      card.appendChild(textSpan);
+
+      card.addEventListener("click", () => {
+        optionsContainer.remove();
+        sendMessage(opt);
+      });
+
+      optionsContainer.appendChild(card);
+    });
+
+    chatMessages.appendChild(optionsContainer);
+  } catch (err) {
+    console.error("❌ Failed to load options", err);
+  }
+}
+
 
   chatToggle.addEventListener("click", () => {
     chatBox.classList.toggle("hidden");
     if (!chatBox.classList.contains("hidden")) {
       chatMessages.innerHTML = "";
-      loadQueryOptions();
+      loadGreeting();
     }
   });
 
