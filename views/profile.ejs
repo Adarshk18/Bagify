@@ -58,8 +58,7 @@
       <a href="/shop" class="text-blue-600 hover:underline">→ Start Shopping</a>
       <% } else { %>
       <div class="space-y-4">
-        <% if (typeof orders !== 'undefined' && Array.isArray(orders)) { %> <%
-        orders.slice(0, 2).forEach(order => { %>
+        <% (user.orders || []).slice(0, 2).forEach(order => { %>
         <div class="border border-gray-200 rounded p-4 bg-gray-50 shadow-sm">
           <div class="flex justify-between items-center mb-2">
             <span class="text-sm text-gray-700 font-mono"
@@ -89,9 +88,7 @@
             Total: ₹<%= order.totalAmount %>
           </div>
         </div>
-        <% }) %> <% } else { %>
-        <p class="text-gray-500">No recent orders found.</p>
-        <% } %>
+        <% }) %>
       </div>
 
       <% if (user.orders.length >= 3) { %>

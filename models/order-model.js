@@ -37,10 +37,10 @@ const orderSchema = mongoose.Schema({
     default: "Pending", // Pending, Paid, Cancelled, Shipped
   },
 
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  // createdAt: {
+  //   type: Date,
+  //   default: Date.now,
+  // },
+}, { timestamps: true });
 
 module.exports = mongoose.model("order", orderSchema);

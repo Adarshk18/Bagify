@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const userModel = require("../models/user-model");
 const Mailer = require("../utils/mailer"); // You already have this
 const bcrypt = require("bcrypt");
+const orderModel = require("../models/order-model");
 
 
 // 👉 Forgot Password - Render Form
@@ -30,7 +31,7 @@ exports.getProfile = async (req, res) => {
 
     res.render("profile", {
       user: { ...user},
-      orders: orders || [],  // ✅ safer
+      orders: Array.isArray(orders) ? orders : [], // ✅ safer
       success: req.flash("success"),
       error: req.flash("error")
     });
