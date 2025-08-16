@@ -8,6 +8,7 @@ const Product = require("../models/product-model.js");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const imageHash = require("image-hash");
 
 const router = express.Router();
 
@@ -24,16 +25,106 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// File upload route
-router.post("/upload", upload.single("file"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.json({
-    url: fileUrl,
-    fileType: req.file.mimetype
+// Helper: get perceptual hash
+function getImageHash(filePath) {
+  return new Promise((resolve, reject) => {
+    imageHash(filePath, 16, true, (err, data) => {
+      if (err) reject(err);
+      else resolve(data);
+    });
   });
+}
+
+// Helper: hamming distance
+function hammingDistance(str1, str2) {
+  let dist = 0;
+  for (let i = 0; i < str1.length; i++) {
+    if (str1[i] !== str2[i]) dist++;
+  }
+  return dist;
+}
+
+// File upload route
+router.post("/upload", upload.single("image"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    const userId = req.session.user?._id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const uploadedPath = req.file.path;
+    const uploadedHash = await getImageHash(uploadedPath);
+
+    // cleanup uploaded file after hashing
+    fs.unlink(uploadedPath, () => {});
+
+    // fetch user orders
+    const orders = await Order.find({ user: userId })
+      .populate("items.product")
+      .exec();
+
+    if (!orders.length) {
+      return res.json({ success: false, message: "No orders found" });
+    }
+
+    const threshold = parseInt(process.env.IMAGE_MATCH_THRESHOLD) || 10;
+
+    let bestMatch = null;
+    let bestDistance = Infinity;
+
+    // hash all product images in parallel
+    const hashPromises = [];
+
+    for (const order of orders) {
+      for (const item of order.items) {
+        const productImagePath = path.join(__dirname, "../public", item.product.image);
+
+        // push promise instead of awaiting inside loop
+        hashPromises.push(
+          getImageHash(productImagePath).then(productHash => ({
+            order,
+            item,
+            productHash
+          }))
+        );
+      }
+    }
+
+    const results = await Promise.all(hashPromises);
+
+    // find closest match
+    for (const { order, item, productHash } of results) {
+      const distance = hammingDistance(uploadedHash, productHash);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestMatch = { order, item };
+      }
+    }
+
+    // check threshold
+    if (bestMatch && bestDistance <= threshold) {
+      return res.json({
+        success: true,
+        message: `Matched product: ${bestMatch.item.product.name}`,
+        quickReplies: [
+          { type: "button", label: "Track Order", action: `track:${bestMatch.order._id}` },
+          { type: "button", label: "Cancel Order", action: `cancel:${bestMatch.order._id}` }
+        ]
+      });
+    }
+
+    res.json({ success: false, message: "No matching product found" });
+
+  } catch (error) {
+    console.error("Image upload/match error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 });
+
 
 /**
  * ✅ New: Greeting message with emoji + card-style options
@@ -150,24 +241,24 @@ router.post("/", async (req, res) => {
     const ordersSummary =
       orders.length > 0
         ? orders
-            .map((o) => {
-              const items = (o.products || [])
-                .map((p) => `${p.product?.name || "[Removed]"} x${p.quantity}`)
-                .join(", ");
-              return `Order ID: ${o._id}
+          .map((o) => {
+            const items = (o.products || [])
+              .map((p) => `${p.product?.name || "[Removed]"} x${p.quantity}`)
+              .join(", ");
+            return `Order ID: ${o._id}
 Status: ${o.status}
 Items: ${items || "No items"}
 Delivery Address: ${o.address?.street || "N/A"}, ${o.address?.city || "N/A"}
 Total: ₹${o.totalAmount ?? 0}`;
-            })
-            .join("\n\n")
+          })
+          .join("\n\n")
         : "No orders found for this user.";
 
     const productsSummary =
       products.length > 0
         ? products
-            .map((p) => `${p.name} - ₹${p.price} (Discount: ₹${p.discount || 0})`)
-            .join("\n")
+          .map((p) => `${p.name} - ₹${p.price} (Discount: ₹${p.discount || 0})`)
+          .join("\n")
         : "No products found matching your query.";
 
     const systemPrompt = `
