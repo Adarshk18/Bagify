@@ -12,6 +12,12 @@ const orderSchema = mongoose.Schema({
         ref: "Product",
       },
       quantity: Number,
+      snapshot: {
+        name: String,
+        price: Number,
+        image: String,
+        description: String
+      },
     },
   ],
   totalAmount: Number,

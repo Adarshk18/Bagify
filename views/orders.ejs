@@ -41,10 +41,17 @@
 
       <!-- 👜 Ordered Products -->
       <ul class="text-sm mb-3 space-y-1">
-        <% order.products.forEach(item => { const product = item.product; if
-        (!product) return; const price = item.product?.price || 0; const
-        discount = product?.discount || 0; const finalPrice = Math.max(0, price
-        - discount); %>
+        <% order.products.forEach(item => { 
+  const product = item.product; 
+  if (!product) { %>
+    <li class="flex items-center gap-2 text-gray-500 italic">
+      👜 [Product Removed] × <%= item.quantity %>
+    </li>
+  <% return; } 
+  const price = product?.price || 0; 
+  const discount = product?.discount || 0; 
+  const finalPrice = Math.max(0, price - discount); %>
+
         <li class="flex items-center gap-2">
           <% if (item.product.image) { %>
           <img

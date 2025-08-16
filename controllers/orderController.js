@@ -64,7 +64,13 @@ exports.placeOrder = async (req, res) => {
 
     const products = validCartItems.map(item => ({
       product: item.productId._id,
-      quantity: item.quantity
+      quantity: item.quantity,
+      snapshot: {
+        name: item.productId.name,
+        price: item.productId.price,
+        image: item.productId.image, // or whatever field stores product image
+        description: item.productId.description
+      }
     }));
 
     const totalAmount = validCartItems.reduce((sum, item) => {

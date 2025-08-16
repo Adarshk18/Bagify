@@ -14,8 +14,7 @@ exports.renderForgotPassword = (req, res) => {
 
 exports.getProfile = async (req, res) => {
   try {
-    const user = await userModel.findById(req.session.user._id)
-      .populate('addresses');
+    const user = await userModel.findById(req.session.user._id);
 
     const orders = await orderModel
       .find({ user: req.session.user._id })
@@ -25,18 +24,27 @@ exports.getProfile = async (req, res) => {
         path: "products.product",
         model: 'Product',
         options: { strictPopulate: false }
-       
+
       })
       .lean();
 
+    orders = orders.map(order => ({
+      ...order,
+      products: order.products.map(p => ({
+        // if product exists use it, else use snapshot (if you store it)
+        product: p.product || p.snapshot || null,
+        quantity: p.quantity
+      }))
+    }));
+
     res.render("profile", {
-      user: { ...user},
+      user: { ...user },
       orders: Array.isArray(orders) ? orders : [], // ✅ safer
       success: req.flash("success"),
       error: req.flash("error")
     });
     console.log("Logged in user ID:", req.session.user._id);
-console.log("Fetched Orders:", orders);
+    console.log("Fetched Orders:", orders);
 
   } catch (err) {
     console.error("❌ Error loading profile:", err.message);
