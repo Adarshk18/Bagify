@@ -78,6 +78,54 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "userId is required" });
     }
 
+    // 🟢 Check if user explicitly asked to cancel an order
+    const cancelMatch = message.match(/cancel.*order.*([a-f0-9]{24})/i);
+    if (cancelMatch) {
+      const orderId = cancelMatch[1];
+      try {
+        const order = await Order.findOne({ _id: orderId, user: userId });
+        if (!order) {
+          return res.json({ reply: `I couldn't find order ${orderId} in your account.` });
+        }
+
+        if (order.status === "Pending") {
+          order.status = "Cancelled";
+          await order.save();
+          return res.json({ reply: `✅ Order ${orderId} has been cancelled successfully.` });
+        } else {
+          return res.json({
+            reply: `❌ Order ${orderId} is currently "${order.status}". Only Pending orders can be cancelled.`
+          });
+        }
+      } catch (err) {
+        console.error("Cancel order error:", err);
+        return res.json({ reply: "Something went wrong while cancelling your order." });
+      }
+    }
+
+    // 🟢 Case 2: User says "cancel my order" / "cancel recent order" without ID
+    if (/cancel.*(recent|my).*order/i.test(message)) {
+      try {
+        const latestOrder = await Order.findOne({ user: userId }).sort({ createdAt: -1 });
+        if (!latestOrder) {
+          return res.json({ reply: "You don’t have any orders to cancel." });
+        }
+
+        if (latestOrder.status === "Pending") {
+          latestOrder.status = "Cancelled";
+          await latestOrder.save();
+          return res.json({ reply: `✅ Your most recent order (${latestOrder._id}) has been cancelled.` });
+        } else {
+          return res.json({
+            reply: `❌ Your most recent order (${latestOrder._id}) is currently "${latestOrder.status}". Only Pending orders can be cancelled.`
+          });
+        }
+      } catch (err) {
+        console.error("Cancel recent order error:", err);
+        return res.json({ reply: "Something went wrong while cancelling your recent order." });
+      }
+    }
+
     const keywords = message
       .toLowerCase()
       .replace(/[^\w\s]/g, "")
