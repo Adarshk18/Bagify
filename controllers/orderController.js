@@ -101,7 +101,7 @@ exports.placeOrder = async (req, res) => {
         totalAmount,
         address: finalAddress,
         status: "Pending Payment",
-        paymentMode: "online",
+        paymentMethod: "Razorpay",
         razorpayOrderId: razorpayOrder.id,
       });
 
@@ -122,10 +122,11 @@ exports.placeOrder = async (req, res) => {
       products,
       totalAmount,
       address: finalAddress,
-      status: "Pending",
-      paymentMethod: "COD",
-      
+      status: paymentMode === 'online' ? 'Pending Payment' : 'Pending',
+      paymentMethod: paymentMode === 'online' ? 'Razorpay' : 'COD',
+      razorpayOrderId: paymentMode === 'online' ? razorpayOrder.id : undefined,
     });
+
 
     // ✅ Clear cart and save address if needed
     user.cart = [];

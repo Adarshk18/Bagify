@@ -20,9 +20,9 @@
               <p class="text-sm text-gray-500 font-mono">🆔 <%= order._id %></p>
               <p class="text-xs text-gray-400">📅 <%= new Date(order.createdAt).toLocaleString() %></p>
               
-              <% if (order.paymentMode) { %>
+              <% if (order.paymentMethod) { %>
                 <p class="text-xs text-gray-600">
-                  💳 Payment Mode: <%= order.paymentMode === 'cod' ? 'Cash on Delivery' : 'Online Payment' %>
+                  💳 Payment Mode: <%= order.paymentMethod %>
                 </p>
               <% } %>
               
