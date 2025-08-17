@@ -16,10 +16,10 @@ exports.getProfile = async (req, res) => {
   try {
     const user = await userModel.findById(req.session.user._id);
 
-    const orders = await orderModel
+    let orders = await orderModel
       .find({ user: req.session.user._id })
       .sort({ createdAt: -1 })
-      .limit(3)
+      .limit(2)
       .populate({
         path: "products.product",
         model: 'Product',
@@ -36,10 +36,10 @@ exports.getProfile = async (req, res) => {
         quantity: p.quantity
       }))
     }));
+    user.orders = orders;   
 
     res.render("profile", {
-      user: { ...user },
-      orders: Array.isArray(orders) ? orders : [], // ✅ safer
+      user,
       success: req.flash("success"),
       error: req.flash("error")
     });

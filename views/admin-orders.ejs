@@ -74,7 +74,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h4 class="text-lg font-semibold text-gray-900">💰 Total: ₹<%= order.totalAmount %></h4>
-            <p class="text-sm text-gray-500">💳 Payment: <%= order.paymentMode || 'N/A' %></p>
+            <p class="text-sm text-gray-500">💳 Payment: <%= order.paymentMethod || 'N/A' %></p>
           </div>
 
           <form action="/admin/orders/update/<%= order._id %>" method="POST" class="flex items-center gap-3">

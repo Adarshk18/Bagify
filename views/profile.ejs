@@ -58,7 +58,7 @@
       <a href="/shop" class="text-blue-600 hover:underline">→ Start Shopping</a>
       <% } else { %>
       <div class="space-y-4">
-        <% (user.orders || []).slice(0, 2).forEach(order => { %>
+        <% user.orders.slice(0, 2).forEach(order => { %>
         <div class="border border-gray-200 rounded p-4 bg-gray-50 shadow-sm">
           <div class="flex justify-between items-center mb-2">
             <span class="text-sm text-gray-700 font-mono"
@@ -91,7 +91,7 @@
         <% }) %>
       </div>
 
-      <% if (user.orders.length >= 3) { %>
+      <% if (user.orders.length >= 2) { %>
       <div class="text-right mt-2">
         <a href="/orders" class="text-blue-600 hover:underline"
           >→ See all orders</a

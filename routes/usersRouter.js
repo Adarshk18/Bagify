@@ -27,22 +27,8 @@ router.post("/login", loginUser);
 router.get("/logout", logoutUser);
 
 // Profile Page
-router.get("/profile", isLoggedIn, async (req, res) => {
-  try {
-    const user = await userModel.findById(req.user._id);
+router.get("/profile", isLoggedIn, userController.getProfile);
 
-    if (!user) {
-      req.flash("error", "User not found.");
-      return res.redirect("/users");
-    }
-
-    res.render("profile", { user });
-  } catch (err) {
-    console.error("Error fetching user profile:", err.message);
-    req.flash("error", "Something went wrong.");
-    res.redirect("/users");
-  }
-});
 
 router.post("/profile/upload-photo", isLoggedIn, upload.single("photo"), async (req, res) => {
   try {
