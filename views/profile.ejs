@@ -73,13 +73,14 @@
 
           <ul class="text-sm text-gray-700 space-y-1">
             <% if (order.products && order.products.length > 0) { %> <%
-            order.products.forEach(item => { %>
+            order.products.forEach(item => { %> <% if (item.product) { %>
             <li>
-              👜 <%= item.product?.name || '[Product Removed]' %> × <%=
-              item.quantity %> — ₹ <%= item.product?.price ? (item.product.price
-              - (item.product.discount || 0)) : '0' %>
+              👜 <%= item.product.name %> × <%= item.quantity %> — ₹ <%=
+              item.product.price %>
             </li>
-            <% }) %> <% } else { %>
+            <% } else { %>
+            <li>👜 [Product Removed] × <%= item.quantity %></li>
+            <% } %> <% }) %> <% } else { %>
             <li>👜 [No Products Found]</li>
             <% } %>
           </ul>

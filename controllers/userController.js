@@ -22,7 +22,7 @@ exports.getProfile = async (req, res) => {
       .limit(2)
       .populate({
         path: "products.product",
-        model: 'Product',
+        // model: 'Product',
         options: { strictPopulate: false }
 
       })
