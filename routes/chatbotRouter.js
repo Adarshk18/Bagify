@@ -8,7 +8,8 @@ const Product = require("../models/product-model.js");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const imageHash = require("image-hash");
+const { imageHash } = require("image-hash");
+
 
 const router = express.Router();
 
@@ -45,8 +46,9 @@ function hammingDistance(str1, str2) {
 }
 
 // File upload route
-router.post("/upload", upload.single("image"), async (req, res) => {
+router.post("/upload", upload.single("file"), async (req, res) => {
   try {
+    console.log("File received:", req.file);
     if (!req.file) {
       return res.status(400).json({ success: false, message: "No file uploaded" });
     }
@@ -64,7 +66,7 @@ router.post("/upload", upload.single("image"), async (req, res) => {
 
     // fetch user orders
     const orders = await Order.find({ user: userId })
-      .populate("items.product")
+      .populate("products.product")
       .exec();
 
     if (!orders.length) {
@@ -80,7 +82,7 @@ router.post("/upload", upload.single("image"), async (req, res) => {
     const hashPromises = [];
 
     for (const order of orders) {
-      for (const item of order.items) {
+      for (const item of order.products) {
         const productImagePath = path.join(__dirname, "../public", item.product.image);
 
         // push promise instead of awaiting inside loop

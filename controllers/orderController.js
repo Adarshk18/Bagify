@@ -1,5 +1,11 @@
 const userModel = require("../models/user-model");
 const orderModel = require("../models/order-model");
+const Razorpay = require("razorpay");
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 exports.placeOrder = async (req, res) => {
   try {
@@ -12,7 +18,7 @@ exports.placeOrder = async (req, res) => {
 
     const {
       fullname, phone, street, city, state,
-      pincode, country, landmark, lat, lng, selectedAddress
+      pincode, country, landmark, lat, lng, selectedAddress, paymentMode
     } = req.body;
 
     let finalAddress = null;
@@ -78,6 +84,38 @@ exports.placeOrder = async (req, res) => {
       return sum + price * item.quantity;
     }, 0);
 
+    if (paymentMode === "online") {
+      // ✅ Create Razorpay Order
+      const options = {
+        amount: totalAmount * 100, // in paise
+        currency: "INR",
+        receipt: `order_rcpt_${Date.now()}`,
+      };
+
+      const razorpayOrder = await razorpay.orders.create(options);
+
+      // ✅ Save order with "Pending Payment"
+      const newOrder = await orderModel.create({
+        user: user._id,
+        products,
+        totalAmount,
+        address: finalAddress,
+        status: "Pending Payment",
+        paymentMode: "online",
+        razorpayOrderId: razorpayOrder.id,
+      });
+
+      await user.save();
+
+      return res.render("payment", {
+        razorpayKey: process.env.RAZORPAY_KEY_ID,
+        orderId: razorpayOrder.id,
+        amount: totalAmount,
+        user,
+        newOrder
+      });
+    }
+
     // ✅ Create the order
     await orderModel.create({
       user: user._id,
@@ -85,7 +123,8 @@ exports.placeOrder = async (req, res) => {
       totalAmount,
       address: finalAddress,
       status: "Pending",
-      paymentMode: req.body.paymentMode || "cod"
+      paymentMethod: "COD",
+      
     });
 
     // ✅ Clear cart and save address if needed

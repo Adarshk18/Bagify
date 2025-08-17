@@ -38,6 +38,12 @@ const orderSchema = mongoose.Schema({
     },
   },
 
+  paymentMethod: {
+    type: String,
+    enum: ["COD", "Razorpay", "Wallet", "UPI"],
+    required: true
+  },
+
   status: {
     type: String,
     default: "Pending", // Pending, Paid, Cancelled, Shipped
