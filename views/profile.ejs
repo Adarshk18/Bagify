@@ -71,16 +71,16 @@
             </span>
           </div>
 
+          <pre><%= JSON.stringify(order.products, null, 2) %></pre>
+
           <ul class="text-sm text-gray-700 space-y-1">
             <% if (order.products && order.products.length > 0) { %> <%
-            order.products.forEach(item => { %> <% if (item.product) { %>
+            order.products.forEach(item => { %>
             <li>
-              👜 <%= item.product.name %> × <%= item.quantity %> — ₹ <%=
-              item.product.price %>
+              👜 <%= (item.product || item.snapshot).name %> × <%= item.quantity
+              %> — ₹ <%= (item.product || item.snapshot).price %>
             </li>
-            <% } else { %>
-            <li>👜 [Product Removed] × <%= item.quantity %></li>
-            <% } %> <% }) %> <% } else { %>
+            <% }) %> <% } else { %>
             <li>👜 [No Products Found]</li>
             <% } %>
           </ul>

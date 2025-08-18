@@ -22,21 +22,24 @@ exports.getProfile = async (req, res) => {
       .limit(2)
       .populate({
         path: "products.product",
-        // model: 'Product',
+        select: "name price image",
         options: { strictPopulate: false }
 
-      })
-      .lean();
+      });
+      
 
     orders = orders.map(order => ({
-      ...order,
+      ...order.toObject(),
       products: order.products.map(p => ({
         // if product exists use it, else use snapshot (if you store it)
-        product: p.product || p.snapshot || null,
+        product: p.product || p.snapshot,
         quantity: p.quantity
       }))
     }));
     user.orders = orders;   
+
+    console.log("→ Populated product value:", orders[0].products[0].product);
+
 
     res.render("profile", {
       user,
