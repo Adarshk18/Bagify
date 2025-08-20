@@ -71,17 +71,29 @@
             </span>
           </div>
 
-          <pre><%= JSON.stringify(order.products, null, 2) %></pre>
+          
 
           <ul class="text-sm text-gray-700 space-y-1">
-            <% if (order.products && order.products.length > 0) { %> <%
-            order.products.forEach(item => { %>
-            <li>
-              👜 <%= (item.product || item.snapshot).name %> × <%= item.quantity
-              %> — ₹ <%= (item.product || item.snapshot).price %>
-            </li>
-            <% }) %> <% } else { %>
-            <li>👜 [No Products Found]</li>
+            <% if (order.products && order.products.length > 0) { %>
+              <% order.products.forEach(item => {
+                // fallback logic, prefer populated product, then snapshot
+                const prod = item.product || item.snapshot; %>
+                <% if (prod && prod.name) { %>
+                  <li class="flex items-center space-x-2">
+                    <% if (prod.image) { %>
+                      <img src="<%= prod.image.startsWith('http') ? prod.image : '/images/' + prod.image %>"
+                        alt="<%= prod.name %>" width="32" height="32" class="inline-block rounded bg-gray-200 border mr-1" />
+                    <% } %>
+                    <span>👜 <%= prod.name %></span>
+                    <span>× <%= item.quantity %></span>
+                    <span>— ₹ <%= prod.price %></span>
+                  </li>
+                <% } else { %>
+                  <li>👜 [No Products Found]</li>
+                <% } %>
+              <% }) %>
+            <% } else { %>
+              <li>👜 [No Products Found]</li>
             <% } %>
           </ul>
 

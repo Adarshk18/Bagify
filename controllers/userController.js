@@ -22,20 +22,28 @@ exports.getProfile = async (req, res) => {
       .limit(2)
       .populate({
         path: "products.product",
-        select: "name price image",
+        select: "name price image description",
         options: { strictPopulate: false }
 
       });
       
 
     orders = orders.map(order => ({
-      ...order.toObject(),
-      products: order.products.map(p => ({
-        // if product exists use it, else use snapshot (if you store it)
-        product: p.product || p.snapshot,
-        quantity: p.quantity
-      }))
-    }));
+  ...order.toObject(),
+  products: order.products.map(p => {
+    // Use the populated product if available, otherwise use snapshot
+    const productInfo = p.product || p.snapshot;
+    return {
+      id: productInfo?._id, // may be undefined if using snapshot
+      name: productInfo?.name,
+      price: productInfo?.price,
+      image: productInfo?.image,
+      description: productInfo?.description,
+      quantity: p.quantity
+    };
+  })
+}));
+
     user.orders = orders;   
 
     console.log("→ Populated product value:", orders[0].products[0].product);
