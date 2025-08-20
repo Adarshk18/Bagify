@@ -53,64 +53,60 @@
     <div>
       <h3 class="text-xl font-semibold text-gray-800 mb-3">🧾 Recent Orders</h3>
 
-      <% if (!user.orders || user.orders.length === 0) { %>
-      <p class="text-gray-500 mb-4">You haven’t placed any orders yet.</p>
-      <a href="/shop" class="text-blue-600 hover:underline">→ Start Shopping</a>
-      <% } else { %>
-      <div class="space-y-4">
-        <% user.orders.slice(0, 2).forEach(order => { %>
-        <div class="border border-gray-200 rounded p-4 bg-gray-50 shadow-sm">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-sm text-gray-700 font-mono"
-              >#<%= order._id %></span
-            >
-            <span
-              class="text-xs px-2 py-1 rounded-full font-medium <%= order.status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' %>"
-            >
-              <%= order.status %>
-            </span>
-          </div>
-
-          
-
-          <ul class="text-sm text-gray-700 space-y-1">
-  <% if (order.products && order.products.length > 0) { %>
-    <% order.products.forEach(prod => { %>
-      <% if (prod.name) { %>
-        <li class="flex items-center space-x-2">
-          <% if (prod.image) { %>
-            <img src="<%= prod.image.startsWith('/') ? prod.image : '/images/' + prod.image %>"
-                 alt="<%= prod.name %>" width="32" height="32"
-                 class="inline-block rounded bg-gray-200 border mr-1" />
-          <% } %>
-          <span>👜 <%= prod.name %></span>
-          <span>× <%= prod.quantity %></span>
-          <span>— ₹ <%= prod.price %></span>
-        </li>
-      <% } else { %>
-        <li>👜 [No Products Found]</li>
-      <% } %>
-    <% }) %>
-  <% } else { %>
-    <li>👜 [No Products Found]</li>
-  <% } %>
-</ul>
-
-
-          <div class="mt-2 text-right font-semibold text-green-600">
-            Total: ₹<%= order.totalAmount %>
-          </div>
+<% if (!user.orders || user.orders.length === 0) { %>
+  <p class="text-gray-500 mb-4">You haven’t placed any orders yet.</p>
+  <a href="/shop" class="text-blue-600 hover:underline">→ Start Shopping</a>
+<% } else { %>
+  <div class="space-y-4">
+    <% user.orders.slice(0, 2).forEach(order => { %>
+        
+      <div class="border border-gray-200 rounded p-4 bg-gray-50 shadow-sm">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-sm text-gray-700 font-mono">#<%= order._id %></span>
+          <span class="text-xs px-2 py-1 rounded-full font-medium <%= order.status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' %>">
+            <%= order.status %>
+          </span>
         </div>
-        <% }) %>
-      </div>
 
-      <% if (user.orders.length >= 2) { %>
-      <div class="text-right mt-2">
-        <a href="/orders" class="text-blue-600 hover:underline"
-          >→ See all orders</a
-        >
+        <!-- ✅ Show products -->
+        <ul class="text-sm mb-3 space-y-1">
+          <% if (order.products && order.products.length > 0) { %>
+            <% order.products.forEach(item => { %>
+              <% if (item.product) { %>
+                <li class="flex items-center gap-2">
+                  <% if (item.product.image) { %>
+                    <img
+                      src="<%= item.product.image.startsWith('/') ? item.product.image : '/images/' + item.product.image %>"
+                      alt="Product image"
+                      class="w-10 h-10 object-contain border"
+                    />
+                  <% } %>
+                  <div>
+                    👜 <span class="font-medium"><%= item.product.name %></span><br />
+                    × <%= item.quantity %> — ₹ <%= item.product.price %> each
+                  </div>
+                </li>
+              <% } %>
+            <% }) %>
+          <% } else { %>
+            <li class="flex items-center gap-2 text-gray-500 italic">👜 [No Products Found]</li>
+          <% } %>
+        </ul>
+
+        <div class="mt-2 text-right font-semibold text-green-600">
+          Total: ₹<%= order.totalAmount %>
+        </div>
       </div>
-      <% } %> <% } %>
+    <% }) %>
+  </div>
+
+  <% if (user.orders.length >= 2) { %>
+    <div class="text-right mt-2">
+      <a href="/orders" class="text-blue-600 hover:underline">→ See all orders</a>
+    </div>
+  <% } %>
+<% } %>
+
     </div>
 
     <hr class="my-6 border-gray-200" />

@@ -20,40 +20,21 @@ exports.getProfile = async (req, res) => {
       .find({ user: req.session.user._id })
       .sort({ createdAt: -1 })
       .limit(2)
+      .lean()    
       .populate({
         path: "products.product",
-        select: "name price image description",
         options: { strictPopulate: false }
 
       });
-      
-
-    orders = orders.map(order => ({
-  ...order.toObject(),
-  products: order.products.map(p => {
-    // Use the populated product if available, otherwise use snapshot
-    const productInfo = p.product && typeof p.product === 'object' ? p.product : p.snapshot;
-    return {
-      id: productInfo?._id, // may be undefined if using snapshot
-      name: productInfo?.name,
-      price: productInfo?.price,
-      image: productInfo?.image,
-      description: productInfo?.description,
-      quantity: p.quantity
-    };
-  })
-}));
-
-console.log('Recent order products:', orders[0]?.products);
+    
 
 
-    user.orders = orders;   
+    // user.orders = orders;   
 
-    console.log("→ Populated product value:", orders[0].products[0].product);
-
+  console.log(JSON.stringify(orders, null, 2));
 
     res.render("profile", {
-      user,
+      user: { ...user.toObject(), orders },
       success: req.flash("success"),
       error: req.flash("error")
     });
@@ -66,6 +47,7 @@ console.log('Recent order products:', orders[0]?.products);
     res.redirect("/");
   }
 };
+
 
 
 // ✅ 📌 Add Address
