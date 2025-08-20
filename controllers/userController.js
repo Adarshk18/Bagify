@@ -32,7 +32,7 @@ exports.getProfile = async (req, res) => {
   ...order.toObject(),
   products: order.products.map(p => {
     // Use the populated product if available, otherwise use snapshot
-    const productInfo = p.product || p.snapshot;
+    const productInfo = p.product && typeof p.product === 'object' ? p.product : p.snapshot;
     return {
       id: productInfo?._id, // may be undefined if using snapshot
       name: productInfo?.name,
@@ -43,6 +43,9 @@ exports.getProfile = async (req, res) => {
     };
   })
 }));
+
+console.log('Recent order products:', orders[0]?.products);
+
 
     user.orders = orders;   
 
