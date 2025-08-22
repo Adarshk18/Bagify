@@ -136,6 +136,6 @@ io.on("connection", (socket) => {
 module.exports = { app, server, io };
 
 // Start server
-app.listen(3000, () => {
+server.listen(3000, () => {
   console.log("🚀 Server running on http://localhost:3000");
 });

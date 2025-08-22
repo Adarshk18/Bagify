@@ -12,7 +12,8 @@
   <% } else { %>
     <div class="space-y-6">
       <% orders.forEach(order => { %>
-        <div class="border rounded-md p-5 shadow-sm <%= order.status === 'Cancelled' ? 'bg-gray-100 text-gray-500 line-through' : 'bg-white' %>">
+        <div class="border rounded-md p-5 shadow-sm <%= order.status === 'Cancelled' ? 'bg-gray-100 text-gray-500 line-through' : 'bg-white' %>"
+             data-order-id="<%= order._id %>">
           
           <!-- 🆔 Order Info -->
           <div class="flex justify-between items-center mb-4">
@@ -34,7 +35,7 @@
             </div>
 
             <span
-              class="px-3 py-1 rounded-full text-xs font-semibold
+              class="order-status px-3 py-1 rounded-full text-xs font-semibold
               <%= order.status === 'Paid' ? 'bg-green-100 text-green-700'
                 : order.status === 'Shipped' ? 'bg-blue-100 text-blue-700'
                 : order.status === 'Out for Delivery' ? 'bg-indigo-100 text-indigo-700'
@@ -99,7 +100,7 @@
               <% const statusSteps = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered']; %>
               <% const currentStep = statusSteps.indexOf(order.status); %>
               <% statusSteps.forEach((step, idx) => { %>
-                <div class="<%= idx <= currentStep ? 'bg-blue-500' : 'bg-gray-300' %> flex-1 transition-all duration-300"></div>
+                <div class="<%= idx <= currentStep ? 'bg-blue-500' : 'bg-gray-300' %> flex-1 transition-all duration-300 progress-step"></div>
               <% }) %>
             </div>
           </div>
@@ -120,3 +121,49 @@
 </div>
 
 <%- include('./partials/footer') %>
+
+<!-- 🔥 Socket.io client -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  // Listen when a new order is placed
+  socket.on("orderPlaced", (data) => {
+    if (data.userId === "<%= user ? user._id : '' %>") {
+      alert(data.message + " (Status: " + data.status + ")");
+      location.reload(); // reload to show new order
+    }
+  });
+
+  // Listen when an order status is updated
+  socket.on("orderStatusUpdated", (data) => {
+    const orderCard = document.querySelector(`[data-order-id='${data.orderId}']`);
+    if (!orderCard) return;
+
+    // Update status badge
+    const statusBadge = orderCard.querySelector(".order-status");
+    if (statusBadge) {
+      statusBadge.textContent = data.status;
+      statusBadge.className =
+        "order-status px-3 py-1 rounded-full text-xs font-semibold " +
+        (data.status === "Shipped" ? "bg-blue-100 text-blue-700"
+        : data.status === "Out for Delivery" ? "bg-indigo-100 text-indigo-700"
+        : data.status === "Delivered" ? "bg-green-100 text-green-700"
+        : data.status === "Cancelled" ? "bg-red-100 text-red-600"
+        : "bg-yellow-100 text-yellow-800");
+    }
+
+    // Update progress bar
+    const progressSteps = ["Pending", "Shipped", "Out for Delivery", "Delivered"];
+    const currentStep = progressSteps.indexOf(data.status);
+    const progressBars = orderCard.querySelectorAll(".progress-step");
+
+    progressBars.forEach((bar, idx) => {
+      bar.className =
+        (idx <= currentStep ? "bg-blue-500" : "bg-gray-300") +
+        " flex-1 transition-all duration-300 progress-step";
+    });
+
+    alert("Order " + data.orderId + " is now " + data.status);
+  });
+</script>

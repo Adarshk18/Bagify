@@ -1,6 +1,8 @@
 const userModel = require("../models/user-model");
 const orderModel = require("../models/order-model");
 const Razorpay = require("razorpay");
+const { io } = require("../app");
+
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -105,6 +107,12 @@ exports.placeOrder = async (req, res) => {
         razorpayOrderId: razorpayOrder.id,
       });
 
+      io.emit("orderPlaced", {
+        userId: user._id,
+        message: "Your order has been placed successfully!",
+        status: paymentMode === "online" ? "Pending Payment" : "Pending",
+      });
+
       await user.save();
 
       return res.render("payment", {
@@ -175,6 +183,12 @@ exports.cancelOrder = async (req, res) => {
 
     order.status = "Cancelled";
     await order.save();
+
+    io.emit("orderStatusUpdated", {
+      orderId: order._id,
+      status: "Cancelled",
+      message: "An order was cancelled."
+    });
 
     req.flash("success", "Order cancelled successfully.");
     res.redirect("/orders");
