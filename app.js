@@ -8,7 +8,11 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const ownerModel = require("./models/owner-model");
+const http = require("http");
+const { Server } = require("socket.io");
 
+const server = http.createServer(app);
+const io = new Server(server);
 
 require("dotenv").config();
 
@@ -118,6 +122,18 @@ app.get(
 app.use((req, res) => {
   res.status(404).render("404");
 });
+
+// 🔥 Socket.io connections
+io.on("connection", (socket) => {
+  console.log("🟢 A user connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("🔴 A user disconnected:", socket.id);
+  });
+});
+
+// 🔥 Export io so controllers can use it
+module.exports = { app, server, io };
 
 // Start server
 app.listen(3000, () => {
