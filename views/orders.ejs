@@ -127,10 +127,23 @@
 <script>
   const socket = io();
 
+  // ✅ Toast notification system
+  function showNotification(message) {
+    const toast = document.createElement("div");
+    toast.className =
+      "fixed bottom-5 right-5 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }
+
   // Listen when a new order is placed
   socket.on("orderPlaced", (data) => {
     if (data.userId === "<%= user ? user._id : '' %>") {
-      alert(data.message + " (Status: " + data.status + ")");
+      showNotification(data.message + " (Status: " + data.status + ")");
       location.reload(); // reload to show new order
     }
   });
@@ -164,6 +177,18 @@
         " flex-1 transition-all duration-300 progress-step";
     });
 
-    alert("Order " + data.orderId + " is now " + data.status);
+    // ✅ Show toast instead of alert
+    showNotification("Order " + data.orderId + " is now " + (data.status || "updated"));
   });
 </script>
+
+<!-- 🔥 Simple fade-in animation for toast -->
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+</style>

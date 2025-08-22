@@ -3,8 +3,7 @@ const crypto = require("crypto");
 const ownerModel = require("../models/owner-model");
 const orderModel = require("../models/order-model");
 const { sendPasswordResetMail } = require("../utils/mailer");
-const { Parser } = require('json2csv');
-
+const { Parser } = require("json2csv");
 
 // 🧑 Admin Registration (One-time setup)
 exports.createOwner = async (req, res) => {
@@ -17,7 +16,7 @@ exports.createOwner = async (req, res) => {
     const newOwner = await ownerModel.create({ fullname, email, password: hashed });
     return res.status(201).send(newOwner);
   } catch (err) {
-    console.error(err);
+    console.error("Create Owner Error:", err);
     res.status(500).send({ error: "Creation failed" });
   }
 };
@@ -38,14 +37,46 @@ exports.viewAllOrders = async (req, res) => {
   }
 };
 
-// 🔄 Update Order Status
+// 🔄 Update Order Status (with real-time emit)
+// 🔄 Update Order Status (with real-time emit)
 exports.updateOrderStatus = async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
 
   try {
-    await orderModel.findByIdAndUpdate(orderId, { status });
-    req.flash("success", "Order status updated!");
+    const updatedOrder = await orderModel
+      .findByIdAndUpdate(orderId, { status }, { new: true })
+      .populate("user");
+
+    if (!updatedOrder) {
+      req.flash("error", "Order not found");
+      return res.redirect("/admin/orders");
+    }
+
+    // ⚡ Emit real-time event
+    const io = req.app.get("io");
+    if (io) {
+      // Emit to the specific user (so only they get notified)
+      if (updatedOrder.user?._id) {
+        io.to(updatedOrder.user._id.toString()).emit("orderStatusUpdated", {
+          orderId: updatedOrder._id.toString(),
+          status: updatedOrder.status,   // ✅ always included
+        });
+      }
+
+      // Also broadcast to admins if needed
+      io.emit("adminOrderUpdate", {
+        orderId: updatedOrder._id.toString(),
+        status: updatedOrder.status,
+        user: {
+          id: updatedOrder.user?._id,
+          name: updatedOrder.user?.fullname,
+          email: updatedOrder.user?.email,
+        },
+      });
+    }
+
+    req.flash("success", `Order #${orderId} status updated to ${status}`);
     res.redirect("/admin/orders");
   } catch (err) {
     console.error("❌ Error updating status:", err.message);
@@ -54,17 +85,18 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
+
+// 📤 Export Orders as CSV
 exports.exportOrders = async (req, res) => {
   try {
-    const orders = await orderModel.find().populate('user');
+    const orders = await orderModel.find().populate("user");
 
-    const fields = ['_id', 'user.fullname', 'user.email', 'totalAmount', 'status', 'createdAt'];
-    const opts = { fields };
-    const parser = new Parser(opts);
+    const fields = ["_id", "user.fullname", "user.email", "totalAmount", "status", "createdAt"];
+    const parser = new Parser({ fields });
     const csv = parser.parse(orders);
 
-    res.header('Content-Type', 'text/csv');
-    res.attachment('orders.csv');
+    res.header("Content-Type", "text/csv");
+    res.attachment("orders.csv");
     return res.send(csv);
   } catch (err) {
     console.error("Export error:", err);
@@ -75,7 +107,8 @@ exports.exportOrders = async (req, res) => {
 // 👨‍💼 Admin Dashboard
 exports.renderAdminPage = (req, res) => {
   const success = req.flash("success");
-  res.render("admin/createproduct", { success });
+  const error = req.flash("error");
+  res.render("admin/createproduct", { success, error });
 };
 
 // 🔐 Admin Login
@@ -100,7 +133,7 @@ exports.loginAdmin = async (req, res) => {
     req.flash("success", "Welcome Admin!");
     res.redirect("/admin");
   } catch (err) {
-    console.error(err.message);
+    console.error("Admin Login Error:", err.message);
     req.flash("error", "Something went wrong");
     res.redirect("/admin/login");
   }
@@ -139,14 +172,12 @@ exports.requestPasswordReset = async (req, res) => {
   owner.resetPasswordExpires = Date.now() + 3600000; // 1 hour
   await owner.save();
 
-
   const resetURL = `${req.protocol}://${req.get("host")}/admin/reset-password/${token}`;
-
   await sendPasswordResetMail({
-  to: email,
-  name: owner.fullname,
-  link: resetURL,
-});
+    to: email,
+    name: owner.fullname,
+    link: resetURL,
+  });
 
   req.flash("success", "Reset link sent to your email.");
   res.redirect("/admin/login");
@@ -166,8 +197,8 @@ exports.renderResetPasswordForm = async (req, res) => {
   }
 
   res.render("admin-reset-password", {
-    token: req.params.token,
-    formAction: `/admin/reset-password/${req.params.token}`,
+    token,
+    formAction: `/admin/reset-password/${token}`,
     success: req.flash("success"),
     error: req.flash("error"),
   });
@@ -202,13 +233,11 @@ exports.resetPassword = async (req, res) => {
 exports.renderForgotPasswordForm = (req, res) => {
   res.render("admin-forgot-password", {
     error: req.flash("error"),
-    success: req.flash("success")
+    success: req.flash("success"),
   });
 };
 
-
-
-// 🔐 Google OAuth Login (used in Passport callback)
+// 🔐 Google OAuth Login
 exports.loginWithGoogle = async (profile, done) => {
   try {
     let owner = await ownerModel.findOne({ googleId: profile.id });
@@ -225,5 +254,18 @@ exports.loginWithGoogle = async (profile, done) => {
     return done(null, owner);
   } catch (err) {
     return done(err, null);
+  }
+};
+
+/* 
+----------------------------------------------------
+🆕 Helper: Emit new order to admins when placed
+Use this inside your orderController after saving order:
+----------------------------------------------------
+*/
+exports.notifyNewOrder = (req, order) => {
+  const io = req.app.get("io");
+  if (io) {
+    io.emit("orderPlaced", order);
   }
 };

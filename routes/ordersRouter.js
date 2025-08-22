@@ -14,9 +14,8 @@ router.get("/", isLoggedIn, async (req, res) => {
     .find({ user: req.user._id })
     .populate("products.product");
     // Check if the product field actually resolves
-  console.log("Orders:", JSON.stringify(orders, null, 2));
 
-  res.render("orders", { orders });
+  res.render("orders", { orders, user: req.user });
 });
 
 router.get("/checkout", isLoggedIn, async (req, res) => {

@@ -18,6 +18,7 @@ require("dotenv").config();
 
 // Middleware setup
 app.set("view engine", "ejs");
+app.set("io", io);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
