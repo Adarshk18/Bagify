@@ -44,6 +44,12 @@ router.get("/shop", async (req, res) => {
   }
 });
 
+router.get("/about", (req, res) => {
+  const success = req.flash("success");
+  const error = req.flash("error");
+  res.render("about", { success, error });
+});
+
 router.get("/contact", (req, res) => {
   const success = req.flash("success");
   const error = req.flash("error");
