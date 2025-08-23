@@ -11,7 +11,7 @@ router.get("/", (req, res) => {
   res.render("index", { error });
 });
 
-router.get("/shop", isLoggedin, async (req, res) => {
+router.get("/shop", async (req, res) => {
   try {
     let filter = {};
     let sort = {};
@@ -36,7 +36,7 @@ router.get("/shop", isLoggedin, async (req, res) => {
     }
 
     const products = await productModel.find(filter).sort(sort);
-    res.render("shop", { products });
+    res.render("shop", { products,user: req.session.user || null });
   } catch (err) {
     console.log(err);
     req.flash("error", "Failed to load products");
