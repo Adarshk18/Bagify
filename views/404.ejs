@@ -1,17 +1,37 @@
 <%- include('./partials/header') %>
 
-<div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
-  <img src="/images/404.svg" alt="404" class="w-64 mb-6" />
-  <h1 class="text-4xl font-bold text-gray-800 mb-2">404 - Page Not Found</h1>
-  <p class="text-gray-600 text-lg mb-6">
-    Oops! The page you're looking for doesn't exist.
-  </p>
-  <a
-    href="/"
-    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md text-lg font-medium transition"
-  >
-    Go Back to Home
-  </a>
+<div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+  <div class="bg-white p-8 rounded-2xl shadow-lg text-center max-w-lg w-full">
+    <!-- Illustration -->
+    <img src="/images/payment_soon.svg" 
+         alt="Payments Coming Soon" 
+         class="w-56 mx-auto mb-6" />
+
+    <!-- Gradient Heading -->
+    <h1 class="text-3xl md:text-4xl font-bold mb-3 
+               bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+      Payments Coming Soon 🚀
+    </h1>
+
+    <!-- Message -->
+    <p class="text-gray-600 text-base mb-6">
+      We're working on enabling secure Razorpay payments.<br />
+      This feature will be available shortly.  
+      Thank you for your patience!
+    </p>
+
+    <!-- CTA Button -->
+    <a href="/" 
+       class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-medium shadow-md transition">
+      Go Back to Shop
+    </a>
+
+    <!-- Optional Support Note -->
+    <p class="mt-4 text-sm text-gray-500">
+      Need help? 
+      <a href="/contact" class="text-blue-600 hover:underline">Contact Support</a>
+    </p>
+  </div>
 </div>
 
 <%- include('./partials/footer') %>

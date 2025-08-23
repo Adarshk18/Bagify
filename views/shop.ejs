@@ -3,42 +3,42 @@
 <div class="min-h-screen bg-gray-50 px-6 py-10">
   <div class="flex flex-col lg:flex-row gap-10">
     <!-- Sidebar -->
-    <aside class="w-full lg:w-1/4 space-y-6">
-      <div class="bg-white p-4 rounded-lg shadow-sm">
-        <h3 class="text-lg font-semibold mb-3">Sort by</h3>
-        <form action="/shop" method="GET">
-          <select
-            name="sortby"
-            onchange="this.form.submit()"
-            class="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-400 transition"
-          >
-            <option value="">Default</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-          </select>
-        </form>
-      </div>
+    <!-- Sidebar -->
+<aside class="w-full lg:w-1/4 space-y-6">
+  <!-- Sort By Card -->
+  <div class="bg-white p-5 rounded-xl shadow-md">
+    <h3 class="text-lg font-semibold mb-3 text-gray-800">Sort by</h3>
+    <form action="/shop" method="GET">
+      <select
+        name="sortby"
+        onchange="this.form.submit()"
+        class="w-full border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+      >
+        <option value="">Default</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+      </select>
+    </form>
+  </div>
 
-      <div class="bg-white p-4 rounded-lg shadow-sm">
-        <h3 class="text-lg font-semibold mb-3">Categories</h3>
-        <ul class="space-y-2 text-sm">
-          <li>
-            <a
-              href="/shop"
-              class="hover:underline text-gray-700 hover:text-blue-600 transition"
-              >All Products</a
-            >
-          </li>
-          <li>
-            <a
-              href="/shop?discount=yes"
-              class="hover:underline text-gray-700 hover:text-blue-600 transition"
-              >Discounted Products</a
-            >
-          </li>
-        </ul>
-      </div>
-    </aside>
+  <!-- Categories Card -->
+  <div class="bg-white p-5 rounded-xl shadow-md">
+    <h3 class="text-lg font-semibold mb-3 text-gray-800">Categories</h3>
+    <ul class="space-y-2 text-sm">
+      <li>
+        <a href="/shop" class="block px-3 py-2 rounded hover:bg-blue-50 hover:text-blue-600 transition">
+          All Products
+        </a>
+      </li>
+      <li>
+        <a href="/shop?discount=yes" class="block px-3 py-2 rounded hover:bg-blue-50 hover:text-blue-600 transition">
+          Discounted Products
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>
+
 
     <!-- Main Content -->
     <main class="w-full lg:w-3/4">
