@@ -1,7 +1,7 @@
 # Bagify
 A Full stack e-commerce platform for Modern &amp; Trendy Bags.
 
-![WhatsApp Image 2025-08-23 at 19 04 55_144a4a91](https://github.com/user-attachments/assets/102f711e-e06e-4053-957d-fb02731d9ffe)
+![WhatsApp Image 2025-08-23 at 20 28 29_31f3064e](https://github.com/user-attachments/assets/03f927bb-7558-439a-b4dc-663871f913ec)
 ![WhatsApp Image 2025-08-23 at 19 05 17_2428838c](https://github.com/user-attachments/assets/4e157fb5-231d-4d4b-be7d-ba3de2bb7607)
 ![WhatsApp Image 2025-08-23 at 19 05 34_693c067d](https://github.com/user-attachments/assets/a5aae3ba-6267-4169-9d9a-a70c46575e0f)
 ![WhatsApp Image 2025-08-23 at 19 05 51_0be5cab2](https://github.com/user-attachments/assets/7adbee3f-fd71-414b-b426-a91183afe6ef)
