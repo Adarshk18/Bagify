@@ -6,7 +6,6 @@
     <title>Bagify</title>
 
     <!-- Tailwind Dark Mode Config -->
-
     <script>
       tailwind.config = {
         darkMode: "class",
@@ -25,56 +24,45 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
-    </head>
+  </head>
 
-    <body class="bg-white text-black dark:bg-white dark:text-black transition-colors duration-300">
+  <body class="bg-white text-black dark:bg-white dark:text-black transition-colors duration-300">
     <header
       class="w-full bg-white dark:bg-gray-800 shadow-sm px-6 py-4 flex items-center justify-between relative z-20"
     >
-      <a href="/" class="text-2xl font-bold text-blue-600 dark:text-blue-300"
-        >Bagify</a
-      >
+      <a href="/" class="text-2xl font-bold text-blue-600 dark:text-blue-300">
+        Bagify
+      </a>
 
       <% if (url.startsWith("/admin/login")) { %>
-      <!-- 💼 Admin Login Page Only -->
-      <nav class="text-sm font-medium text-gray-700 dark:text-gray-300">
-        <a href="/users" class="text-blue-500 hover:underline"
-          >Not an Admin? User Login</a
-        >
-      </nav>
+        <!-- 💼 Admin Login Page Only -->
+        <nav class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <a href="/users" class="text-blue-500 hover:underline">
+            Not an Admin? User Login
+          </a>
+        </nav>
 
       <% } else if (user && user.role === 'admin') { %>
-      <!-- 🛠️ Admin Logged In -->
-      <nav
-        class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300"
-      >
-        <a href="/admin" class="text-purple-600 font-semibold hover:underline"
-          >Admin Panel</a
+        <!-- 🛠️ Admin Logged In -->
+        <nav
+          class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300"
         >
-        <a
-          href="/admin/orders"
-          class="text-purple-600 font-semibold hover:underline"
-          >All Orders</a
+          <a href="/admin" class="text-purple-600 font-semibold hover:underline">Admin Panel</a>
+          <a href="/admin/orders" class="text-purple-600 font-semibold hover:underline">All Orders</a>
+          <a href="/admin/logout" class="text-red-500 hover:underline">Logout</a>
+        </nav>
+
+      <% } else if (user) { %>
+        <!-- 👤 Regular Logged-in Users -->
+        <nav
+          class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300"
         >
-        <a href="/admin/logout" class="text-red-500 hover:underline">Logout</a>
-      </nav>
-
-      <% } else { %>
-      <!-- 👤 Regular Users -->
-      <nav
-        class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300"
-      >
-        <a href="/shop" class="hover:text-blue-600">Shop</a>
-        <a href="/cart" class="hover:text-blue-600">Cart</a>
-
-        <% if (user) { %>
-        <a href="/orders" class="hover:text-blue-600">Orders</a>
-        <a href="/users/profile" class="hover:text-blue-600">Profile</a>
-        <a href="/users/logout" class="text-red-500 hover:underline">Logout</a>
-        <% } else { %>
-        <a href="/users" class="text-blue-500 hover:underline">Login</a>
-        <% } %>
-      </nav>
+          <a href="/shop" class="hover:text-blue-600">Shop</a>
+          <a href="/cart" class="hover:text-blue-600">Cart</a>
+          <a href="/orders" class="hover:text-blue-600">Orders</a>
+          <a href="/users/profile" class="hover:text-blue-600">Profile</a>
+          <a href="/users/logout" class="text-red-500 hover:underline">Logout</a>
+        </nav>
       <% } %>
 
       <!-- 🌙 Theme Toggle Icon -->
@@ -109,5 +97,5 @@
         icon.classList.toggle("fa-sun");
       });
     </script>
-  </head>
+  </body>
 </html>
