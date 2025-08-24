@@ -3,12 +3,14 @@ const orderModel = require("../models/order-model");
 const Razorpay = require("razorpay");
 const { io } = require("../app");
 
-
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+// ==========================
+// Place Order
+// ==========================
 exports.placeOrder = async (req, res) => {
   try {
     const user = await userModel.findById(req.session.user._id).populate("cart.productId");
@@ -20,16 +22,16 @@ exports.placeOrder = async (req, res) => {
 
     const {
       fullname, phone, street, city, state,
-      pincode, country, landmark, lat, lng, selectedAddress, paymentMode
+      pincode, country, landmark, lat, lng,
+      selectedAddress, paymentMode, useCoins
     } = req.body;
 
     let finalAddress = null;
 
+    // ✅ Handle address
     if (selectedAddress !== undefined && selectedAddress !== "" && user.addresses[parseInt(selectedAddress)]) {
-      // ✅ Use selected saved address
       finalAddress = user.addresses[parseInt(selectedAddress)];
     } else {
-      // ✅ Manual form validation
       if (!fullname || !phone || !street || !city || !state || !pincode || !country) {
         req.flash("error", "Please fill in all required address fields.");
         return res.redirect("/orders/checkout");
@@ -51,7 +53,6 @@ exports.placeOrder = async (req, res) => {
         createdAt: new Date()
       };
 
-      // ✅ Save address if not already in user's profile
       const duplicate = user.addresses.find(addr =>
         addr.name?.toLowerCase() === fullname.trim().toLowerCase() &&
         addr.phone?.trim() === phone.trim() &&
@@ -67,7 +68,7 @@ exports.placeOrder = async (req, res) => {
       }
     }
 
-    // ✅ Filter out invalid cart items
+    // ✅ Filter valid cart items
     const validCartItems = user.cart.filter(item => item.productId);
 
     const products = validCartItems.map(item => ({
@@ -76,27 +77,34 @@ exports.placeOrder = async (req, res) => {
       snapshot: {
         name: item.productId.name,
         price: item.productId.price,
-        image: item.productId.image, // or whatever field stores product image
+        image: item.productId.image,
         description: item.productId.description
       }
     }));
 
-    const totalAmount = validCartItems.reduce((sum, item) => {
+    let totalAmount = validCartItems.reduce((sum, item) => {
       const price = Math.max(0, (item.productId.price || 0));
       return sum + price * item.quantity;
     }, 0);
 
+    // ✅ Coins redemption logic
+    let coinsUsed = 0;
+    if (useCoins && user.coins > 0) {
+      coinsUsed = Math.min(user.coins, Math.floor(totalAmount * 0.2)); // Max 20% discount
+      totalAmount -= coinsUsed;
+      user.coins -= coinsUsed;
+    }
+
+    // If payment is ONLINE
     if (paymentMode === "online") {
-      // ✅ Create Razorpay Order
       const options = {
-        amount: totalAmount * 100, // in paise
+        amount: totalAmount * 100,
         currency: "INR",
         receipt: `order_rcpt_${Date.now()}`,
       };
 
       const razorpayOrder = await razorpay.orders.create(options);
 
-      // ✅ Save order with "Pending Payment"
       const newOrder = await orderModel.create({
         user: user._id,
         products,
@@ -105,12 +113,13 @@ exports.placeOrder = async (req, res) => {
         status: "Pending Payment",
         paymentMethod: "Razorpay",
         razorpayOrderId: razorpayOrder.id,
+        coinsUsed
       });
 
       io.emit("orderPlaced", {
         userId: user._id,
         message: "Your order has been placed successfully!",
-        status: paymentMode === "online" ? "Pending Payment" : "Pending",
+        status: "Pending Payment",
       });
 
       await user.save();
@@ -124,23 +133,26 @@ exports.placeOrder = async (req, res) => {
       });
     }
 
-    // ✅ Create the order
-    await orderModel.create({
+    // ✅ COD Order
+    const newOrder = await orderModel.create({
       user: user._id,
       products,
       totalAmount,
       address: finalAddress,
-      status: paymentMode === 'online' ? 'Pending Payment' : 'Pending',
-      paymentMethod: paymentMode === 'online' ? 'Razorpay' : 'COD',
-      razorpayOrderId: paymentMode === 'online' ? razorpayOrder.id : undefined,
+      status: "Pending",
+      paymentMethod: "COD",
+      coinsUsed
     });
 
+    // ✅ Reward coins (5% of total order value)
+    const rewardCoins = Math.floor(totalAmount * 0.05);
+    user.coins += rewardCoins;
 
-    // ✅ Clear cart and save address if needed
+    // ✅ Clear cart and save
     user.cart = [];
     await user.save();
 
-    req.flash("success", "✅ Order placed successfully!");
+    req.flash("success", `✅ Order placed! You earned ${rewardCoins} coins${coinsUsed > 0 ? ` and used ${coinsUsed} coins` : ""}.`);
     res.redirect("/orders");
 
   } catch (err) {
@@ -150,7 +162,9 @@ exports.placeOrder = async (req, res) => {
   }
 };
 
-
+// ==========================
+// View Orders
+// ==========================
 exports.viewOrders = async (req, res) => {
   try {
     const orders = await orderModel
@@ -171,6 +185,9 @@ exports.viewOrders = async (req, res) => {
   }
 };
 
+// ==========================
+// Cancel Order
+// ==========================
 exports.cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -198,5 +215,3 @@ exports.cancelOrder = async (req, res) => {
     res.redirect("/orders");
   }
 };
-
-

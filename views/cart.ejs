@@ -109,8 +109,41 @@
         </a>
       </div>
     </div>
+
+    <!-- 🪙 Rewards Section -->
+    <div class="mt-6 border-t pt-4">
+      <p class="text-sm text-gray-700">
+        🎁 You currently have 
+        <span class="font-bold"><%= user ? user.coins : 0 %></span> coins.
+      </p>
+      <p class="text-xs text-gray-500">
+        You can redeem up to 20% of your order total 
+        (≈ ₹<%= Math.floor(total * 0.2) %>) during checkout.
+      </p>
+    </div>
   </div>
   <% } %>
+
+  <!-- Redeem Points Checkbox -->
+  <% if (user && user.coins > 0) { %>
+    <form id="redeemForm" action="/orders/checkout" method="GET" class="mt-2">
+      <label class="flex items-center gap-2 text-gray-700">
+        <input 
+          type="checkbox" 
+          name="useCoins" 
+          value="true" 
+          <%= (typeof useCoins !== 'undefined' && useCoins) ? "checked" : "" %>
+          onchange="document.getElementById('redeemForm').submit();"
+        />
+        Redeem points for discount (max 20% of total)
+      </label>
+    </form>
+  <% } %>
+
+  <!-- Estimated Points Earned -->
+  <p class="text-sm text-gray-700 mt-2">
+    You will earn approximately <%= Math.floor(total * 0.05) %> points for this order.
+  </p>
 </div>
 
 <%- include('./partials/footer') %>

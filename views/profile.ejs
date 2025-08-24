@@ -46,6 +46,16 @@
         <p class="text-gray-600 mt-1">
           📞 <%= user.contact || "Not provided" %>
         </p>
+
+        <!-- 🪙 Reward Points Section -->
+        <div class="mt-2 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+          <p class="text-sm text-gray-800">
+            🎁 You currently have <span class="font-bold"><%= user.coins %></span> coins.
+          </p>
+          <p class="text-xs text-gray-600">
+            You can redeem up to 20% of your order total during checkout.
+          </p>
+        </div>
       </div>
     </div>
 

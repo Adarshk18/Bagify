@@ -15,12 +15,17 @@ const cartItemSchema = new mongoose.Schema({
 });
 
 // 📦 Order Schema
+// 📦 Order Schema
 const orderSchema = new mongoose.Schema({
   items: [cartItemSchema],
   totalAmount: Number,
   status: { type: String, default: "pending" },
+  paymentMethod: { type: String, enum: ["COD", "Razorpay"], default: "COD" },
+  coinsUsed: { type: Number, default: 0 },   // 👈 track redeemed coins
+  coinsEarned: { type: Number, default: 0 }, // 👈 track reward coins earned
   createdAt: { type: Date, default: Date.now }
 });
+
 
 // 👤 User Schema
 const userSchema = new mongoose.Schema({
@@ -41,6 +46,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 6
+  },
+  coins: {
+    type: Number,
+    default: 0, // every new user starts with 0 coins
   },
   contact: {
     type: String,
