@@ -1,5 +1,6 @@
 const userModel = require("../models/user-model");
 
+// 🛒 View Cart
 exports.viewCart = async (req, res) => {
   try {
     const user = await userModel.findById(req.session.user._id).populate("cart.productId");
@@ -8,7 +9,7 @@ exports.viewCart = async (req, res) => {
       .filter(item => item.productId)
       .map(item => {
         const product = item.productId;
-        const discountedPrice = Number(product.price) || 0; // This is the final price after discount
+        const discountedPrice = Number(product.price) || 0; 
         const originalPrice = Number(product.originalPrice) || discountedPrice;
         const discountAmount = originalPrice - discountedPrice;
         const discountPercentage = originalPrice > 0 ? Math.round((discountAmount / originalPrice) * 100) : 0;
@@ -22,13 +23,24 @@ exports.viewCart = async (req, res) => {
         };
       });
 
-    const total = cartItems.reduce((acc, item) => {
+    let total = cartItems.reduce((acc, item) => {
       return acc + item.effectivePrice * item.quantity;
     }, 0);
+
+    // 🪙 Coin discount logic
+    let coinDiscount = 0;
+    if (req.query.useCoins === "true" && user.coinBalance > 0) {
+      coinDiscount = Math.min(user.coinBalance, total);
+      total = total - coinDiscount;
+    }
+
+    // Save coin discount in session so it can be used in order screen
+    req.session.coinDiscount = coinDiscount;
 
     res.render("cart", {
       cartItems,
       total,
+      coinDiscount,
       user: req.user || null
     });
   } catch (err) {
@@ -38,11 +50,7 @@ exports.viewCart = async (req, res) => {
   }
 };
 
-
-
-
-
-
+// 🛒 Add to Cart
 exports.addToCart = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -65,6 +73,7 @@ exports.addToCart = async (req, res) => {
   }
 };
 
+// 🗑️ Remove from Cart
 exports.removeFromCart = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -82,6 +91,7 @@ exports.removeFromCart = async (req, res) => {
   }
 };
 
+// 🔄 Update Quantity
 exports.updateQuantity = async (req, res) => {
   try {
     const { id, action } = req.body;

@@ -26,63 +26,36 @@
         <div>
           <h4 class="text-lg font-semibold"><%= item.product.name %></h4>
 
-          <% const discountedPrice = Math.max(0, item.product.price -
-          (item.product.discount || 0)); %> <% const hasDiscount =
-          item.product.originalPrice && item.product.discount > 0; const
-          original = item.product.originalPrice || (item.product.price +
-          item.product.discount); const discountPercent = hasDiscount ?
-          Math.round((item.product.discount / original) * 100) : 0; %>
+          <% const discountedPrice = Math.max(0, item.product.price - (item.product.discount || 0)); %>
+          <% const hasDiscount = item.product.originalPrice && item.product.discount > 0; %>
+          <% const original = item.product.originalPrice || (item.product.price + item.product.discount); %>
+          <% const discountPercent = hasDiscount ? Math.round((item.product.discount / original) * 100) : 0; %>
+
           <div class="text-sm text-gray-700">
-            <span class="font-bold text-lg text-gray-800"
-              >₹<%= item.product.price %></span
-            >
-
+            <span class="font-bold text-lg text-gray-800">₹<%= item.product.price %></span>
             <% if (hasDiscount) { %>
-            <span class="line-through text-gray-500 ml-2"
-              >₹<%= original %></span
-            >
-            <span class="ml-2 text-red-500 text-xs"
-              >(<%= discountPercent %>% OFF)</span
-            >
+              <span class="line-through text-gray-500 ml-2">₹<%= original %></span>
+              <span class="ml-2 text-red-500 text-xs">(<%= discountPercent %>% OFF)</span>
             <% } %>
-
-            <span class="ml-2 text-sm text-gray-600"
-              >× <%= item.quantity %></span
-            >
+            <span class="ml-2 text-sm text-gray-600">× <%= item.quantity %></span>
           </div>
 
           <div class="flex gap-2 mt-2">
             <form action="/cart/update" method="POST">
               <input type="hidden" name="id" value="<%= item.product._id %>" />
               <input type="hidden" name="action" value="decrease" />
-              <button
-                aria-label="Decrease Quantity"
-                class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                −
-              </button>
+              <button aria-label="Decrease Quantity" class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">−</button>
             </form>
-            <span class="px-2 text-gray-700 font-medium"
-              ><%= item.quantity %></span
-            >
+            <span class="px-2 text-gray-700 font-medium"><%= item.quantity %></span>
             <form action="/cart/update" method="POST">
               <input type="hidden" name="id" value="<%= item.product._id %>" />
               <input type="hidden" name="action" value="increase" />
-              <button
-                aria-label="Increase Quantity"
-                class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                +
-              </button>
+              <button aria-label="Increase Quantity" class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">+</button>
             </form>
           </div>
         </div>
       </div>
-      <a
-        href="/cart/remove/<%= item.product._id %>"
-        class="text-red-600 text-sm hover:underline"
-        >Remove</a
-      >
+      <a href="/cart/remove/<%= item.product._id %>" class="text-red-600 text-sm hover:underline">Remove</a>
     </div>
     <% }) %>
   </div>
@@ -90,60 +63,82 @@
   <!-- Totals + Actions -->
   <div class="mt-10 bg-white p-6 rounded shadow">
     <div class="flex flex-col sm:flex-row items-center justify-between">
-      <h3 class="text-xl font-semibold mb-4 sm:mb-0">Total: ₹ <%= total %></h3>
+      <h3 class="text-xl font-semibold mb-4 sm:mb-0">
+        Total: ₹ <span id="orderTotal"><%= total %></span>
+      </h3>
       <div class="flex flex-wrap gap-4">
-        <a
-          href="/orders/checkout"
-          class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-        >
-          ✅ Place Order (COD)
-        </a>
-        <a
-          href="/orders/pay"
-          class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
-        >
+        <form id="checkoutForm" action="/orders/checkout" method="GET" class="inline">
+  <input type="hidden" name="useCoins" id="hiddenUseCoins" value="false" />
+  <button type="submit"
+    class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+    ✅ Place Order (COD)
+  </button>
+</form>
+
+        <a href="/orders/pay" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
           💳 Pay with Razorpay
         </a>
-        <a href="/shop" class="text-blue-600 underline px-4 py-2">
-          ← Continue Shopping
-        </a>
+        <a href="/shop" class="text-blue-600 underline px-4 py-2">← Continue Shopping</a>
       </div>
     </div>
 
     <!-- 🪙 Rewards Section -->
     <div class="mt-6 border-t pt-4">
       <p class="text-sm text-gray-700">
-        🎁 You currently have 
-        <span class="font-bold"><%= user ? user.coins : 0 %></span> coins.
+        🎁 You currently have <span class="font-bold" id="userCoins"><%= user ? user.coins : 0 %></span> coins.
       </p>
       <p class="text-xs text-gray-500">
-        You can redeem up to 20% of your order total 
-        (≈ ₹<%= Math.floor(total * 0.2) %>) during checkout.
+        You can redeem up to 10% of your order total (≈ ₹<%= Math.floor(total * 0.1) %>) during checkout.
+      </p>
+
+      <% if (user && user.coins > 0) { %>
+        <label class="flex items-center gap-2 text-gray-700 mt-2">
+          <input type="checkbox" id="useCoins" name="useCoins" value="true" />
+          Redeem coins for discount (max 10% of total)
+        </label>
+        <p id="discountInfo" class="text-sm text-green-600 mt-2 hidden"></p>
+      <% } %>
+
+      <p class="text-sm text-gray-700 mt-2">
+        You will earn approximately <%= Math.floor(total * 0.05) %> coins for this order.
       </p>
     </div>
   </div>
   <% } %>
-
-  <!-- Redeem Points Checkbox -->
-  <% if (user && user.coins > 0) { %>
-    <form id="redeemForm" action="/orders/checkout" method="GET" class="mt-2">
-      <label class="flex items-center gap-2 text-gray-700">
-        <input 
-          type="checkbox" 
-          name="useCoins" 
-          value="true" 
-          <%= (typeof useCoins !== 'undefined' && useCoins) ? "checked" : "" %>
-          onchange="document.getElementById('redeemForm').submit();"
-        />
-        Redeem points for discount (max 20% of total)
-      </label>
-    </form>
-  <% } %>
-
-  <!-- Estimated Points Earned -->
-  <p class="text-sm text-gray-700 mt-2">
-    You will earn approximately <%= Math.floor(total * 0.05) %> points for this order.
-  </p>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const totalEl = document.getElementById("orderTotal");
+    const coinsEl = document.getElementById("userCoins");
+    const discountInfo = document.getElementById("discountInfo");
+    const useCoinsCheckbox = document.getElementById("useCoins");
+    const hiddenUseCoins = document.getElementById("hiddenUseCoins");
+    
+  
+
+    if (!totalEl || !coinsEl || !useCoinsCheckbox) return;
+
+    const baseTotal = <%= total %>;
+    const userCoins = <%= user ? user.coins : 0 %>;
+    const maxDiscount = Math.floor(baseTotal * 0.1); // ✅ 10% cap
+
+    useCoinsCheckbox.addEventListener("change", () => {
+      if (useCoinsCheckbox.checked) {
+        const discount = Math.min(userCoins, maxDiscount);
+        const newTotal = baseTotal - discount;
+
+        totalEl.textContent = newTotal;
+        discountInfo.textContent = `✅ Applied ${discount} coins. You saved ₹${discount}.`;
+        discountInfo.classList.remove("hidden");
+        hiddenUseCoins.value = "true";
+      } else {
+        totalEl.textContent = baseTotal;
+        discountInfo.classList.add("hidden");
+        hiddenUseCoins.value = "false";
+      }
+    });
+  });
+</script>
 
 <%- include('./partials/footer') %>

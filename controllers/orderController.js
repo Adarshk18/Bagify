@@ -90,7 +90,7 @@ exports.placeOrder = async (req, res) => {
     // ✅ Coins redemption logic
     let coinsUsed = 0;
     if (useCoins && user.coins > 0) {
-      coinsUsed = Math.min(user.coins, Math.floor(totalAmount * 0.2)); // Max 20% discount
+      coinsUsed = Math.min(user.coins, Math.floor(totalAmount * 0.1)); // Max 20% discount
       totalAmount -= coinsUsed;
       user.coins -= coinsUsed;
     }
