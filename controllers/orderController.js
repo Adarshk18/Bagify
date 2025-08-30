@@ -2,11 +2,28 @@ const userModel = require("../models/user-model");
 const orderModel = require("../models/order-model");
 const Razorpay = require("razorpay");
 const { io } = require("../app");
+const { sendMail } = require("../utils/mailer"); // ✅ assuming mailer.js exports sendMail
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
+
+// ==========================
+// Helper: Send Order Status Email
+// ==========================
+async function sendOrderStatusEmail(user, order, status) {
+  const subject = `Your Order #${order._id} - ${status}`;
+  const html = `
+    <h2>Hi ${user.fullname || "Customer"},</h2>
+    <p>Your order <strong>#${order._id}</strong> is now <b>${status}</b>.</p>
+    <p>Total Amount: ₹${order.totalAmount}</p>
+    <p>Delivery Address: ${order.address.street}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}</p>
+    <br/>
+    <p>Thank you for shopping with <b>Bagify</b>!</p>
+  `;
+  await sendMail(user.email, subject, html);
+}
 
 // ==========================
 // Place Order
@@ -90,10 +107,12 @@ exports.placeOrder = async (req, res) => {
     // ✅ Coins redemption logic
     let coinsUsed = 0;
     if (useCoins && user.coins > 0) {
-      coinsUsed = Math.min(user.coins, Math.floor(totalAmount * 0.1)); // Max 20% discount
+      coinsUsed = Math.min(user.coins, Math.floor(totalAmount * 0.1)); // Max 10% discount
       totalAmount -= coinsUsed;
       user.coins -= coinsUsed;
     }
+
+    let newOrder;
 
     // If payment is ONLINE
     if (paymentMode === "online") {
@@ -105,12 +124,12 @@ exports.placeOrder = async (req, res) => {
 
       const razorpayOrder = await razorpay.orders.create(options);
 
-      const newOrder = await orderModel.create({
+      newOrder = await orderModel.create({
         user: user._id,
         products,
         totalAmount,
         address: finalAddress,
-        status: "Pending Payment",
+        status: "Pending", // 🔄 fixed (no "Pending Payment")
         paymentMethod: "Razorpay",
         razorpayOrderId: razorpayOrder.id,
         coinsUsed
@@ -119,10 +138,13 @@ exports.placeOrder = async (req, res) => {
       io.emit("orderPlaced", {
         userId: user._id,
         message: "Your order has been placed successfully!",
-        status: "Pending Payment",
+        status: "Pending",
       });
 
       await user.save();
+
+      // ✅ Send email
+      await sendOrderStatusEmail(user, newOrder, "Pending");
 
       return res.render("payment", {
         razorpayKey: process.env.RAZORPAY_KEY_ID,
@@ -134,7 +156,7 @@ exports.placeOrder = async (req, res) => {
     }
 
     // ✅ COD Order
-    const newOrder = await orderModel.create({
+    newOrder = await orderModel.create({
       user: user._id,
       products,
       totalAmount,
@@ -151,6 +173,9 @@ exports.placeOrder = async (req, res) => {
     // ✅ Clear cart and save
     user.cart = [];
     await user.save();
+
+    // ✅ Send email
+    await sendOrderStatusEmail(user, newOrder, "Pending");
 
     req.flash("success", `✅ Order placed! You earned ${rewardCoins} coins${coinsUsed > 0 ? ` and used ${coinsUsed} coins` : ""}.`);
     res.redirect("/orders");
@@ -191,7 +216,7 @@ exports.viewOrders = async (req, res) => {
 exports.cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
-    const order = await orderModel.findById(orderId);
+    const order = await orderModel.findById(orderId).populate("user");
 
     if (!order || order.status !== 'Pending') {
       req.flash("error", "You can only cancel pending orders.");
@@ -199,6 +224,7 @@ exports.cancelOrder = async (req, res) => {
     }
 
     order.status = "Cancelled";
+    order.statusUpdatedAt = new Date();
     await order.save();
 
     io.emit("orderStatusUpdated", {
@@ -207,11 +233,55 @@ exports.cancelOrder = async (req, res) => {
       message: "An order was cancelled."
     });
 
+    // ✅ Send cancellation email
+    await sendOrderStatusEmail(order.user, order, "Cancelled");
+
     req.flash("success", "Order cancelled successfully.");
     res.redirect("/orders");
   } catch (err) {
     console.error("❌ Cancel order error:", err.message);
     req.flash("error", "Failed to cancel order.");
     res.redirect("/orders");
+  }
+};
+
+// ==========================
+// Admin: Update Order Status
+// ==========================
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    if (!["Pending", "Shipped", "Out for Delivery", "Delivered", "Cancelled"].includes(status)) {
+      req.flash("error", "Invalid status provided.");
+      return res.redirect("/admin/orders");
+    }
+
+    const order = await orderModel.findById(orderId).populate("user");
+    if (!order) {
+      req.flash("error", "Order not found.");
+      return res.redirect("/admin/orders");
+    }
+
+    order.status = status;
+    order.statusUpdatedAt = new Date();
+    await order.save();
+
+    io.emit("orderStatusUpdated", {
+      orderId: order._id,
+      status: status,
+      message: `Order status updated to ${status}.`
+    });
+
+    // ✅ Send email to customer
+    await sendOrderStatusEmail(order.user, order, status);
+
+    req.flash("success", `Order status updated to ${status}.`);
+    res.redirect("/admin/orders");
+  } catch (err) {
+    console.error("❌ Update status error:", err.message);
+    req.flash("error", "Failed to update order status.");
+    res.redirect("/admin/orders");
   }
 };

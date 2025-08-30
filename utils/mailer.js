@@ -41,3 +41,13 @@ module.exports.sendPasswordResetMail = async ({ to, name, link }) => {
     `,
   });
 };
+
+// 📦 Generic Order Status Mail
+module.exports.sendMail = async (to, subject, html) => {
+  await transporter.sendMail({
+    from: `"Bagify Orders" <${process.env.MAIL_USER}>`,
+    to,
+    subject,
+    html,
+  });
+};
