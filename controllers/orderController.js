@@ -14,16 +14,84 @@ const razorpay = new Razorpay({
 // ==========================
 async function sendOrderStatusEmail(user, order, status) {
   const subject = `Your Order #${order._id} - ${status}`;
+
+  let statusMessage = "";
+  switch (status) {
+    case "Pending":
+      statusMessage = "✅ We’ve received your order and it’s now pending confirmation.";
+      break;
+    case "Shipped":
+      statusMessage = "📦 Good news! Your order has been shipped and is on its way.";
+      break;
+    case "Out for Delivery":
+      statusMessage = "🚚 Your order is out for delivery. It will reach you very soon.";
+      break;
+    case "Delivered":
+      statusMessage = "🎉 Your order has been delivered. We hope you enjoy your purchase!";
+      break;
+    case "Cancelled":
+      statusMessage = "❌ Your order has been cancelled. If you didn’t request this, please contact support.";
+      break;
+    default:
+      statusMessage = `Your order status is now: ${status}`;
+  }
+
+  // 📦 Generate product list HTML
+  const productsHtml = (order.products || [])
+    .map(
+      (item) => `
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd; text-align:center;">
+          <img src="${item.snapshot.image || ""}" alt="${item.snapshot.name}" width="60" height="60" style="object-fit:cover;"/>
+        </td>
+        <td style="padding:8px; border:1px solid #ddd;">${item.snapshot.name}</td>
+        <td style="padding:8px; border:1px solid #ddd; text-align:center;">${item.quantity}</td>
+        <td style="padding:8px; border:1px solid #ddd; text-align:right;">₹${item.snapshot.price}</td>
+      </tr>
+    `
+    )
+    .join("");
+
   const html = `
-    <h2>Hi ${user.fullname || "Customer"},</h2>
-    <p>Your order <strong>#${order._id}</strong> is now <b>${status}</b>.</p>
-    <p>Total Amount: ₹${order.totalAmount}</p>
-    <p>Delivery Address: ${order.address.street}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}</p>
-    <br/>
-    <p>Thank you for shopping with <b>Bagify</b>!</p>
+    <div style="font-family: Arial, sans-serif; line-height:1.5; color:#333;">
+      <h2>Hi ${user.fullname || "Customer"},</h2>
+      <p>${statusMessage}</p>
+      
+      <h3>🧾 Order Summary</h3>
+      <table style="border-collapse: collapse; width: 100%; margin-bottom:20px;">
+        <thead>
+          <tr style="background:#f5f5f5;">
+            <th style="padding:8px; border:1px solid #ddd;">Image</th>
+            <th style="padding:8px; border:1px solid #ddd;">Product</th>
+            <th style="padding:8px; border:1px solid #ddd;">Qty</th>
+            <th style="padding:8px; border:1px solid #ddd;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${productsHtml}
+        </tbody>
+      </table>
+
+      <p><strong>Order ID:</strong> ${order._id}</p>
+      <p><strong>Status:</strong> ${status}</p>
+      <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
+      <p><strong>Delivery Address:</strong><br>
+         ${order.address.street}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}
+      </p>
+
+      <br/>
+      <p>Thank you for shopping with <b>Bagify</b>! 💙</p>
+    </div>
   `;
-  await sendMail(user.email, subject, html);
+
+  try {
+    await sendMail(user.email, subject, html);
+    console.log("📧 Email sent:", subject, "to", user.email);
+  } catch (err) {
+    console.error("❌ Email error:", err.message);
+  }
 }
+
 
 // ==========================
 // Place Order
@@ -258,7 +326,7 @@ exports.updateOrderStatus = async (req, res) => {
       return res.redirect("/admin/orders");
     }
 
-    const order = await orderModel.findById(orderId).populate("user");
+    const order = await orderModel.findById(orderId).populate({ path: "user", select: "fullname email" });
     if (!order) {
       req.flash("error", "Order not found.");
       return res.redirect("/admin/orders");
