@@ -4,6 +4,7 @@ const ownerModel = require("../models/owner-model");
 const orderModel = require("../models/order-model");
 const { sendPasswordResetMail } = require("../utils/mailer");
 const { Parser } = require("json2csv");
+const { sendMail } = require("../utils/mailer");
 
 // 🧑 Admin Registration (One-time setup)
 exports.createOwner = async (req, res) => {
@@ -20,6 +21,8 @@ exports.createOwner = async (req, res) => {
     res.status(500).send({ error: "Creation failed" });
   }
 };
+
+
 
 // 📦 View All Orders
 exports.viewAllOrders = async (req, res) => {
@@ -38,52 +41,66 @@ exports.viewAllOrders = async (req, res) => {
 };
 
 // 🔄 Update Order Status (with real-time emit)
-// 🔄 Update Order Status (with real-time emit)
-exports.updateOrderStatus = async (req, res) => {
-  const { orderId } = req.params;
-  const { status } = req.body;
 
-  try {
-    const updatedOrder = await orderModel
-      .findByIdAndUpdate(orderId, { status }, { new: true })
-      .populate("user");
+// exports.updateOrderStatus = async (req, res) => {
+//   const { orderId } = req.params;
+//   const { status } = req.body;
 
-    if (!updatedOrder) {
-      req.flash("error", "Order not found");
-      return res.redirect("/admin/orders");
-    }
+//   try {
+//     const updatedOrder = await orderModel
+//       .findByIdAndUpdate(orderId, { status }, { new: true })
+//       .populate("user");
 
-    // ⚡ Emit real-time event
-    const io = req.app.get("io");
-    if (io) {
-      // Emit to the specific user (so only they get notified)
-      if (updatedOrder.user?._id) {
-        io.to(updatedOrder.user._id.toString()).emit("orderStatusUpdated", {
-          orderId: updatedOrder._id.toString(),
-          status: updatedOrder.status,   // ✅ always included
-        });
-      }
+//     if (!updatedOrder) {
+//       req.flash("error", "Order not found");
+//       return res.redirect("/admin/orders");
+//     }
 
-      // Also broadcast to admins if needed
-      io.emit("adminOrderUpdate", {
-        orderId: updatedOrder._id.toString(),
-        status: updatedOrder.status,
-        user: {
-          id: updatedOrder.user?._id,
-          name: updatedOrder.user?.fullname,
-          email: updatedOrder.user?.email,
-        },
-      });
-    }
+//     // 📧 Send status update email
+//     if (updatedOrder.user?.email) {
+//       await sendMail(
+//         updatedOrder.user.email,
+//         `Your Bagify order status is now: ${status}`,
+//         `
+//           <h2>Hi ${updatedOrder.user.fullname},</h2>
+//           <p>Your order <strong>#${updatedOrder._id}</strong> has been updated.</p>
+//           <p><strong>New Status:</strong> ${status}</p>
+//           <p>Thank you for shopping with Bagify!</p>
+//         `
+//       );
+//     }
 
-    req.flash("success", `Order #${orderId} status updated to ${status}`);
-    res.redirect("/admin/orders");
-  } catch (err) {
-    console.error("❌ Error updating status:", err.message);
-    req.flash("error", "Failed to update status.");
-    res.redirect("/admin/orders");
-  }
-};
+//     // ⚡ Emit real-time event
+//     const io = req.app.get("io");
+//     if (io) {
+//       // Emit to the specific user (so only they get notified)
+//       if (updatedOrder.user?._id) {
+//         io.to(updatedOrder.user._id.toString()).emit("orderStatusUpdated", {
+//           orderId: updatedOrder._id.toString(),
+//           status: updatedOrder.status,   // ✅ always included
+//         });
+//       }
+
+//       // Also broadcast to admins if needed
+//       io.emit("adminOrderUpdate", {
+//         orderId: updatedOrder._id.toString(),
+//         status: updatedOrder.status,
+//         user: {
+//           id: updatedOrder.user?._id,
+//           name: updatedOrder.user?.fullname,
+//           email: updatedOrder.user?.email,
+//         },
+//       });
+//     }
+
+//     req.flash("success", `Order #${orderId} status updated to ${status}`);
+//     res.redirect("/admin/orders");
+//   } catch (err) {
+//     console.error("❌ Error updating status:", err.message);
+//     req.flash("error", "Failed to update status.");
+//     res.redirect("/admin/orders");
+//   }
+// };
 
 
 // 📤 Export Orders as CSV

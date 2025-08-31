@@ -5,6 +5,7 @@ const isAdmin = require("../middlewares/isAdmin");
 const productModel = require("../models/product-model");
 const upload = require("../config/multer-config");
 const orderModel = require("../models/order-model");
+const { sendMail } = require("../utils/mailer");
 
 // ⚡️ DEV ONLY: Create first owner
 if (process.env.NODE_ENV === "development") {
@@ -107,9 +108,26 @@ router.post("/admin/orders/update/:id", isAdmin, async (req, res) => {
     if (io) {
       io.emit("orderStatusUpdated", {
         orderId: order._id,
-        newStatus: order.status,
+        status: order.status,   // 🔄 changed to match frontend listener
         userId: order.user ? order.user._id : null
       });
+    }
+
+    // 📧 Send email notification
+    if (order.user?.email) {
+      await sendMail(
+        order.user.email,
+        `Order #${order._id} Status Update`,
+        `
+          <p>Hello ${order.user.fullname},</p>
+          <p>Your order <strong>#${order._id}</strong> status has been updated to:</p>
+          <h3>${status}</h3>
+          <p>Thank you for shopping with us!</p>
+        `
+      );
+      console.log("📨 Status update mail sent to:", order.user.email);
+    } else {
+      console.warn("⚠️ No user email found for order:", orderId);
     }
 
     req.flash("success", `Order #${orderId} status updated to ${status}`);

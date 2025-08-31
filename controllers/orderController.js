@@ -85,10 +85,11 @@ async function sendOrderStatusEmail(user, order, status) {
   `;
 
   try {
+    console.log("📧 Sending mail with subject:", subject, "to:", user.email);
     await sendMail(user.email, subject, html);
     console.log("📧 Email sent:", subject, "to", user.email);
   } catch (err) {
-    console.error("❌ Email error:", err.message);
+    console.error("❌ Email error:", err);
   }
 }
 
@@ -203,13 +204,16 @@ exports.placeOrder = async (req, res) => {
         coinsUsed
       });
 
+      user.orders.push(newOrder._id);
+      await user.save();
+
       io.emit("orderPlaced", {
         userId: user._id,
         message: "Your order has been placed successfully!",
         status: "Pending",
       });
 
-      await user.save();
+      
 
       // ✅ Send email
       await sendOrderStatusEmail(user, newOrder, "Pending");
@@ -233,6 +237,8 @@ exports.placeOrder = async (req, res) => {
       paymentMethod: "COD",
       coinsUsed
     });
+
+     user.orders.push(newOrder._id);
 
     // ✅ Reward coins (5% of total order value)
     const rewardCoins = Math.floor(totalAmount * 0.05);
@@ -326,9 +332,9 @@ exports.updateOrderStatus = async (req, res) => {
       return res.redirect("/admin/orders");
     }
 
-    const order = await orderModel.findById(orderId).populate({ path: "user", select: "fullname email" });
-    if (!order) {
-      req.flash("error", "Order not found.");
+    const order = await orderModel.findById(orderId).populate("user");
+    if (!order || !order.user || !order.user.email) {
+      req.flash("error", "Order or user not found, cannot send email.");
       return res.redirect("/admin/orders");
     }
 
@@ -342,7 +348,12 @@ exports.updateOrderStatus = async (req, res) => {
       message: `Order status updated to ${status}.`
     });
 
+    console.log("DEBUG: status update triggered:", status);
+    console.log("DEBUG: sending to:", order.user?.email);
+
+
     // ✅ Send email to customer
+    console.log("📨 Preparing to send mail for status update:", status, "to:", order.user.email);
     await sendOrderStatusEmail(order.user, order, status);
 
     req.flash("success", `Order status updated to ${status}.`);

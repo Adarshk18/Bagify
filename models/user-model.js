@@ -84,7 +84,10 @@ addresses: [
   cart: [cartItemSchema],
 
   // 📦 Embed Orders
-  orders: [orderSchema],
+  orders: [
+  { type: mongoose.Schema.Types.ObjectId, ref: "order" }
+],
+
 
   // 👤 Role
   role: {
