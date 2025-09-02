@@ -1,0 +1,122 @@
+<%- include("partials/header") %>
+
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">Bagify Admin Dashboard</h1>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Sales Chart -->
+            <div class="bg-white rounded-lg shadow p-4 col-span-2">
+                <h2 class="text-xl font-semibold mb-2">Daily Sales (Last 30 Days)</h2>
+                <canvas id="salesChart" height="250"></canvas>
+            </div>
+
+            <!-- Repeat Buyers -->
+            <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center justify-center">
+                <h2 class="text-xl font-semibold mb-2">Repeat Buyers</h2>
+                <p class="text-4xl font-bold text-blue-600">
+                    <%= repeatBuyersCount %>
+                </p>
+            </div>
+        </div>
+
+        <!-- Top Selling Products -->
+        <div class="bg-white rounded-lg shadow p-4">
+            <h2 class="text-xl font-semibold mb-2">Top Selling Products</h2>
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border p-2 text-left">Product</th>
+                        <th class="border p-2 text-left">Price</th>
+                        <th class="border p-2 text-left">Quantity Sold</th>
+                    </tr>
+                </thead>
+                <tbody id="topProductsBody">
+                    <% topProducts.forEach(p=> { %>
+                        <tr>
+                            <td class="border p-2">
+                                <%= p.name %>
+                            </td>
+                            <td class="border p-2">₹<%= p.price %>
+                            </td>
+                            <td class="border p-2">
+                                <%= p.quantitySold %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        const dailySales = <% - JSON.stringify(dailySales) %>;
+        const labels = dailySales.map(item => item._id);
+        const salesData = dailySales.map(item => item.totalSales);
+
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Daily Sales (₹)',
+                    data: salesData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // ------------------- REAL-TIME UPDATES -------------------
+        const socket = io();
+
+        socket.on('orderPlaced', (order) => {
+            console.log('New Order Received:', order);
+
+            // Update sales chart
+            const orderDate = new Date(order.createdAt).toISOString().split('T')[0];
+            const index = labels.indexOf(orderDate);
+            if (index >= 0) {
+                salesChart.data.datasets[0].data[index] += order.totalAmount;
+            } else {
+                labels.push(orderDate);
+                salesChart.data.datasets[0].data.push(order.totalAmount);
+                if (labels.length > 30) {
+                    labels.shift();
+                    salesChart.data.datasets[0].data.shift();
+                }
+            }
+            salesChart.update();
+
+            // Update top products table
+            order.products.forEach(p => {
+                const row = Array.from(document.querySelectorAll('#topProductsBody tr'))
+                    .find(r => r.children[0].textContent === (p.product.name || p.snapshot?.name));
+                if (row) {
+                    row.children[2].textContent = parseInt(row.children[2].textContent) + p.quantity;
+                } else {
+                    const tbody = document.getElementById('topProductsBody');
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+          <td class="border p-2">${p.product.name || p.snapshot?.name}</td>
+          <td class="border p-2">₹${p.product.price || p.snapshot?.price}</td>
+          <td class="border p-2">${p.quantity}</td>
+        `;
+                    tbody.appendChild(tr);
+                }
+            });
+        });
+    </script>
+
+    <%- include("partials/footer") %>

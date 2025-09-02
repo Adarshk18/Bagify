@@ -274,6 +274,79 @@ exports.loginWithGoogle = async (profile, done) => {
   }
 };
 
+// 🖥️ Admin Dashboard Analytics
+exports.getAdminDashboard = async (req, res) => {
+  try {
+    // 1️⃣ Daily sales trend (last 30 days)
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+
+    const dailySales = await orderModel.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          totalSales: { $sum: "$totalAmount" },
+          ordersCount: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    // 2️⃣ Top-selling products
+    const topProducts = await orderModel.aggregate([
+      { $unwind: "$products" },
+      {
+        $group: {
+          _id: "$products.product",
+          quantitySold: { $sum: "$products.quantity" }
+        }
+      },
+      { $sort: { quantitySold: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" },
+      {
+        $project: {
+          _id: 1,
+          quantitySold: 1,
+          name: "$productDetails.name",
+          price: "$productDetails.price"
+        }
+      }
+    ]);
+
+    // 3️⃣ Repeat buyers (users with more than 1 order)
+    const repeatBuyers = await orderModel.aggregate([
+      { $group: { _id: "$user", ordersCount: { $sum: 1 } } },
+      { $match: { ordersCount: { $gt: 1 } } },
+      { $count: "repeatBuyers" }
+    ]);
+
+    const repeatBuyersCount = repeatBuyers[0]?.repeatBuyers || 0;
+
+    res.render("admin-dashboard", {
+      dailySales,
+      topProducts,
+      repeatBuyersCount,
+      success: req.flash("success"),
+      error: req.flash("error")
+    });
+  } catch (err) {
+    console.error("Admin Dashboard Error:", err);
+    req.flash("error", "Failed to load dashboard.");
+    res.redirect("/admin");
+  }
+};
+
+
 /* 
 ----------------------------------------------------
 🆕 Helper: Emit new order to admins when placed

@@ -4,10 +4,10 @@ const Razorpay = require("razorpay");
 const { io } = require("../app");
 const { sendMail } = require("../utils/mailer"); // ✅ assuming mailer.js exports sendMail
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// const razorpay = new Razorpay({
+//   key_id: process.env.RAZORPAY_KEY_ID,
+//   key_secret: process.env.RAZORPAY_KEY_SECRET,
+// });
 
 // ==========================
 // Helper: Send Order Status Email

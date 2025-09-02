@@ -6,6 +6,7 @@ const productModel = require("../models/product-model");
 const upload = require("../config/multer-config");
 const orderModel = require("../models/order-model");
 const { sendMail } = require("../utils/mailer");
+const { getAdminDashboard } = require("../controllers/ownerController");
 
 // ⚡️ DEV ONLY: Create first owner
 if (process.env.NODE_ENV === "development") {

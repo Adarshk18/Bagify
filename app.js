@@ -10,6 +10,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const ownerModel = require("./models/owner-model");
 const http = require("http");
 const { Server } = require("socket.io");
+const adminRouter = require("./routes/adminRouter");
 
 const server = http.createServer(app);
 const io = new Server(server);
@@ -100,7 +101,7 @@ app.use("/users", require("./routes/usersRouter"));
 app.use("/products", require("./routes/productsRouter"));
 app.use("/cart", require("./routes/cartRouter"));
 app.use("/orders", require("./routes/ordersRouter"));
-app.use("/admin", require("./routes/adminRouter"));
+app.use("/admin", adminRouter);
 
 // Google Auth Routes
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
