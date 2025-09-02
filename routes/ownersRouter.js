@@ -115,16 +115,87 @@ router.post("/admin/orders/update/:id", isAdmin, async (req, res) => {
 
     // 📧 Send email notification
     if (order.user?.email) {
-      await sendMail(
-        order.user.email,
-        `Order #${order._id} Status Update`,
+      
+      const subject = `Your Order #${order._id} - ${status}`;
+
+      let statusMessage = "";
+      switch (status) {
+        case "Pending":
+          statusMessage = "✅ We’ve received your order and it’s now pending confirmation.";
+          break;
+        case "Shipped":
+          statusMessage = "📦 Good news! Your order has been shipped and it’s on its way.";
+          break;
+        case "Out for Delivery":
+          statusMessage = "🚚 Your order is out for delivery. It will reach you very soon.";
+          break;
+        case "Delivered":
+          statusMessage = "🎉 Your order has been delivered. We hope you enjoy your purchase!";
+          break;
+        case "Cancelled":
+          statusMessage = "❌ Your order has been cancelled. If you didn’t request this, please contact support.";
+          break;
+        default:
+          statusMessage = `Your order status is now: ${status}`;
+      }
+
+      // 📦 Product list HTML
+      const productsHtml = (order.products || [])
+        .map(
+          (item) => `
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd; text-align:center;">
+              <img src="${item.snapshot?.image || item.product?.image || ""}" 
+                   alt="${item.snapshot?.name || item.product?.name}" 
+                   width="60" height="60" style="object-fit:cover;"/>
+            </td>
+            <td style="padding:8px; border:1px solid #ddd;">
+              ${item.snapshot?.name || item.product?.name}
+            </td>
+            <td style="padding:8px; border:1px solid #ddd; text-align:center;">
+              ${item.quantity}
+            </td>
+            <td style="padding:8px; border:1px solid #ddd; text-align:right;">
+              ₹${item.snapshot?.price || item.product?.price}
+            </td>
+          </tr>
         `
-          <p>Hello ${order.user.fullname},</p>
-          <p>Your order <strong>#${order._id}</strong> status has been updated to:</p>
-          <h3>${status}</h3>
-          <p>Thank you for shopping with us!</p>
-        `
-      );
+        )
+        .join("");
+
+      const html = `
+        <div style="font-family: Arial, sans-serif; line-height:1.5; color:#333;">
+          <h2>Hi ${order.user.fullname || "Customer"},</h2>
+          <p>${statusMessage}</p>
+          
+          <h3>🧾 Order Summary</h3>
+          <table style="border-collapse: collapse; width: 100%; margin-bottom:20px;">
+            <thead>
+              <tr style="background:#f5f5f5;">
+                <th style="padding:8px; border:1px solid #ddd;">Image</th>
+                <th style="padding:8px; border:1px solid #ddd;">Product</th>
+                <th style="padding:8px; border:1px solid #ddd;">Qty</th>
+                <th style="padding:8px; border:1px solid #ddd;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${productsHtml}
+            </tbody>
+          </table>
+
+          <p><strong>Order ID:</strong> ${order._id}</p>
+          <p><strong>Status:</strong> ${status}</p>
+          <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
+          <p><strong>Delivery Address:</strong><br>
+             ${order.address?.street}, ${order.address?.city}, ${order.address?.state} - ${order.address?.pincode}
+          </p>
+
+          <br/>
+          <p>Thank you for shopping with <b>Bagify</b>! 💙</p>
+        </div>
+      `;
+
+      await sendMail(order.user.email, subject, html);
       console.log("📨 Status update mail sent to:", order.user.email);
     } else {
       console.warn("⚠️ No user email found for order:", orderId);
