@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
@@ -15,7 +17,11 @@ const adminRouter = require("./routes/adminRouter");
 const server = http.createServer(app);
 const io = new Server(server);
 
-require("dotenv").config();
+
+
+console.log("🔍 MAIL_USER:", process.env.MAIL_USER);
+console.log("🔍 MAIL_PASS length:", process.env.MAIL_PASS?.length);
+
 
 // Middleware setup
 app.set("view engine", "ejs");
