@@ -52,7 +52,7 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
-        const dailySales = <% - JSON.stringify(dailySales) %>;
+        const dailySales = <%- JSON.stringify(dailySales) %>;
         const labels = dailySales.map(item => item._id);
         const salesData = dailySales.map(item => item.totalSales);
 
