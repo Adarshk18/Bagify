@@ -22,6 +22,7 @@
         <!-- Top Selling Products -->
         <div class="bg-white rounded-lg shadow p-4">
             <h2 class="text-xl font-semibold mb-2">Top Selling Products</h2>
+            <div class="overflow-y-auto max-h-80">
             <table class="w-full border-collapse">
                 <thead>
                     <tr class="bg-gray-100">
@@ -45,16 +46,45 @@
                         <% }) %>
                 </tbody>
             </table>
+            </div>
         </div>
+
+        <!-- Heatmap of Orders -->
+        <div class="bg-white rounded-lg shadow p-4 mt-6">
+            <h2 class="text-xl font-semibold mb-2">Order Heatmap</h2>
+            <div id="ordersMap" class="w-full h-96 rounded-lg"></div>
+        </div>
+
     </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <!-- Heatmap plugin -->
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
     <script>
         const dailySales = <%- JSON.stringify(dailySales) %>;
-        const labels = dailySales.map(item => item._id);
+        const heatmapPoints = <%- JSON.stringify(heatmapData) %>;
+        const labels = dailySales.map(item => new Date(item._id).toLocaleDateString("en-IN"));
         const salesData = dailySales.map(item => item.totalSales);
+
+        const map = L.map('ordersMap').setView([20.5937, 78.9629], 5); // Center India
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Add Heat Layer
+  const heatLayer = L.heatLayer(heatmapPoints, {
+  radius: 25,
+  blur: 15,
+  maxZoom: 10,
+}).addTo(map);
 
         const ctx = document.getElementById('salesChart').getContext('2d');
         const salesChart = new Chart(ctx, {
@@ -109,13 +139,17 @@
                     const tbody = document.getElementById('topProductsBody');
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-          <td class="border p-2">${p.product.name || p.snapshot?.name}</td>
-          <td class="border p-2">₹${p.product.price || p.snapshot?.price}</td>
+          <td class="border p-2">${p.product?.name || p.snapshot?.name}</td>
+          <td class="border p-2">₹${p.product?.price || p.snapshot?.price}</td>
           <td class="border p-2">${p.quantity}</td>
         `;
                     tbody.appendChild(tr);
                 }
             });
+            if (order.address?.coordinates?.lat && order.address.coordinates.lng) {
+      heatmapPoints.push([order.address.coordinates.lat, order.address.coordinates.lng]);
+      heatLayer.setLatLngs(heatmapPoints); 
+    }
         });
     </script>
 

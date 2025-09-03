@@ -331,11 +331,17 @@ exports.getAdminDashboard = async (req, res) => {
     ]);
 
     const repeatBuyersCount = repeatBuyers[0]?.repeatBuyers || 0;
+    const orders = await orderModel.find({}, "address.coordinates");
+
+    const heatmapData = orders
+      .filter(o => o.address?.coordinates?.lat && o.address?.coordinates?.lng)
+      .map(o => [o.address.coordinates.lat, o.address.coordinates.lng]);
 
     res.render("admin-dashboard", {
       dailySales,
       topProducts,
       repeatBuyersCount,
+      heatmapData,
       success: req.flash("success"),
       error: req.flash("error")
     });
