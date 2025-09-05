@@ -7,7 +7,8 @@ const cartSchema = new mongoose.Schema({
       product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
       quantity: { type: Number, default: 1 },
     }
-  ]
-}, { timestamps: true }); // ✅ gives createdAt & updatedAt
+  ],
+  lastReminderSentAt: { type: Date, default: null } // 🆕 prevent spam
+}, { timestamps: true });
 
 module.exports = mongoose.model("cart", cartSchema);

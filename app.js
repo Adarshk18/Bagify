@@ -12,42 +12,57 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const ownerModel = require("./models/owner-model");
 const http = require("http");
 const { Server } = require("socket.io");
+const MongoStore = require("connect-mongo");
 const adminRouter = require("./routes/adminRouter");
+const config = require("./config/development.json"); // 👈 load json config
 
+// Normalize env vars (support both .env and development.json)
+["MONGO_URI", "EXPRESS_SESSION_SECRET", "MAIL_USER", "MAIL_PASS"].forEach((key) => {
+  if (
+    !process.env[key] &&
+    !config[key] &&
+    !(key === "MONGO_URI" && config.MONGODB_URI)
+  ) {
+    throw new Error(`❌ Missing required env variable: ${key}`);
+  }
+});
+
+// Always ensure process.env.MONGO_URI is set
+process.env.MONGO_URI =
+  process.env.MONGO_URI || config.MONGO_URI || config.MONGODB_URI;
+
+// -------------------- Server + Socket.io --------------------
 const server = http.createServer(app);
 const io = new Server(server);
 
-
-
-console.log("🔍 MAIL_USER:", process.env.MAIL_USER);
-console.log("🔍 MAIL_PASS length:", process.env.MAIL_PASS?.length);
-
-
-// Middleware setup
+// -------------------- Middleware Setup --------------------
 app.set("view engine", "ejs");
 app.set("io", io);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-
-
 
 app.use(
   expressSession({
     resave: false,
     saveUninitialized: false,
     secret: process.env.EXPRESS_SESSION_SECRET,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI, // ✅ from .env or development.json
+      ttl: 14 * 24 * 60 * 60, // 14 days
+    }),
+    cookie: { httpOnly: true, sameSite: "lax", maxAge: 86400000 },
   })
 );
 
-app.use('/chatbot', require('./routes/chatbotRouter')); 
-// Passport setup
+// -------------------- Passport Setup --------------------
 app.use(passport.initialize());
 app.use(passport.session());
 
 passport.serializeUser((user, done) => {
-  done(null, user.id); // serialize the MongoDB _id
+  done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
@@ -71,9 +86,7 @@ passport.use(
       try {
         const existing = await ownerModel.findOne({ googleId: profile.id });
 
-        if (existing) {
-          return done(null, existing);
-        }
+        if (existing) return done(null, existing);
 
         const newOwner = await ownerModel.create({
           fullname: profile.displayName,
@@ -90,7 +103,7 @@ passport.use(
   )
 );
 
-// Flash + locals
+// -------------------- Flash + Locals --------------------
 app.use(flash());
 app.use((req, res, next) => {
   res.locals.user = req.session.user || req.user || null;
@@ -100,7 +113,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// -------------------- Routes --------------------
 app.use("/", require("./routes/index"));
 app.use("/", require("./routes/ownersRouter"));
 app.use("/users", require("./routes/usersRouter"));
@@ -108,6 +121,7 @@ app.use("/products", require("./routes/productsRouter"));
 app.use("/cart", require("./routes/cartRouter"));
 app.use("/orders", require("./routes/ordersRouter"));
 app.use("/admin", adminRouter);
+app.use("/chatbot", require("./routes/chatbotRouter"));
 
 // Google Auth Routes
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -120,7 +134,7 @@ app.get(
   }),
   (req, res) => {
     req.session.user = req.user;
-    req.session.user.role = "admin"; // mark as admin
+    req.session.user.role = "admin";
     req.flash("success", "Logged in via Google!");
     res.redirect("/admin");
   }
@@ -131,7 +145,7 @@ app.use((req, res) => {
   res.status(404).render("404");
 });
 
-// 🔥 Socket.io connections
+// -------------------- Socket.io --------------------
 io.on("connection", (socket) => {
   console.log("🟢 A user connected:", socket.id);
 
@@ -140,10 +154,11 @@ io.on("connection", (socket) => {
   });
 });
 
-// 🔥 Export io so controllers can use it
+// Export for tests / jobs
 module.exports = { app, server, io };
+require("./utils/cartRecoveryJob");
 
-// Start server
+// -------------------- Start Server --------------------
 server.listen(3000, () => {
   console.log("🚀 Server running on http://localhost:3000");
 });
