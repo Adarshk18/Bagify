@@ -116,7 +116,23 @@ exports.placeOrder = async (req, res) => {
 
     // ✅ Handle address
     if (selectedAddress !== undefined && selectedAddress !== "" && user.addresses[parseInt(selectedAddress)]) {
-      finalAddress = user.addresses[parseInt(selectedAddress)];
+      const saved = user.addresses[parseInt(selectedAddress)];
+      finalAddress = {
+        name: saved.name,
+        phone: saved.phone,
+        street: saved.street,
+        city: saved.city,
+        state: saved.state,
+        pincode: saved.pincode,
+        country: saved.country,
+        landmark: saved.landmark,
+        coordinates: saved.coordinates && saved.coordinates.lat && saved.coordinates.lng
+          ? saved.coordinates
+          : {
+            lat: parseFloat(lat) || null,
+            lng: parseFloat(lng) || null
+          }
+      };
     } else {
       if (!fullname || !phone || !street || !city || !state || !pincode || !country) {
         req.flash("error", "Please fill in all required address fields.");
@@ -138,6 +154,9 @@ exports.placeOrder = async (req, res) => {
         },
         createdAt: new Date()
       };
+
+      console.log("📍 Final Address:", finalAddress);
+
 
       const duplicate = user.addresses.find(addr =>
         addr.name?.toLowerCase() === fullname.trim().toLowerCase() &&
@@ -213,7 +232,7 @@ exports.placeOrder = async (req, res) => {
         status: "Pending",
       });
 
-      
+
 
       // ✅ Send email
       await sendOrderStatusEmail(user, newOrder, "Pending");
@@ -238,7 +257,7 @@ exports.placeOrder = async (req, res) => {
       coinsUsed
     });
 
-     user.orders.push(newOrder._id);
+    user.orders.push(newOrder._id);
 
     // ✅ Reward coins (5% of total order value)
     const rewardCoins = Math.floor(totalAmount * 0.05);
