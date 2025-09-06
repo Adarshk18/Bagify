@@ -1,5 +1,5 @@
 const cron = require("node-cron");
-const cartModel = require("../models/cart-model");
+const userModel = require("../models/user-model");
 const { sendMail } = require("./mailer");
 
 cron.schedule("0 * * * *", async () => {
@@ -7,29 +7,32 @@ cron.schedule("0 * * * *", async () => {
     const cutoff = new Date(Date.now() - 1 * 60 * 1000); // 24h inactivity
     const reminderCutoff = new Date(Date.now() - 2 * 60 * 1000); // 24h since last reminder
 
-    const abandonedCarts = await cartModel.find({
-      updatedAt: { $lt: cutoff },
-      items: { $exists: true, $ne: [] },
+    // 🔍 Find users with non-empty carts
+    const usersWithCarts = await userModel.find({
+      "cart.0": { $exists: true }, // cart not empty
       $or: [
-        { lastReminderSentAt: null },
-        { lastReminderSentAt: { $lt: reminderCutoff } }
-      ]
-    }).populate("user").populate("items.product");
+        { lastCartReminderSentAt: null },
+        { lastCartReminderSentAt: { $lt: reminderCutoff } }
+      ],
+      updatedAt: { $lt: cutoff }
+    }).populate("cart.productId");
 
-    for (const cart of abandonedCarts) {
-      if (!cart.user?.email) continue;
+    console.log(`🔍 Found ${usersWithCarts.length} abandoned carts.`);
 
-      const itemsHtml = cart.items.map(i => `
+    for (const user of usersWithCarts) {
+      if (!user.email) continue;
+
+      const itemsHtml = user.cart.map(i => `
         <tr>
-          <td style="padding:8px; border:1px solid #ddd;">${i.product.name}</td>
-          <td style="padding:8px; border:1px solid #ddd;">₹${i.product.price}</td>
+          <td style="padding:8px; border:1px solid #ddd;">${i.productId.name}</td>
+          <td style="padding:8px; border:1px solid #ddd;">₹${i.productId.price}</td>
           <td style="padding:8px; border:1px solid #ddd;">${i.quantity}</td>
         </tr>
       `).join("");
 
       const html = `
         <div style="font-family:Arial,sans-serif; line-height:1.5; color:#333;">
-          <h2>Hi ${cart.user.fullname},</h2>
+          <h2>Hi ${user.fullname},</h2>
           <p>You left some items in your Bagify cart 🛒</p>
           <p>They’re still waiting for you — checkout now before they run out!</p>
           <table style="border-collapse: collapse; width: 100%; margin:20px 0;">
@@ -51,13 +54,13 @@ cron.schedule("0 * * * *", async () => {
         </div>
       `;
 
-      await sendMail(cart.user.email, "🛒 Don’t forget your Bagify cart!", html);
+      await sendMail(user.email, "🛒 Don’t forget your Bagify cart!", html);
 
-      // ✅ Update last reminder timestamp
-      cart.lastReminderSentAt = new Date();
-      await cart.save();
+      // ✅ Save last reminder timestamp
+      user.lastCartReminderSentAt = new Date();
+      await user.save();
 
-      console.log(`📨 Abandoned cart email sent to ${cart.user.email}`);
+      console.log(`📨 Abandoned cart email sent to ${user.email}`);
     }
   } catch (err) {
     console.error("❌ Abandoned cart recovery job failed:", err);

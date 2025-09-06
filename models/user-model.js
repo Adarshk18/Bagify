@@ -102,7 +102,10 @@ addresses: [
   avatar: {
   type: String,
   default: "/images/default-avatar.png"
-}
+},
+
+  // 🆕 For abandoned cart tracking
+  lastCartReminderSentAt: { type: Date, default: null }
 
 
 }, { timestamps: true });
