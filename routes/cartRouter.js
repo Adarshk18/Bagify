@@ -5,7 +5,7 @@ const cartController = require("../controllers/cartController");
 
 // 🧺 View cart
 router.get("/", isLoggedIn, cartController.viewCart);
-
+//done//
 // 🛒 Add to cart
 router.post("/add/:productId", isLoggedIn, cartController.addToCart);
 
