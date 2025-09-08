@@ -368,6 +368,13 @@
 
     chatSend?.addEventListener("click", () => sendMessage());
 
+    const clearChatBtn = document.getElementById("clear-chat-btn");
+    clearChatBtn?.addEventListener("click", () => {
+      chatMessages.innerHTML = "";
+      localStorage.removeItem(`chatHistory_${userId}`);
+      appendMessage("🤖 Bot", "🧹 Chat cleared. How can I help you now?");
+    });
+
     loadHistory();
   });
 </script>
