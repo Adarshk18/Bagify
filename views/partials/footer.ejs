@@ -88,9 +88,13 @@
   class="hidden fixed bottom-20 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50"
 >
   <div class="bg-blue-600 text-white p-3 flex justify-between items-center">
-    <span>🤖 Bagify Assistant</span>
+  <span>🤖 Bagify Assistant</span>
+  <div class="flex gap-2">
+    <button id="clear-chat-btn" class="text-white hover:text-gray-200">🧹</button>
     <button id="chat-close" class="text-white">✖</button>
   </div>
+</div>
+
   <div
     id="chat-messages"
     class="p-3 max-h-96 overflow-y-auto text-sm space-y-2 text-gray-800 dark:text-white"
