@@ -9,6 +9,8 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { imageHash } = require("image-hash");
+const chatHistoryStore = {}; // { userId: [{ role, content }, ...] }
+const MAX_HISTORY = 10; // keep last 10 messages per user
 
 const router = express.Router();
 
@@ -62,7 +64,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     const uploadedHash = await getImageHash(uploadedPath);
 
     // cleanup uploaded file after hashing
-    fs.unlink(uploadedPath, () => {});
+    fs.unlink(uploadedPath, () => { });
 
     // fetch user orders
     const orders = await Order.find({ user: userId })
@@ -161,6 +163,19 @@ router.post("/", async (req, res) => {
     // 🟢 Order cancellation logic (unchanged) ...
 
     // -----------------------------
+    // 🔹 Conversation Memory Setup
+    // -----------------------------
+    if (!chatHistoryStore[userId]) chatHistoryStore[userId] = [];
+
+    // Add user's message to history
+    chatHistoryStore[userId].push({ role: "user", content: message });
+
+    // Keep last MAX_HISTORY messages only
+    if (chatHistoryStore[userId].length > MAX_HISTORY) {
+      chatHistoryStore[userId].shift();
+    }
+
+    // -----------------------------
     // 🔎 Product Search Enhancements
     // -----------------------------
     const keywords = message
@@ -212,29 +227,30 @@ router.post("/", async (req, res) => {
     const ordersSummary =
       orders.length > 0
         ? orders
-            .map((o) => {
-              const items = (o.products || [])
-                .map((p) => `${p.product?.name || "[Removed]"} x${p.quantity}`)
-                .join(", ");
-              return `Order ID: ${o._id}
+          .map((o) => {
+            const items = (o.products || [])
+              .map((p) => `${p.product?.name || "[Removed]"} x${p.quantity}`)
+              .join(", ");
+            return `Order ID: ${o._id}
 Status: ${o.status}
 Items: ${items || "No items"}
 Delivery Address: ${o.address?.street || "N/A"}, ${o.address?.city || "N/A"}
 Total: ₹${o.totalAmount ?? 0}`;
-            })
-            .join("\n\n")
+          })
+          .join("\n\n")
         : "No orders found for this user.";
 
     const productsSummary =
       products.length > 0
         ? products
-            .map((p) => `${p.name} - ₹${p.price} (Discount: ₹${p.discount || 0})`)
-            .join("\n")
+          .map((p) => `${p.name} - ₹${p.price} (Discount: ₹${p.discount || 0})`)
+          .join("\n")
         : "No products found matching your query.";
 
     const systemPrompt = `
 You are Bagify's AI Assistant.
 Answer only questions related to Bagify store, products, orders, and delivery.
+Use previous conversation context to maintain continuity.
 
 Session Data:
 Orders for this user:
@@ -268,6 +284,7 @@ Rules:
           model: "gpt-3.5-turbo",
           messages: [
             { role: "system", content: systemPrompt },
+            ...chatHistoryStore[userId],
             { role: "user", content: message },
           ],
           temperature: 0.2,
@@ -290,6 +307,7 @@ Rules:
           model: orModel,
           messages: [
             { role: "system", content: systemPrompt },
+            ...chatHistoryStore[userId],
             { role: "user", content: message },
           ],
           temperature: 0.2,
@@ -306,6 +324,12 @@ Rules:
 
     const reply = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text || null;
     if (!reply) throw new Error("No reply from AI.");
+
+    // -----------------------------
+    // 🔹 Save bot reply to conversation memory
+    // -----------------------------
+    chatHistoryStore[userId].push({ role: "assistant", content: reply });
+    if (chatHistoryStore[userId].length > MAX_HISTORY) chatHistoryStore[userId].shift();
 
     // ✅ Return reply + structured product data
     return res.json({

@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("chat-file");
   const clearChatBtn = document.getElementById("clear-chat-btn");
   const userId = "<%= user ? user._id : 'guest' %>"; // from server (fallback guest)
+    const storageKey = `chatHistory_${userId}`;
 
   // 🔹 Inject minimal CSS for product cards + quick replies
   const style = document.createElement("style");
@@ -83,6 +84,15 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
   document.head.appendChild(style);
 
+  // -----------------------------
+  // 🔹 Chat History Handling
+  // -----------------------------
+  let chatHistory = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+  function saveHistory() {
+    localStorage.setItem(storageKey, JSON.stringify(chatHistory));
+  }
+
   // Add text message bubble
   function addMessage(text, sender = "bot") {
     const div = document.createElement("div");
@@ -90,6 +100,10 @@ document.addEventListener("DOMContentLoaded", () => {
     div.innerHTML = `<p>${text}</p>`;
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Save to local history
+    chatHistory.push({ role: sender, content: text });
+    saveHistory();
   }
 
   // Add product cards
@@ -105,16 +119,14 @@ document.addEventListener("DOMContentLoaded", () => {
         <img src="${p.image}" alt="${p.name}" />
         <h4>${p.name}</h4>
         <p><strong>₹${p.price}</strong> 
-          ${
-            p.originalPrice > p.price
-              ? `<span class="old-price">₹${p.originalPrice}</span>`
-              : ""
-          }
+          ${p.originalPrice > p.price
+          ? `<span class="old-price">₹${p.originalPrice}</span>`
+          : ""
+        }
         </p>
-        ${
-          p.discount > 0
-            ? `<p class="discount">-${p.discount}₹ OFF</p>`
-            : ""
+        ${p.discount > 0
+          ? `<p class="discount">-${p.discount}₹ OFF</p>`
+          : ""
         }
       `;
 
@@ -123,6 +135,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     chatMessages.appendChild(container);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Save products to history
+    chatHistory.push({ role: "bot", products });
+    saveHistory();
   }
 
   // Add quick reply buttons
@@ -140,6 +156,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     chatMessages.appendChild(container);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    chatHistory.push({ role: "bot", quickReplies });
+    saveHistory();
   }
 
   // Handle bot/server responses
@@ -150,11 +169,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (data.quickReplies) addQuickReplies(data.quickReplies);
   }
 
+  // Restore chat history on page load
+  function restoreChat() {
+    chatMessages.innerHTML = "";
+    chatHistory.forEach((msg) => {
+      if (msg.role === "bot" && msg.products) addProductCards(msg.products);
+      else if (msg.role === "bot" && msg.quickReplies) addQuickReplies(msg.quickReplies);
+      else addMessage(msg.content, msg.role);
+    });
+  }
+  restoreChat();
+
   // 🧹 Clear chat
   function clearChat() {
     chatMessages.innerHTML = "";
-    const key = `chatHistory_${userId}`;
-    localStorage.removeItem(key);
+    chatHistory = [];
+    localStorage.removeItem(storageKey);
     addMessage("🧹 Chat cleared. How can I help you now?", "bot");
   }
 
