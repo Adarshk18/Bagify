@@ -52,66 +52,64 @@ function hammingDistance(str1, str2) {
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "No file uploaded" });
-    }
-
-    const userId = req.session.user?._id;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+      return res
+        .status(400)
+        .json({ success: false, message: "No file uploaded" });
     }
 
     const uploadedPath = req.file.path;
     const uploadedHash = await getImageHash(uploadedPath);
 
     // cleanup uploaded file after hashing
-    fs.unlink(uploadedPath, () => { });
+    fs.unlink(uploadedPath, () => {});
 
-    // fetch user orders
-    const orders = await Order.find({ user: userId })
-      .populate("products.product")
-      .exec();
-
-    if (!orders.length) {
-      return res.json({ success: false, message: "No orders found" });
+    // fetch all products
+    const products = await Product.find({}).lean();
+    if (!products.length) {
+      return res.json({ success: false, message: "No products found" });
     }
 
     const threshold = parseInt(process.env.IMAGE_MATCH_THRESHOLD) || 10;
 
-    let bestMatch = null;
+    let matchedProduct = null;
     let bestDistance = Infinity;
 
-    const hashPromises = [];
-    for (const order of orders) {
-      for (const item of order.products) {
-        const productImagePath = path.join(__dirname, "../public", item.product.image);
-        hashPromises.push(
-          getImageHash(productImagePath).then(productHash => ({
-            order,
-            item,
-            productHash
-          }))
-        );
+    for (let product of products) {
+      if (!product.image) continue;
+
+      // ✅ remove leading slash (/images/...) before joining
+      let cleanImagePath = product.image.startsWith("/")
+        ? product.image.substring(1)
+        : product.image;
+
+      const imagePath = path.join(__dirname, "..", "public", cleanImagePath);
+
+      if (fs.existsSync(imagePath)) {
+        try {
+          const productHash = await getImageHash(imagePath);
+          const distance = hammingDistance(uploadedHash, productHash);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            matchedProduct = product;
+          }
+        } catch (err) {
+          console.warn("Skipping product hash error:", err.message);
+        }
       }
     }
 
-    const results = await Promise.all(hashPromises);
-
-    for (const { order, item, productHash } of results) {
-      const distance = hammingDistance(uploadedHash, productHash);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestMatch = { order, item };
-      }
-    }
-
-    if (bestMatch && bestDistance <= threshold) {
+    if (matchedProduct && bestDistance <= threshold) {
       return res.json({
         success: true,
-        message: `Matched product: ${bestMatch.item.product.name}`,
-        quickReplies: [
-          { type: "button", label: "Track Order", action: `track:${bestMatch.order._id}` },
-          { type: "button", label: "Cancel Order", action: `cancel:${bestMatch.order._id}` }
-        ]
+        message: `Matched product: ${matchedProduct.name}`,
+        product: {
+          id: matchedProduct._id,
+          name: matchedProduct.name,
+          price: matchedProduct.price,
+          originalPrice: matchedProduct.originalPrice,
+          discount: matchedProduct.discount,
+          image: matchedProduct.image,
+        },
       });
     }
 
