@@ -160,8 +160,47 @@ router.post("/", async (req, res) => {
     if (!message) return res.status(400).json({ error: "Message is required" });
     if (!userId) return res.status(400).json({ error: "userId is required" });
 
-    // 🟢 Order cancellation logic (unchanged) ...
+     // -----------------------------
+    // 🟢 Direct Order Cancellation
+    // -----------------------------
+    const cancelRegex = /\bcancel\b.*(order)?\s*([a-f\d]{24})?/i;
+    const match = message.match(cancelRegex);
 
+    if (match) {
+      let orderId = match[2];
+
+      // If user typed "cancel my last order"
+      if (/last order/i.test(message)) {
+        const lastOrder = await Order.findOne({ user: userId, status: { $in: ["Pending", "Processing"] } })
+          .sort({ createdAt: -1 });
+        if (lastOrder) orderId = lastOrder._id.toString();
+      }
+
+      // If user typed "cancel this order" and only 1 pending order exists
+      if (!orderId && /this order/i.test(message)) {
+        const activeOrders = await Order.find({ user: userId, status: { $in: ["Pending", "Processing"] } });
+        if (activeOrders.length === 1) {
+          orderId = activeOrders[0]._id.toString();
+        }
+      }
+
+      if (orderId) {
+        const order = await Order.findOne({ _id: orderId, user: userId });
+        if (!order) {
+          return res.json({ reply: `I couldn’t find order ${orderId} in our system.` });
+        }
+
+        if (["Pending", "Processing"].includes(order.status)) {
+          order.status = "Cancelled";
+          await order.save();
+          return res.json({ reply: `✅ Order ${orderId} has been successfully cancelled.` });
+        } else {
+          return res.json({
+            reply: `❌ Order ${orderId} cannot be cancelled because it is already "${order.status}".`
+          });
+        }
+      }
+    }
     // -----------------------------
     // 🔹 Conversation Memory Setup
     // -----------------------------
@@ -262,6 +301,7 @@ ${productsSummary}
 Rules:
 - If user asks for tracking, show the order status from Session Data.
 - If user asks for cancellation, allow only if order status is "Pending" or "Processing".
+- If user asks generally like "cancel my last order", suggest the ID from Session Data.
 - If no relevant data is found, reply: "I couldn’t find that in our system."
 - Keep answers short, clear, and precise.
     `;
