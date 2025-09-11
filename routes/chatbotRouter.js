@@ -11,7 +11,7 @@ const fs = require("fs");
 const { imageHash } = require("image-hash");
 const chatHistoryStore = {}; // { userId: [{ role, content }, ...] }
 const MAX_HISTORY = 10; // keep last 10 messages per user
-
+const productHashCache = new Map();
 const router = express.Router();
 
 // Ensure uploads directory exists
@@ -50,75 +50,116 @@ function hammingDistance(str1, str2) {
  * 📤 File upload route (for image-based matching)
  */
 router.post("/upload", upload.single("file"), async (req, res) => {
+  // NOTE: requires getImageHash(filePath) and hammingDistance(str1, str2) already defined
+  const cleanupFile = (p) => {
+    try { if (p && fs.existsSync(p)) fs.unlink(p, () => {}); } catch (e) {}
+  };
+
   try {
     if (!req.file) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No file uploaded" });
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    // Allow only image mime types
+    const mimetype = req.file.mimetype || "";
+    if (!mimetype.startsWith("image/")) {
+      cleanupFile(req.file.path);
+      return res.status(400).json({ success: false, message: "Only image uploads are allowed" });
     }
 
     const uploadedPath = req.file.path;
-    const uploadedHash = await getImageHash(uploadedPath);
 
-    // cleanup uploaded file after hashing
-    fs.unlink(uploadedPath, () => {});
+    // Compute perceptual hash of uploaded image
+    let uploadedHash;
+    try {
+      uploadedHash = await getImageHash(uploadedPath);
+    } catch (err) {
+      console.error("Failed to hash uploaded image:", err);
+      cleanupFile(uploadedPath);
+      return res.status(500).json({ success: false, message: "Failed to process uploaded image" });
+    }
 
-    // fetch all products
+    // Load products
     const products = await Product.find({}).lean();
-    if (!products.length) {
+    if (!products || products.length === 0) {
+      cleanupFile(uploadedPath);
       return res.json({ success: false, message: "No products found" });
     }
 
     const threshold = parseInt(process.env.IMAGE_MATCH_THRESHOLD) || 10;
+    const matches = [];
 
-    let matchedProduct = null;
-    let bestDistance = Infinity;
-
-    for (let product of products) {
+    // Compare against each product image (cache hashes for performance)
+    for (const product of products) {
       if (!product.image) continue;
 
-      // ✅ remove leading slash (/images/...) before joining
-      let cleanImagePath = product.image.startsWith("/")
+      // Normalize product.image -> remove leading slash if present
+      const cleanImagePath = product.image.startsWith("/")
         ? product.image.substring(1)
         : product.image;
 
-      const imagePath = path.join(__dirname, "..", "public", cleanImagePath);
+      const productFullPath = path.join(__dirname, "..", "public", cleanImagePath);
 
-      if (fs.existsSync(imagePath)) {
-        try {
-          const productHash = await getImageHash(imagePath);
-          const distance = hammingDistance(uploadedHash, productHash);
-          if (distance < bestDistance) {
-            bestDistance = distance;
-            matchedProduct = product;
-          }
-        } catch (err) {
-          console.warn("Skipping product hash error:", err.message);
+      if (!fs.existsSync(productFullPath)) {
+        // skip missing files silently
+        continue;
+      }
+
+      try {
+        // try cache first
+        let productHash = productHashCache.get(productFullPath);
+        if (!productHash) {
+          productHash = await getImageHash(productFullPath);
+          productHashCache.set(productFullPath, productHash);
         }
+
+        const distance = hammingDistance(uploadedHash, productHash);
+        if (typeof distance === "number") {
+          // collect any image within a reasonable distance
+          if (distance <= threshold) {
+            matches.push({ product, distance });
+          } else {
+            // optionally keep best few even if > threshold (not needed)
+          }
+        }
+      } catch (err) {
+        console.warn("Skipping product image due to hash error:", productFullPath, err.message);
+        continue;
       }
     }
 
-    if (matchedProduct && bestDistance <= threshold) {
-      return res.json({
-        success: true,
-        message: `Matched product: ${matchedProduct.name}`,
-        product: {
-          id: matchedProduct._id,
-          name: matchedProduct.name,
-          price: matchedProduct.price,
-          originalPrice: matchedProduct.originalPrice,
-          discount: matchedProduct.discount,
-          image: matchedProduct.image,
-        },
-      });
+    // cleanup uploaded file (we no longer need it)
+    cleanupFile(uploadedPath);
+
+    if (!matches.length) {
+      return res.json({ success: false, message: "No matching product found" });
     }
 
-    res.json({ success: false, message: "No matching product found" });
+    // sort by best (smallest) distance and return top 5 matches
+    matches.sort((a, b) => a.distance - b.distance);
+    const topMatches = matches.slice(0, 5).map((m) => ({
+      id: m.product._id,
+      name: m.product.name,
+      price: m.product.price,
+      originalPrice: m.product.originalPrice,
+      discount: m.product.discount,
+      image: m.product.image, // keep DB value (e.g. "/images/xxx.webp") so frontend <img> works
+      distance: m.distance,
+    }));
+
+    return res.json({
+      success: true,
+      message: `Found ${topMatches.length} matching product(s).`,
+      products: topMatches,
+    });
   } catch (error) {
     console.error("Image upload/match error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    // try to cleanup uploaded file if present
+    if (req.file && req.file.path) cleanupFile(req.file.path);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 /**
  * ✅ Greeting message
