@@ -8,9 +8,51 @@
 
   <style>
     .hero-section {
-      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf3 100%);
+      background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #9333ea 100%);
+      color: white;
       position: relative;
       overflow: hidden;
+    }
+
+    .hero-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.25;
+      animation: floatGlow 8s ease-in-out infinite alternate;
+    }
+
+    .hero-glow {
+      transition: transform 0.4s ease-out;
+      will-change: transform;
+    }
+
+
+    .glow-1 {
+      top: -100px;
+      left: -100px;
+      width: 400px;
+      height: 400px;
+      background: #6366f1;
+    }
+
+    .glow-2 {
+      bottom: -120px;
+      right: -120px;
+      width: 450px;
+      height: 450px;
+      background: #ec4899;
+      animation-delay: 2s;
+    }
+
+    @keyframes floatGlow {
+      0% {
+        transform: translateY(0px) translateX(0px) scale(1);
+      }
+
+      100% {
+        transform: translateY(-30px) translateX(30px) scale(1.1);
+      }
     }
 
     .hero-bg-shape {
@@ -35,6 +77,13 @@
       width: 350px;
       height: 350px;
       animation-delay: 3s;
+    }
+
+    .hero-glow,
+    .hero-float-1,
+    .hero-float-2 {
+      transition: transform 0.4s ease-out;
+      will-change: transform;
     }
 
     @keyframes floatBg {
@@ -106,15 +155,14 @@
     <% } %>
 
       <!-- Hero Section -->
-      <!-- Hero Section -->
       <section
         class="hero-section min-h-[60vh] flex flex-col md:flex-row items-center justify-center py-20 px-6 relative overflow-hidden">
 
-        <!-- Animated gradient background shapes -->
-        <div class="hero-bg-shape"></div>
-        <div class="hero-bg-shape"></div>
+        <!-- Glowing background shapes -->
+        <div class="hero-glow glow-1"></div>
+        <div class="hero-glow glow-2"></div>
 
-        <!-- Floating decorative shapes -->
+        <!-- Floating decorative images -->
         <img src="/images/slide1.webp"
           class="hero-float-1 absolute top-10 left-10 w-20 opacity-20 animate-float rounded-xl" alt="">
         <img src="/images/slide2.webp"
@@ -122,42 +170,43 @@
 
         <!-- Left: Text -->
         <div class="max-w-xl text-center md:text-left z-10 md:pr-10">
-          <h1 data-aos="fade-up" class="text-4xl md:text-5xl font-bold mb-6">
+          <h1 data-aos="fade-up" class="text-4xl md:text-5xl font-bold mb-6 text-white">
             Welcome to
-            <span class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 
-             bg-clip-text text-transparent
-             hover:from-pink-500 hover:to-yellow-400 
-             transition-all duration-500">
+            <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 
+             bg-clip-text text-transparent">
               Bagify
             </span>
           </h1>
 
-          <p data-aos="fade-up" data-aos-delay="200" class="text-lg md:text-xl text-gray-700 mb-6">
+          <p data-aos="fade-up" data-aos-delay="200" class="text-lg md:text-xl text-gray-200 mb-6">
             Explore premium, stylish, and affordable bags. <br />Quality & trends, all
             in one place.
           </p>
 
           <div data-aos="zoom-in" data-aos-delay="400" class="flex justify-center md:justify-start gap-4 flex-wrap">
-            <a href="/shop" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition">
+            <a href="/shop" class="bg-blue-500 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-600 transition">
               🛍️ Shop Now
             </a>
             <% if (!user) { %>
-              <a href="/users" class="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition">
+              <a href="/users"
+                class="bg-white/20 backdrop-blur text-white px-6 py-3 rounded-xl hover:bg-white/30 transition">
                 🔐 Login / Register
               </a>
-              <a href="/admin/login" class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition">
+              <a href="/admin/login"
+                class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 px-6 py-3 rounded-xl hover:from-yellow-500 hover:to-yellow-600 transition">
                 🛡️ Admin Login
               </a>
               <% } else if (user.role==='admin' ) { %>
-                <a href="/admin" class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 transition">
+                <a href="/admin"
+                  class="bg-yellow-400 text-gray-900 px-6 py-3 rounded-xl hover:bg-yellow-500 transition">
                   🧭 Admin Panel
                 </a>
-                <a href="/admin/logout" class="bg-red-500 text-white px-6 py-3 rounded hover:bg-red-600 transition">
+                <a href="/admin/logout" class="bg-red-500 text-white px-6 py-3 rounded-xl hover:bg-red-600 transition">
                   🔒 Logout
                 </a>
                 <% } else { %>
                   <a href="/users/profile"
-                    class="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition">
+                    class="bg-white/20 backdrop-blur text-white px-6 py-3 rounded-xl hover:bg-white/30 transition">
                     👤 My Profile
                   </a>
                   <% } %>
@@ -171,6 +220,7 @@
           </lottie-player>
         </div>
       </section>
+
 
 
 
@@ -319,3 +369,36 @@
 
         <!-- Lottie Player -->
         <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+        <script>
+          const glows = document.querySelectorAll('.hero-glow');
+          const floats = document.querySelectorAll('.hero-float-1, .hero-float-2');
+
+          function applyParallax(x, y) {
+            glows.forEach((glow, i) => {
+              const speed = (i + 1) * 0.5;
+              glow.style.transform = `translate(${x * speed}px, ${y * speed}px) scale(1.1)`;
+            });
+
+            floats.forEach((img, i) => {
+              const speed = (i + 1) * 0.3;
+              img.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+          }
+
+          // Desktop mouse movement
+          document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 40;
+            const y = (e.clientY / window.innerHeight - 0.5) * 40;
+            applyParallax(x, y);
+          });
+
+          // Mobile device tilt (gyroscope)
+          window.addEventListener('deviceorientation', (e) => {
+            if (e.gamma !== null && e.beta !== null) {
+              const x = (e.gamma / 45) * 20; // left-right tilt
+              const y = (e.beta / 45) * 20;  // front-back tilt
+              applyParallax(x, y);
+            }
+          });
+        </script>
