@@ -309,7 +309,11 @@
         <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 
         <script>
-          AOS.init({ duration: 1000, once: true, offset: 100 });
+          AOS.init({ duration: 1000, once: false, offset: 100, mirror: true });
+
+          window.addEventListener('scroll', () => AOS.refresh());
+window.addEventListener('resize', () => AOS.refresh());
+
 
           const swiper = new Swiper(".mySwiper", {
             slidesPerView: 1,
@@ -324,6 +328,8 @@
             },
           });
         </script>
+
+        
 
         <!-- GSAP + ScrollTrigger -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
