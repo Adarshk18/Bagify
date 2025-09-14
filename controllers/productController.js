@@ -25,8 +25,19 @@ exports.createProduct = async (req, res) => {
 
     // Ensure discount is not more than original price
     if (numericDiscount >= numericOriginal) {
-      req.flash("error", "Discount cannot be more than or equal to original price.");
+      req.flash(
+        "error",
+        "Discount cannot be more than or equal to original price."
+      );
       return res.redirect("/admin/create");
+    }
+
+    // 📌 Store uploaded image(s)
+    let images = [];
+    if (req.file) {
+      images = ["/images/" + req.file.filename];
+    } else if (req.files && req.files.length > 0) {
+      images = req.files.map((file) => "/images/" + file.filename);
     }
 
     const product = await productModel.create({
@@ -37,7 +48,7 @@ exports.createProduct = async (req, res) => {
       bgcolor,
       panelcolor,
       textcolor,
-      image: req.file.filename,
+      images, // ✅ uses array now
     });
 
     req.flash("success", "Product Created");
@@ -81,4 +92,30 @@ exports.getAllProducts = async (req, res) => {
     req.flash("error", "Failed to load products");
     res.redirect("/");
   }
+};
+
+// Get single product details
+exports.getProductById = async (req, res) => {
+  try {
+    const product = await productModel
+      .findById(req.params.id)
+      .populate("reviews.user", "name");
+
+    if (!product) {
+      req.flash("error", "Product not found");
+      return res.redirect("/shop");
+    }
+
+    res.render("product-details", { product, user: req.session.user });
+  } catch (err) {
+    console.error(err);
+    req.flash("error", "Failed to load product");
+    res.redirect("/shop");
+  }
+};
+
+exports.buyNow = async (req, res) => {
+  const product = await productModel.findById(req.params.id);
+  req.session.cart = [{ product, quantity: 1 }];
+  res.redirect("/orders/checkout");
 };

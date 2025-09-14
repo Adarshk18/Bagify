@@ -5,7 +5,7 @@ const isLoggedIn = require("../middlewares/isLoggedIn");
 const isAdmin = require("../middlewares/isAdmin");
 const multer = require("multer");
 const path = require("path");
-const productController = require("../controllers/productController")
+const productController = require("../controllers/productController");
 
 // 🖼️ Multer config for file upload
 const storage = multer.diskStorage({
@@ -21,32 +21,49 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// 📌 Shop Page
 router.get("/shop", productController.getAllProducts);
 
+// 📌 Product Detail Page
+router.get("/products/:id", productController.getProductById);
 
+// 📌 Add Review (User Only)
+// router.post("/products/:id/reviews", isLoggedIn, productController.addReview);
 
-
-
-// ➕ Product Creation (Admin Only)
-router.post("/create", isAdmin, upload.single("image"), async (req, res) => {
+// ➕ Product Creation (Admin Only - multiple images)
+router.post("/create", isAdmin, upload.array("images", 5), async (req, res) => {
   try {
-    const { name, price, discount, bgcolor, panelcolor, textcolor } = req.body;
-    const image = req.file ? "/images/" + req.file.filename : null;
-
-    
-    if (Number(discount) > Number(price)) {
-      req.flash("error", "Discount cannot be greater than price");
-      return res.redirect("/admin");
-    }
-
-    await productModel.create({
+    const {
       name,
-      price,
-      discount,
-      image,
+      originalPrice,
+      discount = 0,
       bgcolor,
       panelcolor,
       textcolor,
+      description,
+    } = req.body;
+
+    const numericOriginal = Number(originalPrice) || 0;
+    const numericDiscount = Number(discount) || 0;
+    const finalPrice = Math.max(0, numericOriginal - numericDiscount);
+
+    if (numericDiscount >= numericOriginal) {
+      req.flash("error", "Discount cannot be more than or equal to original price.");
+      return res.redirect("/admin");
+    }
+
+    const images = req.files ? req.files.map(file => "/images/" + file.filename) : [];
+
+    await productModel.create({
+      name,
+      price: finalPrice,
+      originalPrice: numericOriginal,
+      discount: numericDiscount,
+      bgcolor,
+      panelcolor,
+      textcolor,
+      description,
+      images,
     });
 
     req.flash("success", "Product created successfully!");
@@ -57,5 +74,8 @@ router.post("/create", isAdmin, upload.single("image"), async (req, res) => {
     res.redirect("/admin");
   }
 });
+
+router.post("/buy/:id", productController.buyNow);
+
 
 module.exports = router;

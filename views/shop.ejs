@@ -119,15 +119,15 @@
           </span>
           <% } %>
 
-          <div
-            class="flex items-center justify-center h-48 bg-gradient-to-br from-white via-[<%= product.bgcolor %>] to-white transition-transform group-hover:scale-105"
-          >
-            <img
-              src="<%= product.image.startsWith('/images') ? product.image : '/images/' + product.image %>"
-              alt="<%= product.name %>"
-              class="h-full object-contain p-4 transition-transform group-hover:scale-110"
-            />
-          </div>
+          <a href="/products/<%= product._id %>">
+  <div class="flex items-center justify-center h-48 bg-gradient-to-br ...">
+    <img src="<%= (product.images && product.images.length > 0 ? (product.images[0].startsWith('/images') ? product.images[0] : '/images/' + product.images[0]) : (product.image ? (product.image.startsWith('/images') ? product.image : '/images/' + product.image) : '/images/default-avatar.png')) %>" 
+     alt="<%= product.name %>" 
+     class="h-full object-contain p-4 transition-transform group-hover:scale-110" />
+
+  </div>
+</a>
+
 
           <div
             class="p-4"

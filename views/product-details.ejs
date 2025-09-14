@@ -1,0 +1,103 @@
+<%- include('./partials/header') %>
+
+  <div class="min-h-screen bg-gray-50 px-6 py-10">
+    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
+
+      <!-- 🖼️ Product Images with Thumbnails -->
+      <div>
+        <% if (product.images && product.images.length> 0) { %>
+          <!-- Main Image -->
+          <div class="mb-4">
+            <img id="mainImage" <% let firstImg=product.images && product.images.length> 0 ? product.images[0] :
+            "placeholder.png"; %>
+            <img id="mainImage" src="/images/<%= firstImg %>" class="w-full h-96 object-contain rounded-lg shadow-md" />
+
+            class="w-full h-96 object-contain rounded-lg shadow-md" />
+          </div>
+
+          <!-- Thumbnails -->
+          <div class="flex gap-3">
+            <% product.images.forEach((img, idx)=> { %>
+              <img src="<%= img.startsWith('/images') ? img : '/images/' + img %>"
+                class="w-20 h-20 object-contain rounded-md border cursor-pointer hover:ring-2 hover:ring-blue-500"
+                onclick="document.getElementById('mainImage').src=this.src" />
+              <% }) %>
+          </div>
+          <% } else { %>
+            <img src="/images/placeholder.png" class="w-full h-96 object-contain rounded-lg shadow-md" />
+            <% } %>
+      </div>
+
+      <!-- 📦 Product Details -->
+      <div>
+        <h1 class="text-3xl font-bold mb-4">
+          <%= product.name %>
+        </h1>
+        <p class="text-gray-700 mb-4">
+          <%= product.description %>
+        </p>
+
+        <!-- 💰 Pricing -->
+        <div class="flex items-center gap-4 mb-4">
+          <span class="text-2xl font-semibold">₹<%= product.price %></span>
+          <% if (product.discount> 0) { %>
+            <span class="line-through text-gray-400">₹<%= product.originalPrice %></span>
+            <span class="text-red-500 font-semibold">
+              <%= Math.round((product.discount / product.originalPrice) * 100) %>% OFF
+            </span>
+            <% } %>
+        </div>
+
+        <!-- ⭐ Ratings -->
+        <div class="mb-4">
+          <% const totalReviews=product.reviews.length; const avgRating=totalReviews> 0
+            ? (product.reviews.reduce((acc,r)=>acc+r.rating,0)/totalReviews).toFixed(1)
+            : 0;
+            %>
+            <span class="font-semibold">⭐ Rating: <%= avgRating %> / 5 </span>
+            (<%= totalReviews %> reviews)
+        </div>
+
+        <!-- 🛒 Actions -->
+        <% if (user) { %>
+          <form action="/cart/add/<%= product._id %>" method="POST" class="mb-3">
+            <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+              Add to Cart
+            </button>
+          </form>
+
+          <form action="/products/buy/<%= product._id %>" method="POST">
+            <input type="hidden" name="productId" value="<%= product._id %>">
+            <button class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+              Buy Now
+            </button>
+          </form>
+          <% } else { %>
+            <a href="/users" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300 transition">
+              Login to Order
+            </a>
+            <% } %>
+
+              <!-- 📝 Reviews -->
+              <div class="mt-10">
+                <h2 class="text-xl font-semibold mb-3">Reviews</h2>
+                <% if(product.reviews.length===0){ %>
+                  <p class="text-gray-500">No reviews yet.</p>
+                  <% } %>
+                    <% product.reviews.forEach(r=> { %>
+                      <div class="mb-3 border-b border-gray-200 pb-2">
+                        <p class="font-semibold">
+                          <%= r.user?.name || "Anonymous" %>
+                        </p>
+                        <p>Rating: <%= r.rating %> / 5</p>
+                        <p>
+                          <%= r.comment %>
+                        </p>
+                      </div>
+                      <% }) %>
+              </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('./partials/footer') %>

@@ -15,6 +15,7 @@ const { Server } = require("socket.io");
 const MongoStore = require("connect-mongo");
 const adminRouter = require("./routes/adminRouter");
 const config = require("./config/development.json"); // 👈 load json config
+const productsRouter = require("./routes/productsRouter");
 
 // Normalize env vars (support both .env and development.json)
 ["MONGO_URI", "EXPRESS_SESSION_SECRET", "MAIL_USER", "MAIL_PASS"].forEach((key) => {
@@ -122,6 +123,8 @@ app.use("/cart", require("./routes/cartRouter"));
 app.use("/orders", require("./routes/ordersRouter"));
 app.use("/admin", adminRouter);
 app.use("/chatbot", require("./routes/chatbotRouter"));
+app.use("/", productsRouter);
+
 
 // Google Auth Routes
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
