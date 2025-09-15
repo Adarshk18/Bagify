@@ -26,6 +26,28 @@
           <% } else { %>
             <img src="/images/placeholder.png" class="w-full h-96 object-contain rounded-lg shadow-md" />
             <% } %>
+
+             <!-- 🛒 Actions -->
+        <% if (user) { %>
+  <div class="mt-6 flex flex-col sm:flex-row gap-4 w-full">
+    <form action="/cart/add/<%= product._id %>" method="POST" class="flex-1">
+      <button class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+        Add to Cart
+      </button>
+    </form>
+
+    <form action="/products/buy/<%= product._id %>" method="POST" class="flex-1">
+      <input type="hidden" name="productId" value="<%= product._id %>">
+      <button type="submit" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+        Buy Now
+      </button>
+    </form>
+  </div>
+<% } else { %>
+  <a href="/users" class="block w-full bg-gray-200 text-gray-800 text-center px-6 py-3 rounded-lg hover:bg-gray-300 transition">
+    Login to Order
+  </a>
+<% } %>
       </div>
 
       <!-- 📦 Product Details -->
@@ -58,25 +80,7 @@
             (<%= totalReviews %> reviews)
         </div>
 
-        <!-- 🛒 Actions -->
-        <% if (user) { %>
-          <form action="/cart/add/<%= product._id %>" method="POST" class="mb-3">
-            <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-              Add to Cart
-            </button>
-          </form>
-
-          <form action="/products/buy/<%= product._id %>" method="POST">
-            <input type="hidden" name="productId" value="<%= product._id %>">
-            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
-              Buy Now
-            </button>
-          </form>
-          <% } else { %>
-            <a href="/users" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300 transition">
-              Login to Order
-            </a>
-            <% } %>
+       
 
               <!-- 📝 Reviews -->
               <div class="mt-10">
