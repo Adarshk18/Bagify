@@ -25,7 +25,7 @@ const upload = multer({ storage });
 router.get("/shop", productController.getAllProducts);
 
 // 📌 Product Detail Page
-router.get("/products/:id", productController.getProductById);
+router.get("/:id", productController.getProductById);
 
 // 📌 Add Review (User Only)
 // router.post("/products/:id/reviews", isLoggedIn, productController.addReview);

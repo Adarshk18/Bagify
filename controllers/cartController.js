@@ -10,7 +10,7 @@ exports.viewCart = async (req, res) => {
       .map(item => {
         const product = item.productId;
         const discountedPrice = Number(product.price) || 0; 
-        const originalPrice = Number(product.originalPrice) || discountedPrice;
+        const originalPrice = Number(product.originalPrice) || discountedPrice; 
         const discountAmount = originalPrice - discountedPrice;
         const discountPercentage = originalPrice > 0 ? Math.round((discountAmount / originalPrice) * 100) : 0;
 
