@@ -5,8 +5,11 @@ const isAdmin = require("../middlewares/isAdmin");
 const productModel = require("../models/product-model");
 const upload = require("../config/multer-config");
 const orderModel = require("../models/order-model");
+const orderController = require("../controllers/orderController");
 const { sendMail } = require("../utils/mailer");
 const { getAdminDashboard } = require("../controllers/ownerController");
+const multer = require("multer");
+const path = require("path");
 
 // ⚡️ DEV ONLY: Create first owner
 if (process.env.NODE_ENV === "development") {
@@ -20,6 +23,19 @@ if (process.env.NODE_ENV === "development") {
   });
 }
 
+// // ⚙️ Multer Setup
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "./public/images/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     const ext = path.extname(file.originalname);
+//     cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+//   },
+// });
+
+
 // 🛒 Admin Products Dashboard
 router.get("/admin", isAdmin, async (req, res) => {
   const success = req.flash("success");
@@ -29,16 +45,16 @@ router.get("/admin", isAdmin, async (req, res) => {
 });
 
 // ➕ Create Product
-router.post("/admin/create", isAdmin, upload.single("image"), async (req, res) => {
+router.post("/admin/create", isAdmin, upload.array("images",5), async (req, res) => {
   try {
     const data = req.body;
 
-    if (!req.file) {
-      req.flash("error", "Image is required");
+    if (!req.files || req.files.length === 0) {
+      req.flash("error", "At least one image is required");
       return res.redirect("/admin");
     }
 
-    data.image = "/images/" + req.file.filename;
+    data.images = req.files.map(file => "/images/" + file.filename);
     await productModel.create(data);
 
     req.flash("success", "✅ Product Created");

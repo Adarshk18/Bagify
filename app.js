@@ -123,7 +123,7 @@ app.use("/cart", require("./routes/cartRouter"));
 app.use("/orders", require("./routes/ordersRouter"));
 app.use("/admin", adminRouter);
 app.use("/chatbot", require("./routes/chatbotRouter"));
-app.use("/", productsRouter);
+// app.use("/admin", productsRouter)
 
 
 // Google Auth Routes
