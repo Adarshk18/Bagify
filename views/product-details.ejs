@@ -3,7 +3,7 @@
   <div class="min-h-screen bg-gray-50 px-6 py-10">
     <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
 
-      <!-- 🖼️ Product Images with Thumbnails -->
+
       <!-- 🖼️ Product Images with Thumbnails -->
       <div>
         <% if (product.images && product.images.length> 0) {
@@ -31,65 +31,37 @@
             <% } %>
       </div>
 
+      <!-- 📦 Product Details -->
+      <div>
+        <h1 class="text-3xl font-bold mb-4">
+          <%= product.name %>
+        </h1>
+        <p class="text-gray-700 mb-4">
+          <%= product.description %>
+        </p>
 
-      <!-- 🛒 Actions -->
-      <% if (user) { %>
-        <div class="mt-6 flex flex-col sm:flex-row gap-4 w-full">
-          <form action="/cart/add/<%= product._id %>" method="POST" class="flex-1">
-            <button class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
-              Add to Cart
-            </button>
-          </form>
-
-          <form action="/products/buy/<%= product._id %>" method="POST" class="flex-1">
-            <input type="hidden" name="productId" value="<%= product._id %>">
-            <button type="submit"
-              class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
-              Buy Now
-            </button>
-          </form>
+        <!-- 💰 Pricing -->
+        <div class="flex items-center gap-4 mb-4">
+          <span class="text-2xl font-semibold">₹<%= product.price %></span>
+          <% if (product.discount> 0) { %>
+            <span class="line-through text-gray-400">₹<%= product.originalPrice %></span>
+            <span class="text-red-500 font-semibold">
+              <%= Math.round((product.discount / product.originalPrice) * 100) %>% OFF
+            </span>
+            <% } %>
         </div>
-        <% } else { %>
-          <a href="/users"
-            class="block w-full bg-gray-200 text-gray-800 text-center px-6 py-3 rounded-lg hover:bg-gray-300 transition">
-            Login to Order
-          </a>
-          <% } %>
-    </div>
 
-    <!-- 📦 Product Details -->
-    <div>
-      <h1 class="text-3xl font-bold mb-4">
-        <%= product.name %>
-      </h1>
-      <p class="text-gray-700 mb-4">
-        <%= product.description %>
-      </p>
+        <!-- ⭐ Ratings -->
+        <div class="mb-4">
+          <% const totalReviews=product.reviews.length; const avgRating=totalReviews> 0
+            ? (product.reviews.reduce((acc,r)=>acc+r.rating,0)/totalReviews).toFixed(1)
+            : 0;
+            %>
+            <span class="font-semibold">⭐ Rating: <%= avgRating %> / 5 </span>
+            (<%= totalReviews %> reviews)
+        </div>
 
-      <!-- 💰 Pricing -->
-      <div class="flex items-center gap-4 mb-4">
-        <span class="text-2xl font-semibold">₹<%= product.price %></span>
-        <% if (product.discount> 0) { %>
-          <span class="line-through text-gray-400">₹<%= product.originalPrice %></span>
-          <span class="text-red-500 font-semibold">
-            <%= Math.round((product.discount / product.originalPrice) * 100) %>% OFF
-          </span>
-          <% } %>
-      </div>
-
-      <!-- ⭐ Ratings -->
-      <div class="mb-4">
-        <% const totalReviews=product.reviews.length; const avgRating=totalReviews> 0
-          ? (product.reviews.reduce((acc,r)=>acc+r.rating,0)/totalReviews).toFixed(1)
-          : 0;
-          %>
-          <span class="font-semibold">⭐ Rating: <%= avgRating %> / 5 </span>
-          (<%= totalReviews %> reviews)
-      </div>
-
-
-
-      <!-- 📝 Reviews -->
+         <!-- 📝 Reviews -->
       <div class="mt-10">
         <h2 class="text-xl font-semibold mb-3">Reviews</h2>
         <% if(product.reviews.length===0){ %>
@@ -106,6 +78,32 @@
                 </p>
               </div>
               <% }) %>
+      </div>
+
+
+        <!-- 🛒 Actions -->
+        <% if (user) { %>
+          <div class="mt-6 flex flex-col sm:flex-row gap-4 w-full">
+            <form action="/cart/add/<%= product._id %>" method="POST" class="flex-1">
+              <button class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                Add to Cart
+              </button>
+            </form>
+
+            <form action="/products/buy/<%= product._id %>" method="POST" class="flex-1">
+              <input type="hidden" name="productId" value="<%= product._id %>">
+              <button type="submit"
+                class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+                Buy Now
+              </button>
+            </form>
+          </div>
+          <% } else { %>
+            <a href="/users"
+              class="block w-full bg-gray-200 text-gray-800 text-center px-6 py-3 rounded-lg hover:bg-gray-300 transition">
+              Login to Order
+            </a>
+            <% } %>
       </div>
     </div>
   </div>
