@@ -76,6 +76,8 @@ router.post("/create", isAdmin, upload.array("images", 5), async (req, res) => {
 });
 
 router.post("/buy/:id", productController.buyNow);
+router.post('/:id/reviews', productController.addReview);
+
 
 
 module.exports = router;

@@ -1,115 +1,174 @@
 <%- include('./partials/header') %>
 
-  <div class="min-h-screen bg-gray-50 px-6 py-10">
-    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
+<div class="min-h-screen bg-gray-50 px-6 py-10">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
 
+    <!-- 🖼️ Product Images with Thumbnails -->
+    <div>
+      <% if (product.images && product.images.length> 0) {
+        const firstImg = product.images[0].startsWith('/images') ? product.images[0] : '/images/' + product.images[0];
+        %>
+        <!-- Main Image -->
+        <div class="mb-4 overflow-hidden rounded-lg shadow-md border">
+          <img id="mainImage" src="<%= firstImg %>"
+            class="w-full h-96 object-contain transition-transform duration-300 hover:scale-110 cursor-zoom-in" />
+        </div>
 
-      <!-- 🖼️ Product Images with Thumbnails -->
-      <div>
-        <% if (product.images && product.images.length> 0) {
-          const firstImg = product.images[0].startsWith('/images') ? product.images[0] : '/images/' + product.images[0];
-          %>
-          <!-- Main Image -->
-          <div class="mb-4">
-            <img id="mainImage" src="<%= firstImg %>" class="w-full h-96 object-contain rounded-lg shadow-md" />
+        <!-- Thumbnails -->
+        <div class="flex gap-3 overflow-x-auto pb-2">
+          <% product.images.forEach((img)=> {
+            const thumb = img.startsWith('/images') ? img : '/images/' + img;
+            %>
+            <img src="<%= thumb %>"
+              class="w-20 h-20 object-contain rounded-md border cursor-pointer hover:ring-2 hover:ring-blue-500"
+              onclick="document.getElementById('mainImage').src=this.src" />
+          <% }) %>
+        </div>
+
+        <% } else { %>
+          <!-- Fallback if no images -->
+          <img src="/images/placeholder.png" class="w-full h-96 object-contain rounded-lg shadow-md" />
+      <% } %>
+    </div>
+
+    <!-- 📦 Product Details -->
+    <div>
+      <h1 class="text-3xl font-bold mb-4">
+        <%= product.name %>
+      </h1>
+      <p class="text-gray-700 mb-4">
+        <%= product.description %>
+      </p>
+
+      <!-- 💰 Pricing -->
+      <% const hasDiscount=product.originalPrice && product.discount> 0;
+        const original = product.originalPrice || (product.price + product.discount);
+        const discountPercent = hasDiscount ? Math.round((product.discount / original) * 100) : 0;
+      %>
+
+      <div class="flex flex-col gap-1 mb-4">
+        <div class="flex items-center gap-4">
+          <span class="text-2xl font-semibold text-gray-800">₹<%= product.price %></span>
+          <% if (hasDiscount) { %>
+            <span class="line-through text-gray-500">₹<%= original %></span>
+            <span class="text-red-500 font-semibold">(<%= discountPercent %>% OFF)</span>
+          <% } %>
+        </div>
+
+        <% if (hasDiscount) { %>
+          <div class="text-green-600 text-sm font-medium">
+            You save ₹<%= product.discount %>
           </div>
-
-          <!-- Thumbnails -->
-          <div class="flex gap-3">
-            <% product.images.forEach((img)=> {
-              const thumb = img.startsWith('/images') ? img : '/images/' + img;
-              %>
-              <img src="<%= thumb %>"
-                class="w-20 h-20 object-contain rounded-md border cursor-pointer hover:ring-2 hover:ring-blue-500"
-                onclick="document.getElementById('mainImage').src=this.src" />
-              <% }) %>
-          </div>
-
-          <% } else { %>
-            <!-- Fallback if no images -->
-            <img src="/images/placeholder.png" class="w-full h-96 object-contain rounded-lg shadow-md" />
-            <% } %>
+        <% } %>
       </div>
 
-      <!-- 📦 Product Details -->
-      <div>
-        <h1 class="text-3xl font-bold mb-4">
-          <%= product.name %>
-        </h1>
-        <p class="text-gray-700 mb-4">
-          <%= product.description %>
-        </p>
-<!-- 💰 Pricing -->
-<% 
-  const hasDiscount = product.originalPrice && product.discount > 0; 
-  const original = product.originalPrice || (product.price + product.discount);
-  const discountPercent = hasDiscount ? Math.round((product.discount / original) * 100) : 0;
-%>
+      <p class="text-sm text-gray-600 mb-2">Get it by <span class="font-medium">Tuesday, 17 Sept</span></p>
+      <p class="text-sm text-gray-600 mb-4">EMI from <span class="font-medium">₹299/month</span></p>
 
-<div class="flex flex-col gap-1 mb-4">
-  <div class="flex items-center gap-4">
-    <span class="text-2xl font-semibold text-gray-800">₹<%= product.price %></span>
-    <% if (hasDiscount) { %>
-      <span class="line-through text-gray-500">₹<%= original %></span>
-      <span class="text-red-500 font-semibold">(<%= discountPercent %>% OFF)</span>
-    <% } %>
-  </div>
+      <!-- ⭐ Ratings -->
+      <div class="mb-4 flex items-center gap-2">
+        <% 
+          const totalReviews = product.reviews.length;
+          const avgRating = totalReviews > 0
+            ? (product.reviews.reduce((acc,r)=>acc+r.rating,0)/totalReviews).toFixed(1)
+            : 0;
+        %>
+        <div class="flex">
+          <% for (let i = 1; i <= 5; i++) { %>
+            <svg class="w-5 h-5 <%= i <= Math.round(avgRating) ? 'text-yellow-400' : 'text-gray-300' %> fill-current"
+              viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292..."/></svg>
+          <% } %>
+        </div>
+        <span class="font-medium"><%= avgRating %>/5</span>
+        <span class="text-gray-500">(<%= totalReviews %> reviews)</span>
+      </div>
 
-  <% if (hasDiscount) { %>
-    <div class="text-green-600 text-sm font-medium">
-      You save ₹<%= product.discount %>
+      <!-- 📦 Stock Badge -->
+      <span class="inline-block px-3 py-1 rounded-full text-sm font-medium 
+        <%= product.stock && product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+        <%= product.stock && product.stock > 0 ? 'In Stock' : 'Out of Stock' %>
+      </span>
+
+      <!-- 🛒 Actions -->
+      <% if (user) { %>
+        <div class="mt-6 flex flex-col sm:flex-row gap-4 w-full">
+          <form action="/cart/add/<%= product._id %>" method="POST" class="flex-1">
+            <button class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+              Add to Cart
+            </button>
+          </form>
+
+          <form action="/products/buy/<%= product._id %>" method="POST" class="flex-1">
+            <input type="hidden" name="productId" value="<%= product._id %>">
+            <button type="submit"
+              class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
+              Buy Now
+            </button>
+          </form>
+        </div>
+      <% } else { %>
+        <a href="/users"
+          class="block w-full bg-gray-200 text-gray-800 text-center px-6 py-3 rounded-lg hover:bg-gray-300 transition">
+          Login to Order
+        </a>
+      <% } %>
     </div>
+  </div>
+</div>
+
+<!-- 📝 Write a Review -->
+<div class="max-w-4xl mx-auto mt-12">
+  <h2 class="text-xl font-semibold mb-4">Write a Review</h2>
+
+  <% if (user) { %>
+    <form action="/products/<%= product._id %>/reviews" method="POST" class="space-y-3">
+      <div>
+        <label class="block text-sm font-medium mb-1">Rating</label>
+        <select name="rating" class="border rounded-lg px-3 py-2 w-32">
+          <option value="5">⭐ 5</option>
+          <option value="4">⭐ 4</option>
+          <option value="3">⭐ 3</option>
+          <option value="2">⭐ 2</option>
+          <option value="1">⭐ 1</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Comment</label>
+        <textarea name="comment" rows="3" class="border rounded-lg px-3 py-2 w-full"></textarea>
+      </div>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+        Submit Review
+      </button>
+    </form>
+  <% } else { %>
+    <p class="text-gray-600">Please <a href="/users" class="text-blue-600 underline">login</a> to write a review.</p>
   <% } %>
 </div>
 
-
-
-          <!-- 📝 Reviews -->
-          <div class="mt-10">
-            <h2 class="text-xl font-semibold mb-3">Reviews</h2>
-            <% if(product.reviews.length===0){ %>
-              <p class="text-gray-500">No reviews yet.</p>
-              <% } %>
-                <% product.reviews.forEach(r=> { %>
-                  <div class="mb-3 border-b border-gray-200 pb-2">
-                    <p class="font-semibold">
-                      <%= r.user?.name || "Anonymous" %>
-                    </p>
-                    <p>Rating: <%= r.rating %> / 5</p>
-                    <p>
-                      <%= r.comment %>
-                    </p>
-                  </div>
-                  <% }) %>
+<!-- 💬 Reviews List -->
+<div class="max-w-4xl mx-auto mt-10">
+  <h2 class="text-xl font-semibold mb-4">Customer Reviews</h2>
+  <% if (product.reviews.length > 0) { %>
+    <div class="space-y-4">
+      <% product.reviews.slice().reverse().forEach(r => { %>
+        <div class="border rounded-lg p-4">
+          <div class="flex items-center justify-between">
+            <div class="font-semibold"><%= r.user?.name || "Anonymous" %></div>
+            <div class="text-sm text-gray-500"><%= new Date(r.createdAt).toLocaleDateString() %></div>
           </div>
-
-
-          <!-- 🛒 Actions -->
-          <% if (user) { %>
-            <div class="mt-6 flex flex-col sm:flex-row gap-4 w-full">
-              <form action="/cart/add/<%= product._id %>" method="POST" class="flex-1">
-                <button class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
-                  Add to Cart
-                </button>
-              </form>
-
-              <form action="/products/buy/<%= product._id %>" method="POST" class="flex-1">
-                <input type="hidden" name="productId" value="<%= product._id %>">
-                <button type="submit"
-                  class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition">
-                  Buy Now
-                </button>
-              </form>
-            </div>
-            <% } else { %>
-              <a href="/users"
-                class="block w-full bg-gray-200 text-gray-800 text-center px-6 py-3 rounded-lg hover:bg-gray-300 transition">
-                Login to Order
-              </a>
-              <% } %>
-      </div>
+          <div class="flex my-1">
+            <% for (let i = 1; i <= 5; i++) { %>
+              <svg class="w-4 h-4 <%= i <= r.rating ? 'text-yellow-400' : 'text-gray-300' %> fill-current"
+                viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292..."/></svg>
+            <% } %>
+          </div>
+          <p class="text-gray-700 mt-1"><%= r.comment %></p>
+        </div>
+      <% }) %>
     </div>
-  </div>
-  </div>
+  <% } else { %>
+    <p class="text-gray-500">No reviews yet. Be the first to review this product.</p>
+  <% } %>
+</div>
 
-  <%- include('./partials/footer') %>
+<%- include('./partials/footer') %>

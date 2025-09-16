@@ -17,10 +17,12 @@ exports.createProduct = async (req, res) => {
       bgcolor,
       panelcolor,
       textcolor,
+      stock = 0,
     } = req.body;
 
     const numericOriginal = Number(originalPrice) || 0;
     const numericDiscount = Number(discount) || 0;
+    const numericStock = Number(stock) || 0;
     const finalPrice = Math.max(0, numericOriginal - numericDiscount);
 
     // Ensure discount is not more than original price
@@ -45,6 +47,7 @@ exports.createProduct = async (req, res) => {
       price: finalPrice,
       originalPrice: numericOriginal,
       discount: numericDiscount,
+      stock: numericStock, 
       bgcolor,
       panelcolor,
       textcolor,
@@ -58,6 +61,44 @@ exports.createProduct = async (req, res) => {
     res.status(500).send("Error creating product");
   }
 };
+
+// ⭐ POST /products/:id/reviews
+exports.addReview = async (req, res) => {
+  try {
+    if (!req.session.user) {
+      req.flash("error", "You must be logged in to review");
+      return res.redirect("/");
+    }
+
+    const { rating, comment } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      req.flash("error", "Rating must be between 1 and 5");
+      return res.redirect(`/products/${req.params.id}`);
+    }
+
+    const product = await productModel.findById(req.params.id);
+    if (!product) {
+      req.flash("error", "Product not found");
+      return res.redirect("/shop");
+    }
+
+    product.reviews.push({
+      user: req.session.user._id,
+      rating: Number(rating),
+      comment: comment?.trim() || "",
+    });
+
+    await product.save();
+    req.flash("success", "Review added");
+    res.redirect(`/products/${req.params.id}`);
+  } catch (err) {
+    console.error(err);
+    req.flash("error", "Failed to add review");
+    res.redirect(`/products/${req.params.id}`);
+  }
+};
+
 
 // Get all products (for /shop page with search/filter)
 exports.getAllProducts = async (req, res) => {
