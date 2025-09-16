@@ -6,14 +6,22 @@
 
     <form action="/admin/edit/<%= product._id %>" method="POST" enctype="multipart/form-data" class="space-y-10">
       
-      <!-- 🖼️ Current Image -->
+      <!-- 🖼️ Current Images -->
       <div class="text-center">
-        <p class="text-gray-600 mb-2 font-medium">Current Product Image</p>
-        <img
-          src="/images/<%= product.image %>"
-          alt="Current Image"
-          class="w-40 h-40 object-contain mx-auto border rounded"
-        />
+        <p class="text-gray-600 mb-2 font-medium">Current Product Images</p>
+        <div class="flex flex-wrap gap-4 justify-center">
+          <% if (product.images && product.images.length > 0) { %>
+            <% product.images.forEach(img => { %>
+              <img
+                src="<%= img.startsWith('/images') ? img : '/images/' + img %>"
+                alt="Product Image"
+                class="w-24 h-24 object-contain border rounded"
+              />
+            <% }) %>
+          <% } else { %>
+            <img src="/images/placeholder.png" class="w-24 h-24 object-contain border rounded" />
+          <% } %>
+        </div>
       </div>
 
       <!-- 🧾 Product Details -->
@@ -33,23 +41,35 @@
           </div>
 
           <div>
-            <label class="block mb-1 font-medium">New Image (Optional)</label>
+            <label class="block mb-1 font-medium">Upload New Images (Optional)</label>
             <input
               type="file"
-              name="image"
+              name="images"
+              multiple
               accept="image/*"
               class="w-full border px-4 py-2 rounded"
             />
           </div>
 
           <div>
-            <label class="block mb-1 font-medium">Price (₹)</label>
+            <label class="block mb-1 font-medium">Original Price (₹)</label>
+            <input
+              type="number"
+              name="originalPrice"
+              value="<%= product.originalPrice %>"
+              class="w-full border px-4 py-2 rounded"
+              placeholder="Eg: 4999"
+            />
+          </div>
+
+          <div>
+            <label class="block mb-1 font-medium">Final Price (₹)</label>
             <input
               type="number"
               name="price"
               value="<%= product.price %>"
               class="w-full border px-4 py-2 rounded"
-              placeholder="e.g. 799"
+              placeholder="Eg: 3999"
             />
           </div>
 
@@ -61,6 +81,19 @@
               value="<%= product.discount %>"
               class="w-full border px-4 py-2 rounded"
               placeholder="Optional"
+            />
+          </div>
+
+          <!-- 🆕 Stock -->
+          <div>
+            <label class="block mb-1 font-medium">Stock Quantity</label>
+            <input
+              type="number"
+              name="stock"
+              min="0"
+              value="<%= product.stock || 0 %>"
+              class="w-full border px-4 py-2 rounded"
+              placeholder="Eg: 20"
             />
           </div>
         </div>
