@@ -57,8 +57,8 @@
             <% return; } %>
 
             <li class="flex items-center gap-2">
-              <% if (product.image) { %>
-                <img src="<%= product.image %>" alt="Product image" class="w-10 h-10 object-contain border" />
+              <% if (product.images[0]) { %>
+                <img src="<%= product.images[0] %>" alt="Product image" class="w-10 h-10 object-contain border" />
               <% } %>
               <div>
                 👜 <span class="font-medium"><%= product.name %></span><br />

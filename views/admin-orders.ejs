@@ -47,7 +47,7 @@
               <li class="py-2 flex justify-between items-center text-gray-700">
                 <% if (prod) { %>
                   <div class="flex items-center gap-3">
-                    <img src="<%= prod.image %>" alt="Product" class="w-10 h-10 object-cover rounded" />
+                    <img src="<%= prod.images[0] %>" alt="Product" class="w-10 h-10 object-cover rounded" />
                     <span class="font-medium"><%= prod.name %></span>
                   </div>
                 <% } else { %>

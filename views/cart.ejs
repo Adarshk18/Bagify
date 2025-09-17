@@ -14,9 +14,9 @@
           <% cartItems.forEach(item=> { %>
             <div class="bg-white rounded shadow p-4 flex items-center justify-between">
               <div class="flex items-center gap-4">
-                <% if (item.product.image) { %>
+                <% if (item.product.images[0]) { %>
                   <img
-                    src="<%= item.product.image.startsWith('/images') ? item.product.image : '/images/' + item.product.image %>"
+                    src="<%= item.product.images[0].startsWith('/images') ? item.product.images[0] : '/images/' + item.product.images[0] %>"
                     alt="<%= item.product.name %>" class="w-20 h-20 object-contain rounded" />
                   <% } else { %>
                     <img src="/images/placeholder.png" alt="No image available"
