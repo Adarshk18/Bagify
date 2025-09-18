@@ -15,10 +15,9 @@ const http = require("http");
 const { Server } = require("socket.io");
 const MongoStore = require("connect-mongo");
 const adminRouter = require("./routes/adminRouter");
-const config = require("./config/development.json"); // 👈 load json config
-const productsRouter = require("./routes/productsRouter");
+const config = require("./config/development.json");
 
-// Normalize env vars (support both .env and development.json)
+// ✅ Normalize env vars (support both .env and development.json)
 ["MONGO_URI", "EXPRESS_SESSION_SECRET", "MAIL_USER", "MAIL_PASS"].forEach((key) => {
   if (
     !process.env[key] &&
@@ -28,8 +27,6 @@ const productsRouter = require("./routes/productsRouter");
     throw new Error(`❌ Missing required env variable: ${key}`);
   }
 });
-
-// Always ensure process.env.MONGO_URI is set
 process.env.MONGO_URI =
   process.env.MONGO_URI || config.MONGO_URI || config.MONGODB_URI;
 
@@ -52,7 +49,7 @@ app.use(
     saveUninitialized: false,
     secret: process.env.EXPRESS_SESSION_SECRET,
     store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI, // ✅ from .env or development.json
+      mongoUrl: process.env.MONGO_URI,
       ttl: 14 * 24 * 60 * 60, // 14 days
     }),
     cookie: { httpOnly: true, sameSite: "lax", maxAge: 86400000 },
@@ -76,7 +73,7 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-// Google OAuth Strategy
+// ✅ Google OAuth Strategy
 passport.use(
   new GoogleStrategy(
     {
@@ -87,14 +84,13 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const existing = await ownerModel.findOne({ googleId: profile.id });
-
         if (existing) return done(null, existing);
 
         const newOwner = await ownerModel.create({
           fullname: profile.displayName,
           email: profile.emails[0].value,
           googleId: profile.id,
-          picture: profile.photos[0].value,
+          picture: profile.photos?.[0]?.value,
         });
 
         return done(null, newOwner);
@@ -105,22 +101,40 @@ passport.use(
   )
 );
 
+// ✅ GitHub OAuth Strategy
 passport.use(
   new GitHubStrategy(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       callbackURL: "/auth/github/callback",
-      scope: ["user:email"]
+      scope: ["user:email"],
     },
     async (accessToken, refreshToken, profile, done) => {
-      let email = null;
-      if (profile.emails && profile.emails.length > 0) {
-        email = profile.emails[0].value;
+      try {
+        let email = null;
+        if (profile.emails && profile.emails.length > 0) {
+          email = profile.emails[0].value;
+        }
+        if (!email) {
+          return done(null, false, { message: "No email found from GitHub" });
+        }
+
+        let owner = await ownerModel.findOne({ email });
+        if (!owner) {
+          // Optional: auto-create admin from GitHub login
+          owner = await ownerModel.create({
+            fullname: profile.displayName || profile.username,
+            email,
+            githubId: profile.id,
+            picture: profile.photos?.[0]?.value,
+          });
+        }
+
+        return done(null, owner);
+      } catch (err) {
+        return done(err, null);
       }
-      const owner = await Owner.findOne({ email });
-      if (!owner) return done(null, false, { message: "Not an admin" });
-      return done(null, owner);
     }
   )
 );
@@ -144,12 +158,9 @@ app.use("/cart", require("./routes/cartRouter"));
 app.use("/orders", require("./routes/ordersRouter"));
 app.use("/admin", adminRouter);
 app.use("/chatbot", require("./routes/chatbotRouter"));
-// app.use("/admin", productsRouter)
 
-
-// Google Auth Routes
+// ✅ Google Auth Routes
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
-
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", {
@@ -164,7 +175,23 @@ app.get(
   }
 );
 
-// 404 page
+// ✅ GitHub Auth Routes
+app.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
+app.get(
+  "/auth/github/callback",
+  passport.authenticate("github", {
+    failureRedirect: "/admin/login",
+    failureFlash: true,
+  }),
+  (req, res) => {
+    req.session.user = req.user;
+    req.session.user.role = "admin";
+    req.flash("success", "Logged in via GitHub!");
+    res.redirect("/admin");
+  }
+);
+
+// -------------------- 404 Page --------------------
 app.use((req, res) => {
   res.status(404).render("404");
 });
@@ -172,13 +199,11 @@ app.use((req, res) => {
 // -------------------- Socket.io --------------------
 io.on("connection", (socket) => {
   console.log("🟢 A user connected:", socket.id);
-
   socket.on("disconnect", () => {
     console.log("🔴 A user disconnected:", socket.id);
   });
 });
 
-// Export for tests / jobs
 module.exports = { app, server, io };
 require("./utils/cartRecoveryJob");
 

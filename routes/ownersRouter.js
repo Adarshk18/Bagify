@@ -1,44 +1,37 @@
 const express = require("express");
 const router = express.Router();
+
+const passport = require("passport");
+const path = require("path");
+
 const ownerModel = require("../models/owner-model");
 const isAdmin = require("../middlewares/isAdmin");
 const productModel = require("../models/product-model");
 const upload = require("../config/multer-config");
 const orderModel = require("../models/order-model");
-const orderController = require("../controllers/orderController");
 const { sendMail } = require("../utils/mailer");
-const { getAdminDashboard } = require("../controllers/ownerController");
-const multer = require("multer");
-const path = require("path");
-const passport = require("passport");
-
 
 // ⚡️ DEV ONLY: Create first owner
 if (process.env.NODE_ENV === "development") {
   router.post("/create", async (req, res) => {
-    const { fullname, email, password } = req.body;
-    const existing = await ownerModel.find();
-    if (existing.length) return res.status(403).send("Not allowed");
-
-    const owner = await ownerModel.create({ fullname, email, password });
-    res.status(201).send(owner);
+    try {
+      const { fullname, email, password } = req.body;
+      const existing = await ownerModel.find();
+      if (existing.length) return res.status(403).send("Not allowed");
+      const owner = await ownerModel.create({ fullname, email, password });
+      res.status(201).send(owner);
+    } catch (err) {
+      console.error("Owner create error:", err);
+      res.status(500).send("Error creating owner");
+    }
   });
 }
 
-// // ⚙️ Multer Setup
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "./public/images/");
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//     const ext = path.extname(file.originalname);
-//     cb(null, file.fieldname + "-" + uniqueSuffix + ext);
-//   },
-// });
+/* ============================================================
+ 🛒 ADMIN PRODUCTS
+============================================================ */
 
-
-// 🛒 Admin Products Dashboard
+// Admin dashboard
 router.get("/admin", isAdmin, async (req, res) => {
   const success = req.flash("success");
   const error = req.flash("error");
@@ -46,8 +39,8 @@ router.get("/admin", isAdmin, async (req, res) => {
   res.render("createproducts", { success, error, products });
 });
 
-// ➕ Create Product
-router.post("/admin/create", isAdmin, upload.array("images",5), async (req, res) => {
+// Create product
+router.post("/admin/create", isAdmin, upload.array("images", 5), async (req, res) => {
   try {
     const data = req.body;
 
@@ -68,60 +61,70 @@ router.post("/admin/create", isAdmin, upload.array("images",5), async (req, res)
   }
 });
 
-// GOOGLE ADMIN LOGIN
-router.get("/auth/google", passport.authenticate("google", { scope: ["email", "profile"] }));
-
-router.get(
-  "/auth/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: "/admin",
-    failureFlash: true,
-  }),
-  (req, res) => {
-    req.session.isAdmin = true;
-    res.redirect("/admin/dashboard"); // or wherever admin lands
-  }
-);
-
-// GITHUB ADMIN LOGIN
-router.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
-
-router.get(
-  "/auth/github/callback",
-  passport.authenticate("github", {
-    failureRedirect: "/admin",
-    failureFlash: true,
-  }),
-  (req, res) => {
-    req.session.isAdmin = true;
-    res.redirect("/admin/dashboard");
-  }
-);
-
-
-// ✏️ Edit Product
+// Edit product
 router.get("/admin/edit/:id", isAdmin, async (req, res) => {
   const product = await productModel.findById(req.params.id);
   res.render("editproduct", { product });
 });
 
 router.post("/admin/edit/:id", isAdmin, upload.single("image"), async (req, res) => {
-  const update = req.body;
-  if (req.file) update.image = "/images/" + req.file.filename;
-
-  await productModel.findByIdAndUpdate(req.params.id, update);
-  req.flash("success", "✅ Product Updated");
-  res.redirect("/admin");
+  try {
+    const update = req.body;
+    if (req.file) update.image = "/images/" + req.file.filename;
+    await productModel.findByIdAndUpdate(req.params.id, update);
+    req.flash("success", "✅ Product Updated");
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Product Edit Error:", err);
+    req.flash("error", "Something went wrong while editing product");
+    res.redirect("/admin");
+  }
 });
 
-// ❌ Delete Product
+// Delete product
 router.get("/admin/delete/:id", isAdmin, async (req, res) => {
-  await productModel.findByIdAndDelete(req.params.id);
-  req.flash("success", "🗑️ Product Deleted");
-  res.redirect("/admin");
+  try {
+    await productModel.findByIdAndDelete(req.params.id);
+    req.flash("success", "🗑️ Product Deleted");
+    res.redirect("/admin");
+  } catch (err) {
+    console.error("Product Delete Error:", err);
+    req.flash("error", "Something went wrong while deleting product");
+    res.redirect("/admin");
+  }
 });
 
-// 📦 Admin Order Dashboard
+/* ============================================================
+ 🔐 GOOGLE / GITHUB ADMIN LOGIN
+============================================================ */
+
+router.get("/auth/google", passport.authenticate("google", { scope: ["email", "profile"] }));
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/admin", failureFlash: true }),
+  (req, res) => {
+    req.session.isAdmin = true;
+    res.redirect("/admin/dashboard");
+  }
+);
+
+router.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
+
+router.get(
+  "/auth/github/callback",
+  passport.authenticate("github", { failureRedirect: "/admin", failureFlash: true }),
+  (req, res) => {
+    req.session.isAdmin = true;
+    res.redirect("/admin/dashboard");
+  }
+);
+
+/* ============================================================
+ 📦 ADMIN ORDERS
+============================================================ */
+
+// Admin order dashboard
 router.get("/admin/orders", isAdmin, async (req, res) => {
   try {
     const orders = await orderModel
@@ -136,7 +139,7 @@ router.get("/admin/orders", isAdmin, async (req, res) => {
   }
 });
 
-// 🔄 Update Order Status (with real-time socket emit)
+// Update order status
 router.post("/admin/orders/update/:id", isAdmin, async (req, res) => {
   try {
     const { status } = req.body;
@@ -153,19 +156,18 @@ router.post("/admin/orders/update/:id", isAdmin, async (req, res) => {
       return res.redirect("/admin/orders");
     }
 
-    // ⚡ Emit event for real-time update
+    // ⚡ Real-time emit
     const io = req.app.get("io");
     if (io) {
       io.emit("orderStatusUpdated", {
         orderId: order._id,
-        status: order.status,   // 🔄 changed to match frontend listener
+        status: order.status,
         userId: order.user ? order.user._id : null
       });
     }
 
-    // 📧 Send email notification
+    // 📧 Email notification
     if (order.user?.email) {
-      
       const subject = `Your Order #${order._id} - ${status}`;
 
       let statusMessage = "";
@@ -189,13 +191,12 @@ router.post("/admin/orders/update/:id", isAdmin, async (req, res) => {
           statusMessage = `Your order status is now: ${status}`;
       }
 
-      // 📦 Product list HTML
       const productsHtml = (order.products || [])
         .map(
           (item) => `
           <tr>
             <td style="padding:8px; border:1px solid #ddd; text-align:center;">
-              <img src="${item.snapshot?.image || item.product?.image || ""}" 
+              <img src="${item.snapshot?.images?.[0] || item.product?.images?.[0] || ""}" 
                    alt="${item.snapshot?.name || item.product?.name}" 
                    width="60" height="60" style="object-fit:cover;"/>
             </td>
@@ -247,8 +248,6 @@ router.post("/admin/orders/update/:id", isAdmin, async (req, res) => {
 
       await sendMail(order.user.email, subject, html);
       console.log("📨 Status update mail sent to:", order.user.email);
-    } else {
-      console.warn("⚠️ No user email found for order:", orderId);
     }
 
     req.flash("success", `Order #${orderId} status updated to ${status}`);
