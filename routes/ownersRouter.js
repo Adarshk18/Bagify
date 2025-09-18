@@ -10,6 +10,8 @@ const { sendMail } = require("../utils/mailer");
 const { getAdminDashboard } = require("../controllers/ownerController");
 const multer = require("multer");
 const path = require("path");
+const passport = require("passport");
+
 
 // ⚡️ DEV ONLY: Create first owner
 if (process.env.NODE_ENV === "development") {
@@ -65,6 +67,37 @@ router.post("/admin/create", isAdmin, upload.array("images",5), async (req, res)
     res.redirect("/admin");
   }
 });
+
+// GOOGLE ADMIN LOGIN
+router.get("/auth/google", passport.authenticate("google", { scope: ["email", "profile"] }));
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/admin",
+    failureFlash: true,
+  }),
+  (req, res) => {
+    req.session.isAdmin = true;
+    res.redirect("/admin/dashboard"); // or wherever admin lands
+  }
+);
+
+// GITHUB ADMIN LOGIN
+router.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
+
+router.get(
+  "/auth/github/callback",
+  passport.authenticate("github", {
+    failureRedirect: "/admin",
+    failureFlash: true,
+  }),
+  (req, res) => {
+    req.session.isAdmin = true;
+    res.redirect("/admin/dashboard");
+  }
+);
+
 
 // ✏️ Edit Product
 router.get("/admin/edit/:id", isAdmin, async (req, res) => {

@@ -9,6 +9,7 @@ const expressSession = require("express-session");
 const flash = require("connect-flash");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const GitHubStrategy = require("passport-github2").Strategy;
 const ownerModel = require("./models/owner-model");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -100,6 +101,26 @@ passport.use(
       } catch (err) {
         return done(err, null);
       }
+    }
+  )
+);
+
+passport.use(
+  new GitHubStrategy(
+    {
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: "/auth/github/callback",
+      scope: ["user:email"]
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      let email = null;
+      if (profile.emails && profile.emails.length > 0) {
+        email = profile.emails[0].value;
+      }
+      const owner = await Owner.findOne({ email });
+      if (!owner) return done(null, false, { message: "Not an admin" });
+      return done(null, owner);
     }
   )
 );
