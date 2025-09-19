@@ -98,27 +98,6 @@ router.get("/admin/delete/:id", isAdmin, async (req, res) => {
  🔐 GOOGLE / GITHUB ADMIN LOGIN
 ============================================================ */
 
-router.get("/auth/google", passport.authenticate("google", { scope: ["email", "profile"] }));
-
-router.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/admin", failureFlash: true }),
-  (req, res) => {
-    req.session.isAdmin = true;
-    res.redirect("/admin/dashboard");
-  }
-);
-
-router.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
-
-router.get(
-  "/auth/github/callback",
-  passport.authenticate("github", { failureRedirect: "/admin", failureFlash: true }),
-  (req, res) => {
-    req.session.isAdmin = true;
-    res.redirect("/admin/dashboard");
-  }
-);
 
 /* ============================================================
  📦 ADMIN ORDERS
