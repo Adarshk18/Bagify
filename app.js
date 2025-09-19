@@ -88,13 +88,12 @@ passport.use(
       try {
         const email = profile.emails?.[0]?.value;
 
-        const owner = await ownerModel.findOne({ email });
-        if (!owner) {
+        if (email !== ADMIN_EMAIL) {
           return done(null, false, { message: "Unauthorized admin email" });
         }
 
 
-      
+        let owner = await ownerModel.findOne({ email });
         if (!owner) {
           owner = await ownerModel.create({
             fullname: profile.displayName,
