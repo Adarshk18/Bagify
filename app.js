@@ -16,6 +16,9 @@ const { Server } = require("socket.io");
 const MongoStore = require("connect-mongo");
 const adminRouter = require("./routes/adminRouter");
 const config = require("./config/development.json");
+// const owner = require("./models/owner-model");
+
+const ADMIN_EMAIL = "dev.adarsh286@gmail.com"; // ✅ Only this email allowed
 
 // ✅ Normalize env vars (support both .env and development.json)
 ["MONGO_URI", "EXPRESS_SESSION_SECRET", "MAIL_USER", "MAIL_PASS"].forEach((key) => {
@@ -83,17 +86,25 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const existing = await ownerModel.findOne({ googleId: profile.id });
-        if (existing) return done(null, existing);
+        const email = profile.emails?.[0]?.value;
 
-        const newOwner = await ownerModel.create({
-          fullname: profile.displayName,
-          email: profile.emails[0].value,
-          googleId: profile.id,
-          picture: profile.photos?.[0]?.value,
-        });
+        const owner = await ownerModel.findOne({ email });
+        if (!owner) {
+          return done(null, false, { message: "Unauthorized admin email" });
+        }
 
-        return done(null, newOwner);
+
+      
+        if (!owner) {
+          owner = await ownerModel.create({
+            fullname: profile.displayName,
+            email,
+            googleId: profile.id,
+            picture: profile.photos?.[0]?.value,
+          });
+        }
+
+        return done(null, owner);
       } catch (err) {
         return done(err, null);
       }
@@ -112,17 +123,14 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        let email = null;
-        if (profile.emails && profile.emails.length > 0) {
-          email = profile.emails[0].value;
-        }
-        if (!email) {
-          return done(null, false, { message: "No email found from GitHub" });
+        const email = profile.emails?.[0]?.value;
+
+        if (email !== ADMIN_EMAIL) {
+          return done(null, false, { message: "Unauthorized admin email" });
         }
 
         let owner = await ownerModel.findOne({ email });
         if (!owner) {
-          // Optional: auto-create admin from GitHub login
           owner = await ownerModel.create({
             fullname: profile.displayName || profile.username,
             email,
@@ -157,7 +165,22 @@ app.use("/products", require("./routes/productsRouter"));
 app.use("/cart", require("./routes/cartRouter"));
 app.use("/orders", require("./routes/ordersRouter"));
 app.use("/admin", adminRouter);
-app.use("/chatbot", require("./routes/chatbotRouter"));
+// PDF Cheatsheet Generation Route
+// const { generateCheatsheetPdf } = require("./utils/cheatsheetPdfGenerator");
+// app.get("/cheatsheet/pdf", async (req, res) => {
+//   try {
+//     const pdfBuffer = await generateCheatsheetPdf();
+//     res.set({
+//       "Content-Type": "application/pdf",
+//       "Content-Disposition": "attachment; filename=project_cheatsheet.pdf",
+//     });
+//     res.send(pdfBuffer);
+//   } catch (err) {
+//     console.error("Failed to generate cheatsheet PDF:", err);
+//     req.flash("error", "Could not generate cheatsheet PDF.");
+//     res.redirect("/");
+//   }
+// });
 
 // ✅ Google Auth Routes
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -168,6 +191,7 @@ app.get(
     failureFlash: true,
   }),
   (req, res) => {
+    if (!req.user) return res.redirect("/admin/login");
     req.session.user = req.user;
     req.session.user.role = "admin";
     req.flash("success", "Logged in via Google!");
@@ -184,6 +208,7 @@ app.get(
     failureFlash: true,
   }),
   (req, res) => {
+    if (!req.user) return res.redirect("/admin/login");
     req.session.user = req.user;
     req.session.user.role = "admin";
     req.flash("success", "Logged in via GitHub!");
