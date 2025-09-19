@@ -164,22 +164,7 @@ app.use("/products", require("./routes/productsRouter"));
 app.use("/cart", require("./routes/cartRouter"));
 app.use("/orders", require("./routes/ordersRouter"));
 app.use("/admin", adminRouter);
-// PDF Cheatsheet Generation Route
-// const { generateCheatsheetPdf } = require("./utils/cheatsheetPdfGenerator");
-// app.get("/cheatsheet/pdf", async (req, res) => {
-//   try {
-//     const pdfBuffer = await generateCheatsheetPdf();
-//     res.set({
-//       "Content-Type": "application/pdf",
-//       "Content-Disposition": "attachment; filename=project_cheatsheet.pdf",
-//     });
-//     res.send(pdfBuffer);
-//   } catch (err) {
-//     console.error("Failed to generate cheatsheet PDF:", err);
-//     req.flash("error", "Could not generate cheatsheet PDF.");
-//     res.redirect("/");
-//   }
-// });
+
 
 // ✅ Google Auth Routes
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
