@@ -1,7 +1,5 @@
 <footer class="bg-gray-900 dark:bg-gray-950 text-white py-6 mt-10 relative">
-  <div
-    class="container mx-auto px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4"
-  >
+  <div class="container mx-auto px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4">
     <!-- Brand Info -->
     <div class="text-center md:text-left">
       <h4 class="text-lg font-bold 
@@ -9,8 +7,8 @@
            bg-clip-text text-transparent
            hover:from-pink-500 hover:to-yellow-400 
            transition-all duration-500">
-  Bagify
-</h4>
+        Bagify
+      </h4>
 
       <p class="text-sm text-gray-400 dark:text-gray-500">
         Your trusted online bag store. Trendy & Affordable!
@@ -19,44 +17,25 @@
 
     <!-- Navigation Links -->
     <div class="flex flex-wrap gap-3 text-sm justify-center">
-      <a
-        href="/"
-        class="hover:underline text-gray-300 dark:text-gray-400 hover:text-white"
-        >Home</a
-      >
-      
-      <a
-        href="/about"
-        class="hover:underline text-gray-300 dark:text-gray-400 hover:text-white"
-        >About</a
-      >
-      <a
-        href="/contact"
-        class="hover:underline text-gray-300 dark:text-gray-400 hover:text-white"
-        >Contact</a
-      >
+      <a href="/" class="hover:underline text-gray-300 dark:text-gray-400 hover:text-white">Home</a>
+
+      <a href="/about" class="hover:underline text-gray-300 dark:text-gray-400 hover:text-white">About</a>
+      <a href="/contact" class="hover:underline text-gray-300 dark:text-gray-400 hover:text-white">Contact</a>
     </div>
 
     <!-- Social Links -->
     <div class="flex gap-4 text-xl text-gray-400 dark:text-gray-500">
-      <a
-        href="https://www.linkedin.com/in/adarshsharma-9122as/"
-        target="_blank"
-        class="hover:text-pink-400"
-        ><i class="fab fa-linkedin"></i
-      ></a>
-      <a href="https://x.com/dev_adarsh286" target="_blank" class="hover:text-blue-400"
-        ><i class="fab fa-twitter"></i
-      ></a>
+      <a href="https://www.linkedin.com/in/adarshsharma-9122as/" target="_blank" class="hover:text-pink-400"><i
+          class="fab fa-linkedin"></i></a>
+      <a href="https://x.com/dev_adarsh286" target="_blank" class="hover:text-blue-400"><i
+          class="fab fa-twitter"></i></a>
     </div>
   </div>
 
   <!-- Back to Top -->
   <div class="absolute right-5 bottom-5">
-    <a
-      href="#top"
-      class="bg-white dark:bg-gray-200 text-black px-3 py-1 rounded-full shadow hover:bg-gray-300 dark:hover:bg-gray-400 text-xs transition"
-    >
+    <a href="#top"
+      class="bg-white dark:bg-gray-200 text-black px-3 py-1 rounded-full shadow hover:bg-gray-300 dark:hover:bg-gray-400 text-xs transition">
       ↑ Back to Top
     </a>
   </div>
@@ -68,313 +47,305 @@
 </footer>
 
 <!-- Font Awesome -->
-<script
-  src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"
-  crossorigin="anonymous"
-></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous"></script>
 
 <!-- 💬 Chatbot Toggle Button -->
-<% if (user && user.role !== 'admin') { %>
+<% if (user && user.role !=='admin' ) { %>
   <!-- 💬 Chatbot Toggle Button -->
-  <div id="chat-toggle" class="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-3 rounded-full shadow-lg cursor-pointer">
+  <div id="chat-toggle"
+    class="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-3 rounded-full shadow-lg cursor-pointer">
     💬
   </div>
-<% } %>
+  <% } %>
 
 
-<!-- 🧠 AI Chatbot Widget -->
-<div
-  id="chatbox"
-  class="hidden fixed bottom-20 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50"
->
-  <div class="bg-blue-600 text-white p-3 flex justify-between items-center">
-  <span>🤖 Bagify Assistant</span>
-  <div class="flex gap-2">
-    <button id="clear-chat-btn" class="text-white hover:text-gray-200">🧹</button>
-    <button id="chat-close" class="text-white">✖</button>
-  </div>
-</div>
+    <!-- 🧠 AI Chatbot Widget -->
+    <div id="chatbox"
+      class="hidden fixed bottom-20 right-6 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50">
+      <div class="bg-blue-600 text-white p-3 flex justify-between items-center">
+        <span>🤖 Bagify Assistant</span>
+        <div class="flex gap-2">
+          <button id="clear-chat-btn" class="text-white hover:text-gray-200">🧹</button>
+          <button id="chat-close" class="text-white">✖</button>
+        </div>
+      </div>
 
-  <div
-    id="chat-messages"
-    class="p-3 max-h-96 overflow-y-auto text-sm space-y-2 text-gray-800 dark:text-white"
-  >
-    <div>👋 Hi! I can help with orders, tracking, and more.</div>
-  </div>
-  <div
-    class="flex items-center gap-2 p-2 border-t border-gray-300 dark:border-gray-700"
-  >
-  <label for="chatFile" class="cursor-pointer p-2 bg-gray-200 dark:bg-gray-600 rounded-full hover:bg-gray-300 dark:hover:bg-gray-500">
-    📎
-  </label>
-  <input type="file" id="chatFile" class="hidden" accept="image/*,.pdf,.doc,.docx" />
-  
-    <textarea
-      id="chatInput"
-      class="flex-grow p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
-      rows="1"
-      placeholder="Type your message..."
-    ></textarea>
+      <div id="chat-messages" class="p-3 max-h-96 overflow-y-auto text-sm space-y-2 text-gray-800 dark:text-white">
+        <div>👋 Hi! I can help with orders, tracking, and more.</div>
+      </div>
+      <div class="flex items-center gap-2 p-2 border-t border-gray-300 dark:border-gray-700">
+        <label for="chatFile"
+          class="cursor-pointer p-2 bg-gray-200 dark:bg-gray-600 rounded-full hover:bg-gray-300 dark:hover:bg-gray-500">
+          📎
+        </label>
+        <input type="file" id="chatFile" class="hidden" accept="image/*,.pdf,.doc,.docx" />
 
-    <button
-      id="sendButton"
-      class="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
-    >
-      <i class="fas fa-paper-plane"></i>
-    </button>
-  </div>
-</div>
+        <textarea id="chatInput"
+          class="flex-grow p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
+          rows="1" placeholder="Type your message..."></textarea>
 
-<script>
-  console.log("📌 Chatbot script loaded.");
+        <button id="sendButton"
+          class="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const chatToggle = document.getElementById("chat-toggle");
-    const chatBox = document.getElementById("chatbox");
-    const chatInput = document.getElementById("chatInput");
-    const chatMessages = document.getElementById("chat-messages");
-    const chatClose = document.getElementById("chat-close");
-    const chatSend = document.getElementById("sendButton");
-    const fileInput = document.getElementById("chatFile");
+    <script>
+      console.log("📌 Chatbot script loaded.");
 
-    if (!chatToggle || !chatBox || !chatInput || !chatMessages) {
-      console.error("❌ Chatbot HTML elements missing.");
-      return;
-    }
+      document.addEventListener("DOMContentLoaded", () => {
+        const chatToggle = document.getElementById("chat-toggle");
+        const chatBox = document.getElementById("chatbox");
+        const chatInput = document.getElementById("chatInput");
+        const chatMessages = document.getElementById("chat-messages");
+        const chatClose = document.getElementById("chat-close");
+        const chatSend = document.getElementById("sendButton");
+        const fileInput = document.getElementById("chatFile");
 
-    const userId = "<%= user ? user._id : '' %>";
-
-    function loadHistory(userId) {
-      try {
-        const key = `chatHistory_${userId}`;
-        const chats = JSON.parse(localStorage.getItem(key) || "[]");
-        chatMessages.innerHTML = "";
-        chats.forEach((c) => appendMessage(c.sender, c.text));
-      } catch (e) {
-        console.warn("⚠️ Could not load chat history", e);
-      }
-    }
-
-    function saveMessage(sender, text) {
-      try {
-        const key = `chatHistory_${userId}`;
-        const chats = JSON.parse(localStorage.getItem(key) || "[]");
-        chats.push({ sender, text, at: new Date().toISOString() });
-        localStorage.setItem(key, JSON.stringify(chats));
-      } catch (e) {
-        console.warn("⚠️ Could not save chat", e);
-      }
-    }
-
-    function appendMessage(senderLabel, text) {
-      const div = document.createElement("div");
-      div.className = "chat-line";
-      div.innerHTML = `<strong>${senderLabel}:</strong> ${text}`;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      return div;
-    }
-
-    async function sendMessage(text) {
-      if (!text) {
-        text = chatInput.value.trim();
-        if (!text) return;
-        chatInput.value = "";
-      }
-
-      appendMessage("You", text);
-      saveMessage("You", text);
-
-      const typingEl = appendMessage("🤖 Bot", "Typing...");
-
-      try {
-        const res = await fetch("/chatbot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text, userId }),
-        });
-
-        const json = await res.json();
-
-        if (!res.ok) {
-          const errMsg = json?.error || `Server ${res.status}`;
-          typingEl.innerHTML = `<strong>🤖 Bot:</strong> ❌ ${errMsg}`;
-          saveMessage("Bot", `ERROR: ${errMsg}`);
+        if (!chatToggle || !chatBox || !chatInput || !chatMessages) {
+          console.error("❌ Chatbot HTML elements missing.");
           return;
         }
 
-        typingEl.innerHTML = `<strong>🤖 Bot:</strong> ${json.reply}`;
-        saveMessage("Bot", json.reply);
-      } catch (err) {
-        console.error("❌ Fetch error:", err);
-        typingEl.innerHTML = `<strong>🤖 Bot:</strong> ❌ GPT API Error.`;
-        saveMessage("Bot", "GPT API Error.");
-      }
-    }
+        const userId = "<%= user ? user._id : '' %>";
 
-    async function loadGreeting() {
-      try {
-        const res = await fetch("/chatbot/greeting");
-        const data = await res.json();
+        function loadHistory(userId) {
+          try {
+            const key = `chatHistory_${userId}`;
+            const chats = JSON.parse(localStorage.getItem(key) || "[]");
+            chatMessages.innerHTML = "";
+            chats.forEach((c) => appendMessage(c.sender, c.text));
+          } catch (e) {
+            console.warn("⚠️ Could not load chat history", e);
+          }
+        }
 
-        // Show greeting message
-        appendMessage("🤖 Bot", data.message);
+        function saveMessage(sender, text) {
+          try {
+            const key = `chatHistory_${userId}`;
+            const chats = JSON.parse(localStorage.getItem(key) || "[]");
+            chats.push({ sender, text, at: new Date().toISOString() });
+            localStorage.setItem(key, JSON.stringify(chats));
+          } catch (e) {
+            console.warn("⚠️ Could not save chat", e);
+          }
+        }
 
-        // Render cards if available
-        if (Array.isArray(data.cards) && data.cards.length > 0) {
-          const cardsContainer = document.createElement("div");
-          cardsContainer.className = "grid grid-cols-1 gap-3 mt-3";
+        function appendMessage(senderLabel, text) {
+          const div = document.createElement("div");
+          div.className = "chat-line";
+          div.innerHTML = `<strong>${senderLabel}:</strong> ${text}`;
+          chatMessages.appendChild(div);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+          return div;
+        }
 
-          data.cards.forEach((cardData) => {
-            const card = document.createElement("div");
-            card.className =
-              "cursor-pointer p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition hover:scale-[1.02] flex items-center gap-3";
+        async function sendMessage(text) {
+          if (!text) {
+            text = chatInput.value.trim();
+            if (!text) return;
+            chatInput.value = "";
+          }
 
-            const iconSpan = document.createElement("span");
-            iconSpan.className = "text-2xl";
-            iconSpan.textContent = cardData.label.charAt(0); // first emoji from label
+          appendMessage("You", text);
+          saveMessage("You", text);
 
-            const textSpan = document.createElement("span");
-            textSpan.className = "font-medium text-gray-800 dark:text-gray-200";
-            textSpan.textContent = cardData.label;
+          const typingEl = appendMessage("🤖 Bot", "Typing...");
 
-            card.appendChild(iconSpan);
-            card.appendChild(textSpan);
-
-            card.addEventListener("click", () => {
-              cardsContainer.remove();
-              sendMessage(cardData.query);
+          try {
+            const res = await fetch("/chatbot", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ message: text, userId }),
             });
 
-            cardsContainer.appendChild(card);
-          });
+            const json = await res.json();
 
-          chatMessages.appendChild(cardsContainer);
+            if (!res.ok) {
+              const errMsg = json?.error || `Server ${res.status}`;
+              typingEl.innerHTML = `<strong>🤖 Bot:</strong> ❌ ${errMsg}`;
+              saveMessage("Bot", `ERROR: ${errMsg}`);
+              return;
+            }
+
+            typingEl.innerHTML = `<strong>🤖 Bot:</strong> ${json.reply}`;
+            saveMessage("Bot", json.reply);
+          } catch (err) {
+            console.error("❌ Fetch error:", err);
+            typingEl.innerHTML = `<strong>🤖 Bot:</strong> ❌ GPT API Error.`;
+            saveMessage("Bot", "GPT API Error.");
+          }
         }
-      } catch (err) {
-        console.error("❌ Failed to load greeting", err);
-      }
-    }
 
-    async function loadQueryOptions() {
-      try {
-        const res = await fetch("/chatbot/options");
-        const options = await res.json();
+        async function loadGreeting() {
+          try {
+            const res = await fetch("/chatbot/greeting");
+            const data = await res.json();
 
-        const optionsContainer = document.createElement("div");
-        optionsContainer.className = "grid grid-cols-1 gap-3 mt-3";
+            // Show greeting message
+            appendMessage("🤖 Bot", data.message);
 
-        options.forEach((opt) => {
-          const card = document.createElement("div");
-          card.className =
-            "cursor-pointer p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition hover:scale-[1.02] flex items-center gap-3";
+            // Render cards if available
+            if (Array.isArray(data.cards) && data.cards.length > 0) {
+              const cardsContainer = document.createElement("div");
+              cardsContainer.className = "grid grid-cols-1 gap-3 mt-3";
 
-          // Icon (randomized or based on keyword)
-          const iconSpan = document.createElement("span");
-          iconSpan.className = "text-2xl";
-          iconSpan.textContent = opt.includes("order")
-            ? "📦"
-            : opt.includes("discount")
-            ? "💸"
-            : opt.includes("recommend")
-            ? "✨"
-            : opt.includes("cancel")
-            ? "❌"
-            : "🛍️";
+              data.cards.forEach((cardData) => {
+                const card = document.createElement("div");
+                card.className =
+                  "cursor-pointer p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition hover:scale-[1.02] flex items-center gap-3";
 
-          const textSpan = document.createElement("span");
-          textSpan.className = "font-medium text-gray-800 dark:text-gray-200";
-          textSpan.textContent = opt;
+                const iconSpan = document.createElement("span");
+                iconSpan.className = "text-2xl";
+                iconSpan.textContent = cardData.label.charAt(0); // first emoji from label
 
-          card.appendChild(iconSpan);
-          card.appendChild(textSpan);
+                const textSpan = document.createElement("span");
+                textSpan.className = "font-medium text-gray-800 dark:text-gray-200";
+                textSpan.textContent = cardData.label;
 
-          card.addEventListener("click", () => {
-            optionsContainer.remove();
-            sendMessage(opt);
-          });
+                card.appendChild(iconSpan);
+                card.appendChild(textSpan);
 
-          optionsContainer.appendChild(card);
+                card.addEventListener("click", () => {
+                  cardsContainer.remove();
+                  sendMessage(cardData.query);
+                });
+
+                cardsContainer.appendChild(card);
+              });
+
+              chatMessages.appendChild(cardsContainer);
+            }
+          } catch (err) {
+            console.error("❌ Failed to load greeting", err);
+          }
+        }
+
+        async function loadQueryOptions() {
+          try {
+            const res = await fetch("/chatbot/options");
+            const options = await res.json();
+
+            const optionsContainer = document.createElement("div");
+            optionsContainer.className = "grid grid-cols-1 gap-3 mt-3";
+
+            options.forEach((opt) => {
+              const card = document.createElement("div");
+              card.className =
+                "cursor-pointer p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition hover:scale-[1.02] flex items-center gap-3";
+
+              // Icon (randomized or based on keyword)
+              const iconSpan = document.createElement("span");
+              iconSpan.className = "text-2xl";
+              iconSpan.textContent = opt.includes("order")
+                ? "📦"
+                : opt.includes("discount")
+                  ? "💸"
+                  : opt.includes("recommend")
+                    ? "✨"
+                    : opt.includes("cancel")
+                      ? "❌"
+                      : "🛍️";
+
+              const textSpan = document.createElement("span");
+              textSpan.className = "font-medium text-gray-800 dark:text-gray-200";
+              textSpan.textContent = opt;
+
+              card.appendChild(iconSpan);
+              card.appendChild(textSpan);
+
+              card.addEventListener("click", () => {
+                optionsContainer.remove();
+                sendMessage(opt);
+              });
+
+              optionsContainer.appendChild(card);
+            });
+
+            chatMessages.appendChild(optionsContainer);
+          } catch (err) {
+            console.error("❌ Failed to load options", err);
+          }
+        }
+
+        fileInput?.addEventListener("change", async () => {
+          if (!fileInput.files.length) return;
+
+          const file = fileInput.files[0];
+          appendMessage("You", `📤 Uploading: ${file.name}...`);
+
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("userId", userId);
+
+          try {
+            const res = await fetch("/chatbot/upload", {
+              method: "POST",
+              body: formData
+            });
+
+            const json = await res.json();
+
+            if (!res.ok) {
+              appendMessage("🤖 Bot", `❌ Upload failed: ${json.error || res.statusText}`);
+              return;
+            }
+
+            if (json.fileType.startsWith("image/")) {
+              appendMessage("You", `<img src="${json.url}" class="max-w-full rounded-lg" />`);
+            } else {
+              appendMessage("You", `📄 <a href="${json.url}" target="_blank">${file.name}</a>`);
+            }
+
+            saveMessage("You", file.type.startsWith("image/")
+              ? `<img src="${json.url}" class="max-w-full rounded-lg" />`
+              : `📄 <a href="${json.url}" target="_blank">${file.name}</a>`
+            );
+
+
+            // Let bot process the uploaded file
+            sendMessage(`I have uploaded a file: ${json.url}`);
+
+          } catch (err) {
+            console.error("Upload error:", err);
+            appendMessage("🤖 Bot", "❌ File upload failed.");
+          } finally {
+            fileInput.value = "";
+          }
         });
 
-        chatMessages.appendChild(optionsContainer);
-      } catch (err) {
-        console.error("❌ Failed to load options", err);
-      }
-    }
+        chatToggle.addEventListener("click", () => {
+          chatBox.classList.toggle("hidden");
+          if (!chatBox.classList.contains("hidden")) {
+            loadHistory(userId);
+            if (chatMessages.children.length === 0) {
+              loadGreeting();
+            }
+          }
+        });
 
-    fileInput?.addEventListener("change", async () => {
-    if (!fileInput.files.length) return;
+        chatClose?.addEventListener("click", () => {
+          chatBox.classList.add("hidden");
+        });
 
-    const file = fileInput.files[0];
-    appendMessage("You", `📤 Uploading: ${file.name}...`);
+        chatInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("userId", userId);
+        chatSend?.addEventListener("click", () => sendMessage());
 
-    try {
-      const res = await fetch("/chatbot/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        appendMessage("🤖 Bot", `❌ Upload failed: ${json.error || res.statusText}`);
-        return;
-      }
-
-      if (json.fileType.startsWith("image/")) {
-        appendMessage("You", `<img src="${json.url}" class="max-w-full rounded-lg" />`);
-      } else {
-        appendMessage("You", `📄 <a href="${json.url}" target="_blank">${file.name}</a>`);
-      }
-
-      saveMessage("You", `[Uploaded file](${json.url})`);
-
-      // Let bot process the uploaded file
-      sendMessage(`I have uploaded a file: ${json.url}`);
-
-    } catch (err) {
-      console.error("Upload error:", err);
-      appendMessage("🤖 Bot", "❌ File upload failed.");
-    } finally {
-      fileInput.value = "";
-    }
-  });
-
-    chatToggle.addEventListener("click", () => {
-      chatBox.classList.toggle("hidden");
-      if (!chatBox.classList.contains("hidden")) {
-        loadHistory(userId);
-        if (chatMessages.children.length === 0) {
+        const clearChatBtn = document.getElementById("clear-chat-btn");
+        clearChatBtn?.addEventListener("click", () => {
+          chatMessages.innerHTML = "";
+          localStorage.removeItem(`chatHistory_${userId}`);
+          appendMessage("🤖 Bot", "🧹 Chat cleared. How can I help you now?");
           loadGreeting();
-        }
-      }
-    });
+        });
 
-    chatClose?.addEventListener("click", () => {
-      chatBox.classList.add("hidden");
-    });
-
-    chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
-
-    chatSend?.addEventListener("click", () => sendMessage());
-
-    const clearChatBtn = document.getElementById("clear-chat-btn");
-    clearChatBtn?.addEventListener("click", () => {
-      chatMessages.innerHTML = "";
-      localStorage.removeItem(`chatHistory_${userId}`);
-      appendMessage("🤖 Bot", "🧹 Chat cleared. How can I help you now?");
-    });
-
-    loadHistory();
-  });
-</script>
+        loadHistory(userId);
+      });
+    </script>

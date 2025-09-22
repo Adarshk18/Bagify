@@ -52,7 +52,7 @@ function hammingDistance(str1, str2) {
 router.post("/upload", upload.single("file"), async (req, res) => {
   // NOTE: requires getImageHash(filePath) and hammingDistance(str1, str2) already defined
   const cleanupFile = (p) => {
-    try { if (p && fs.existsSync(p)) fs.unlink(p, () => {}); } catch (e) {}
+    try { if (p && fs.existsSync(p)) fs.unlink(p, () => { }); } catch (e) { }
   };
 
   try {
@@ -149,6 +149,8 @@ router.post("/upload", upload.single("file"), async (req, res) => {
 
     return res.json({
       success: true,
+      fileType: mimetype,
+      url: "/uploads/" + path.basename(req.file.path),
       message: `Found ${topMatches.length} matching product(s).`,
       products: topMatches,
     });
@@ -199,7 +201,7 @@ router.post("/", async (req, res) => {
     if (!message) return res.status(400).json({ error: "Message is required" });
     if (!userId) return res.status(400).json({ error: "userId is required" });
 
-     // -----------------------------
+    // -----------------------------
     // 🟢 Direct Order Cancellation
     // -----------------------------
     const cancelRegex = /\bcancel\b.*(order)?\s*([a-f\d]{24})?/i;
