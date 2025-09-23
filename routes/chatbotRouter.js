@@ -377,12 +377,14 @@ Rules:
         throw new Error(data?.error?.message || `OpenAI API Error ${apiResp.status}`);
       }
     } else if (openrouterKey) {
-      const orModel = process.env.OPENROUTER_MODEL || "openai/gpt-3.5-turbo";
+      const orModel = process.env.OPENROUTER_MODEL || "openai/gpt-4.1-mini"; // safer default
       const apiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${openrouterKey}`,
           "Content-Type": "application/json",
+          "HTTP-Referer": process.env.APP_URL || "http://localhost:3000", // REQUIRED
+          "X-Title": "Bagify Chatbot" // optional, but recommended
         },
         body: JSON.stringify({
           model: orModel,
@@ -399,7 +401,8 @@ Rules:
       if (!apiResp.ok) {
         throw new Error(data?.error?.message || `OpenRouter API Error ${apiResp.status}`);
       }
-    } else {
+    }
+    else {
       return res.status(500).json({ error: "No AI provider configured. Please set OPENAI_API_KEY or OPENROUTER_API_KEY." });
     }
 
