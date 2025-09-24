@@ -172,7 +172,7 @@
             typingEl.innerHTML = `<strong>🤖 Bot:</strong> ${json.reply}`;
             saveMessage("Bot", json.reply);
           } catch (err) {
-            console.error("❌ Fetch error:", err);
+            console.error("Chatbot Error:", error.message, error.response?.data);
             typingEl.innerHTML = `<strong>🤖 Bot:</strong> ❌ GPT API Error.`;
             saveMessage("Bot", "GPT API Error.");
           }

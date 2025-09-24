@@ -362,7 +362,7 @@ Rules:
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo",
+         model: "openai/gpt-4o-mini",
           messages: [
             { role: "system", content: systemPrompt },
             ...chatHistoryStore[userId],
@@ -377,15 +377,17 @@ Rules:
         throw new Error(data?.error?.message || `OpenAI API Error ${apiResp.status}`);
       }
     } else if (openrouterKey) {
-      const orModel = process.env.OPENROUTER_MODEL || "openai/gpt-3.5-turbo";
+      // const orModel = process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
       const apiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${openrouterKey}`,
           "Content-Type": "application/json",
+          "HTTP-Referer": process.env.BASE_URL || "http://localhost:3000",
+          "X-Title": "Bagify Assistant"
         },
         body: JSON.stringify({
-          model: orModel,
+          model: "openai/gpt-4o-mini",
           messages: [
             { role: "system", content: systemPrompt },
             ...chatHistoryStore[userId],
