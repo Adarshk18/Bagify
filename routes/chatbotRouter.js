@@ -362,7 +362,7 @@ Rules:
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-         model: "openai/gpt-4o-mini",
+          model: "gpt-3.5-turbo",
           messages: [
             { role: "system", content: systemPrompt },
             ...chatHistoryStore[userId],
@@ -372,34 +372,63 @@ Rules:
         }),
       });
 
-      data = await apiResp.json();
+      const text = await apiResp.text();   // get raw text
+      console.log("🔍 OpenAI raw response:", text);  // ✅ log it
+      data = JSON.parse(text);
+
+      // data = await apiResp.json();
       if (!apiResp.ok) {
         throw new Error(data?.error?.message || `OpenAI API Error ${apiResp.status}`);
       }
     } else if (openrouterKey) {
-      // const orModel = process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
-      const apiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${openrouterKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": process.env.BASE_URL || "http://localhost:3000",
-          "X-Title": "Bagify Assistant"
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-4o-mini",
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...chatHistoryStore[userId],
-            { role: "user", content: message },
-          ],
-          temperature: 0.2,
-        }),
-      });
+      try {
+        const apiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${openrouterKey}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": process.env.BASE_URL || "http://localhost:3000",
+            "X-Title": "Bagify Assistant"
+          },
+          body: JSON.stringify({
+            model: process.env.OPENROUTER_MODEL || "openai/gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...chatHistoryStore[userId],
+              { role: "user", content: message },
+            ],
+            temperature: 0.2,
+          }),
+        });
 
-      data = await apiResp.json();
-      if (!apiResp.ok) {
-        throw new Error(data?.error?.message || `OpenRouter API Error ${apiResp.status}`);
+        const text = await apiResp.text();
+        console.log("🔍 OpenRouter raw response:", text);
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (parseErr) {
+          console.error("❌ Failed to parse OpenRouter response:", text);
+          throw new Error(`Failed to parse OpenRouter response: ${text}`);
+        }
+
+        if (!apiResp.ok) {
+          throw new Error(data?.error?.message || `OpenRouter API Error ${apiResp.status}`);
+        }
+
+        const reply = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text;
+        if (!reply) {
+          console.error("❌ OpenRouter returned no reply:", data);
+          throw new Error("No reply from OpenRouter model");
+        }
+
+        chatHistoryStore[userId].push({ role: "assistant", content: reply });
+        if (chatHistoryStore[userId].length > MAX_HISTORY) chatHistoryStore[userId].shift();
+
+        return res.json({ reply });
+      } catch (err) {
+        console.error("💥 OpenRouter Error:", err);
+        return res.status(500).json({ error: err.message });
       }
     } else {
       return res.status(500).json({ error: "No AI provider configured. Please set OPENAI_API_KEY or OPENROUTER_API_KEY." });

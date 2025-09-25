@@ -16,6 +16,7 @@ const { Server } = require("socket.io");
 const MongoStore = require("connect-mongo");
 const adminRouter = require("./routes/adminRouter");
 const config = require("./config/development.json");
+const chatbotRouter = require("./routes/chatbotRouter");
 // const owner = require("./models/owner-model");
 
 const ADMIN_EMAIL = "dev.adarsh286@gmail.com"; // ✅ Only this email allowed
@@ -44,6 +45,7 @@ app.set("io", io);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use("/chatbot", chatbotRouter);
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
