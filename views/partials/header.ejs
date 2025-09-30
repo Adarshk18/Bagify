@@ -6,13 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bagify</title>
 
-  <!-- Tailwind Dark Mode Config -->
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-    };
-  </script>
-
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -21,8 +14,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 
-<body class="bg-white text-black dark:bg-gray-900 dark:text-white transition-colors duration-300">
-  <header class="w-full bg-white dark:bg-gray-800 shadow-sm px-6 py-4 flex items-center justify-between relative z-20">
+<body class="bg-white text-black transition-colors duration-300">
+  <header class="w-full bg-white shadow-sm px-6 py-4 flex items-center justify-between relative z-20">
     <!-- Logo -->
     <a href="/" class="text-2xl font-bold 
            bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 
@@ -34,14 +27,14 @@
 
     <!-- Desktop Nav -->
     <% if (url.startsWith("/admin/login")) { %>
-      <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+      <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700">
         <a href="/users" class="text-blue-500 hover:underline">
           Not an Admin? User Login
         </a>
       </nav>
 
       <% } else if (user && user.role==='admin' ) { %>
-        <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+        <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700">
           <a href="/admin" class="text-purple-600 font-semibold hover:underline">Admin Panel</a>
           <a href="/admin/orders" class="text-purple-600 font-semibold hover:underline">All Orders</a>
           <a href="/admin/dashboard" class="block text-purple-600 font-semibold hover:underline">Admin Dashboard</a>
@@ -49,7 +42,7 @@
         </nav>
 
         <% } else if (user) { %>
-          <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+          <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-gray-700">
             <a href="/shop" class="hover:text-blue-600">Shop</a>
             <a href="/cart" class="hover:text-blue-600">Cart</a>
             <a href="/orders" class="hover:text-blue-600">Orders</a>
@@ -59,14 +52,9 @@
           <% } %>
 
     <div class="flex items-center gap-4">
-      <!-- Theme Toggle -->
-      <button id="themeToggleBtn" class="ml-4 text-xl text-gray-600 dark:text-gray-200">
-        <i id="themeIcon" class="fas fa-moon"></i>
-      </button>
-
       <!-- Mobile Hamburger -->
       <% if (user || url.startsWith("/admin/login")) { %>
-        <button id="menuBtn" class="md:hidden text-2xl text-gray-700 dark:text-gray-300">
+        <button id="menuBtn" class="md:hidden text-2xl text-gray-700">
           <i class="fas fa-bars"></i>
         </button>
       <% } %>
@@ -74,7 +62,7 @@
   </header>
 
   <!-- Mobile Menu -->
-  <div id="mobileMenu" class="hidden md:hidden flex-col bg-white dark:bg-gray-800 shadow-md px-6 py-4 space-y-4">
+  <div id="mobileMenu" class="hidden md:hidden flex-col bg-white shadow-md px-6 py-4 space-y-4">
     <% if (url.startsWith("/admin/login")) { %>
       <a href="/users" class="block text-blue-500 hover:underline">
         Not an Admin? User Login
@@ -95,7 +83,7 @@
 
   <!-- Scripts -->
   <script>
-    // Mobile menu toggle only (dark/light handled in theme.js)
+    // Mobile menu toggle only
     const menuBtn = document.getElementById("menuBtn");
     const mobileMenu = document.getElementById("mobileMenu");
     menuBtn?.addEventListener("click", () => {
