@@ -114,7 +114,7 @@ exports.placeOrder = async (req, res) => {
 
     let finalAddress = null;
 
-    // ✅ Handle address
+    
     if (selectedAddress !== undefined && selectedAddress !== "" && user.addresses[parseInt(selectedAddress)]) {
       const saved = user.addresses[parseInt(selectedAddress)];
       finalAddress = {
