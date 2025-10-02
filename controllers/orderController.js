@@ -155,9 +155,6 @@ exports.placeOrder = async (req, res) => {
         createdAt: new Date()
       };
 
-      console.log("📍 Final Address:", finalAddress);
-
-
       const duplicate = user.addresses.find(addr =>
         addr.name?.toLowerCase() === fullname.trim().toLowerCase() &&
         addr.phone?.trim() === phone.trim() &&
@@ -193,12 +190,14 @@ exports.placeOrder = async (req, res) => {
     }, 0);
 
     // ✅ Coins redemption logic
-    let coinsUsed = 0;
-    if (useCoins && user.coins > 0) {
+    let coinsUsed = req.session.coinDiscount || 0;
+    if (coinsUsed > 0 && user.coins >= coinsUsed) {
       coinsUsed = Math.min(user.coins, Math.floor(totalAmount * 0.1)); // Max 10% discount
       totalAmount -= coinsUsed;
       user.coins -= coinsUsed;
     }
+
+    req.session.coinDiscount = 0;
 
     let newOrder;
 
