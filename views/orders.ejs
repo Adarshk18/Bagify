@@ -76,17 +76,12 @@
     const subtotal = order.products.reduce((sum, i) => sum + (i.snapshot.price * i.quantity), 0) + (order.coinsUsed || 0);
   %>
 
-  <p class="text-gray-600">Subtotal: ₹ <%= subtotal %></p>
+  <p class="text-gray-600">Subtotal: ₹ <%= order.totalAmount + (order.coinsUsed || 0) %></p>
+<% if (order.coinsUsed && order.coinsUsed > 0) { %>
+  <p class="text-gray-600">🎁 Coins Used: -₹ <%= order.coinsUsed %></p>
+<% } %>
+<p class="font-bold text-green-700">Final Total: ₹ <%= order.totalAmount %></p>
 
-  <% if (order.coinsUsed && order.coinsUsed > 0) { %>
-    <p class="text-gray-600">🎁 Coins Used: -₹ <%= order.coinsUsed %></p>
-  <% } %>
-
-  <p class="font-bold text-green-700">Final Total: ₹ <%= order.totalAmount %></p>
-
-  <% if (order.coinsUsed && order.coinsUsed > 0) { %>
-    <p class="text-xs text-gray-500">You saved ₹<%= order.coinsUsed %> by redeeming coins 🎉</p>
-  <% } %>
 
   <% if (order.paymentMethod === "COD") { %>
     <p class="text-xs text-gray-500">You earned ≈ <%= Math.floor(order.totalAmount * 0.05) %> 🪙 on this order</p>

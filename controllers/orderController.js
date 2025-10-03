@@ -126,12 +126,10 @@ exports.placeOrder = async (req, res) => {
         pincode: saved.pincode,
         country: saved.country,
         landmark: saved.landmark,
-        coordinates: saved.coordinates && saved.coordinates.lat && saved.coordinates.lng
-          ? saved.coordinates
-          : {
-            lat: parseFloat(lat) || null,
-            lng: parseFloat(lng) || null
-          }
+        coordinates: saved.coordinates?.lat && saved.coordinates?.lng ? saved.coordinates : {
+          lat: parseFloat(lat) || null,
+          lng: parseFloat(lng) || null
+        }
       };
     } else {
       if (!fullname || !phone || !street || !city || !state || !pincode || !country) {
@@ -166,15 +164,13 @@ exports.placeOrder = async (req, res) => {
         addr.country?.toLowerCase() === country.trim().toLowerCase()
       );
 
-      if (!duplicate) {
-        user.addresses.push(finalAddress);
-      }
+      if (!duplicate) user.addresses.push(finalAddress);
     }
 
-    // ✅ Filter valid cart items
+    // ✅ Valid cart items
     const validCartItems = user.cart.filter(item => item.productId);
 
-    // ✅ Base products
+    // ✅ Base products snapshot
     let products = validCartItems.map(item => ({
       product: item.productId._id,
       quantity: item.quantity,
@@ -186,8 +182,8 @@ exports.placeOrder = async (req, res) => {
       }
     }));
 
-    // ✅ Calculate total
-    let totalAmount = validCartItems.reduce((sum, item) => {
+    // ✅ Calculate subtotal
+    let subtotal = validCartItems.reduce((sum, item) => {
       const price = Math.max(0, (item.productId.price || 0));
       return sum + price * item.quantity;
     }, 0);
@@ -195,32 +191,36 @@ exports.placeOrder = async (req, res) => {
     // ✅ Apply coins
     let coinsUsed = req.session.coinDiscount || 0;
     if (coinsUsed > 0 && user.coins >= coinsUsed) {
-      coinsUsed = Math.min(user.coins, Math.floor(totalAmount * 0.1)); // Max 10%
-      totalAmount -= coinsUsed;
-      user.coins -= coinsUsed;
-
-      // 👇 Distribute discount across products
-      const discountPerProduct = coinsUsed / validCartItems.length;
-      products = products.map(p => {
-        return {
-          ...p,
-          snapshot: {
-            ...p.snapshot,
-            price: Math.max(0, p.snapshot.price - discountPerProduct) // adjusted price
-          }
-        };
-      });
+      // ensure max 10% of subtotal
+      coinsUsed = Math.min(user.coins, Math.floor(subtotal * 0.1));
+    } else {
+      coinsUsed = 0;
     }
 
-    // reset session coinDiscount
+    let finalAmount = subtotal - coinsUsed;
+
+    if (coinsUsed > 0) {
+      user.coins -= coinsUsed;
+
+      // 👇 Adjust snapshot prices proportionally (optional, ensures UI matches)
+      const discountPerProduct = coinsUsed / validCartItems.length;
+      products = products.map(p => ({
+        ...p,
+        snapshot: {
+          ...p.snapshot,
+          price: Math.max(0, p.snapshot.price - discountPerProduct)
+        }
+      }));
+    }
+
+    // reset session
     req.session.coinDiscount = 0;
 
+    // ✅ Create Order
     let newOrder;
-
-    // ✅ If ONLINE
     if (paymentMode === "online") {
       const options = {
-        amount: totalAmount * 100,
+        amount: finalAmount * 100,
         currency: "INR",
         receipt: `order_rcpt_${Date.now()}`,
       };
@@ -230,12 +230,13 @@ exports.placeOrder = async (req, res) => {
       newOrder = await orderModel.create({
         user: user._id,
         products,
-        totalAmount,
+        subtotal,             // 🔥 add subtotal
+        totalAmount: finalAmount,
+        coinsUsed,
         address: finalAddress,
         status: "Pending",
         paymentMethod: "Razorpay",
         razorpayOrderId: razorpayOrder.id,
-        coinsUsed
       });
 
       user.orders.push(newOrder._id);
@@ -252,7 +253,7 @@ exports.placeOrder = async (req, res) => {
       return res.render("payment", {
         razorpayKey: process.env.RAZORPAY_KEY_ID,
         orderId: razorpayOrder.id,
-        amount: totalAmount,
+        amount: finalAmount,
         user,
         newOrder
       });
@@ -262,26 +263,30 @@ exports.placeOrder = async (req, res) => {
     newOrder = await orderModel.create({
       user: user._id,
       products,
-      totalAmount,
+      subtotal,             // 🔥 add subtotal
+      totalAmount: finalAmount,
+      coinsUsed,
       address: finalAddress,
       status: "Pending",
       paymentMethod: "COD",
-      coinsUsed
     });
 
     user.orders.push(newOrder._id);
 
-    // ✅ Reward coins (5%)
-    const rewardCoins = Math.floor(totalAmount * 0.05);
+    // ✅ Reward coins (5% of final amount)
+    const rewardCoins = Math.floor(finalAmount * 0.05);
     user.coins += rewardCoins;
 
-    // ✅ Clear cart and save
+    // ✅ Clear cart
     user.cart = [];
     await user.save();
 
     await sendOrderStatusEmail(user, newOrder, "Pending");
 
-    req.flash("success", `✅ Order placed! You earned ${rewardCoins} coins${coinsUsed > 0 ? ` and used ${coinsUsed} coins` : ""}.`);
+    req.flash(
+      "success",
+      `✅ Order placed! You earned ${rewardCoins} coins${coinsUsed > 0 ? ` and used ${coinsUsed} coins` : ""}.`
+    );
     res.redirect("/orders");
 
   } catch (err) {
@@ -290,6 +295,7 @@ exports.placeOrder = async (req, res) => {
     res.redirect("/orders/checkout");
   }
 };
+
 
 
 // ==========================

@@ -55,6 +55,12 @@ const orderSchema = mongoose.Schema(
       required: true,
     },
 
+    coinsUsed: {
+      type: Number,
+      default: 0
+    },
+
+
     // ✅ Order lifecycle statuses
     status: {
       type: String,
