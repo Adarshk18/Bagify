@@ -109,12 +109,12 @@ exports.placeOrder = async (req, res) => {
     const {
       fullname, phone, street, city, state,
       pincode, country, landmark, lat, lng,
-      selectedAddress, paymentMode, useCoins
+      selectedAddress, paymentMode
     } = req.body;
 
     let finalAddress = null;
 
-    
+    // ✅ Handle saved vs new address
     if (selectedAddress !== undefined && selectedAddress !== "" && user.addresses[parseInt(selectedAddress)]) {
       const saved = user.addresses[parseInt(selectedAddress)];
       finalAddress = {
@@ -155,6 +155,7 @@ exports.placeOrder = async (req, res) => {
         createdAt: new Date()
       };
 
+      // ✅ Avoid duplicate addresses
       const duplicate = user.addresses.find(addr =>
         addr.name?.toLowerCase() === fullname.trim().toLowerCase() &&
         addr.phone?.trim() === phone.trim() &&
@@ -173,7 +174,8 @@ exports.placeOrder = async (req, res) => {
     // ✅ Filter valid cart items
     const validCartItems = user.cart.filter(item => item.productId);
 
-    const products = validCartItems.map(item => ({
+    // ✅ Base products
+    let products = validCartItems.map(item => ({
       product: item.productId._id,
       quantity: item.quantity,
       snapshot: {
@@ -184,24 +186,38 @@ exports.placeOrder = async (req, res) => {
       }
     }));
 
+    // ✅ Calculate total
     let totalAmount = validCartItems.reduce((sum, item) => {
       const price = Math.max(0, (item.productId.price || 0));
       return sum + price * item.quantity;
     }, 0);
 
-    // ✅ Coins redemption logic
+    // ✅ Apply coins
     let coinsUsed = req.session.coinDiscount || 0;
     if (coinsUsed > 0 && user.coins >= coinsUsed) {
-      coinsUsed = Math.min(user.coins, Math.floor(totalAmount * 0.1)); // Max 10% discount
+      coinsUsed = Math.min(user.coins, Math.floor(totalAmount * 0.1)); // Max 10%
       totalAmount -= coinsUsed;
       user.coins -= coinsUsed;
+
+      // 👇 Distribute discount across products
+      const discountPerProduct = coinsUsed / validCartItems.length;
+      products = products.map(p => {
+        return {
+          ...p,
+          snapshot: {
+            ...p.snapshot,
+            price: Math.max(0, p.snapshot.price - discountPerProduct) // adjusted price
+          }
+        };
+      });
     }
 
+    // reset session coinDiscount
     req.session.coinDiscount = 0;
 
     let newOrder;
 
-    // If payment is ONLINE
+    // ✅ If ONLINE
     if (paymentMode === "online") {
       const options = {
         amount: totalAmount * 100,
@@ -216,7 +232,7 @@ exports.placeOrder = async (req, res) => {
         products,
         totalAmount,
         address: finalAddress,
-        status: "Pending", // 🔄 fixed (no "Pending Payment")
+        status: "Pending",
         paymentMethod: "Razorpay",
         razorpayOrderId: razorpayOrder.id,
         coinsUsed
@@ -231,9 +247,6 @@ exports.placeOrder = async (req, res) => {
         status: "Pending",
       });
 
-
-
-      // ✅ Send email
       await sendOrderStatusEmail(user, newOrder, "Pending");
 
       return res.render("payment", {
@@ -245,7 +258,7 @@ exports.placeOrder = async (req, res) => {
       });
     }
 
-    // ✅ COD Order
+    // ✅ COD
     newOrder = await orderModel.create({
       user: user._id,
       products,
@@ -258,7 +271,7 @@ exports.placeOrder = async (req, res) => {
 
     user.orders.push(newOrder._id);
 
-    // ✅ Reward coins (5% of total order value)
+    // ✅ Reward coins (5%)
     const rewardCoins = Math.floor(totalAmount * 0.05);
     user.coins += rewardCoins;
 
@@ -266,7 +279,6 @@ exports.placeOrder = async (req, res) => {
     user.cart = [];
     await user.save();
 
-    // ✅ Send email
     await sendOrderStatusEmail(user, newOrder, "Pending");
 
     req.flash("success", `✅ Order placed! You earned ${rewardCoins} coins${coinsUsed > 0 ? ` and used ${coinsUsed} coins` : ""}.`);
@@ -278,6 +290,7 @@ exports.placeOrder = async (req, res) => {
     res.redirect("/orders/checkout");
   }
 };
+
 
 // ==========================
 // View Orders
