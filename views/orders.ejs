@@ -76,7 +76,7 @@
     const subtotal = order.products.reduce((sum, i) => sum + (i.snapshot.price * i.quantity), 0) + (order.coinsUsed || 0);
   %>
 
-  <p class="text-gray-600">Subtotal: ₹ <%= order.totalAmount + (order.coinsUsed || 0) %></p>
+  
 <% if (order.coinsUsed && order.coinsUsed > 0) { %>
   <p class="text-gray-600">🎁 Coins Used: -₹ <%= order.coinsUsed %></p>
 <% } %>
