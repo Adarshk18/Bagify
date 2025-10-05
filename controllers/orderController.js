@@ -109,7 +109,8 @@ exports.placeOrder = async (req, res) => {
     const {
       fullname, phone, street, city, state,
       pincode, country, landmark, lat, lng,
-      selectedAddress, paymentMode
+      selectedAddress, paymentMode,
+      useCoins, coinsUsed, discountedTotal
     } = req.body;
 
     let finalAddress = null;
@@ -188,22 +189,19 @@ exports.placeOrder = async (req, res) => {
       return sum + price * item.quantity;
     }, 0);
 
-    // ✅ Apply coins
-    let coinsUsed = req.session.coinDiscount || 0;
-    if (coinsUsed > 0 && user.coins >= coinsUsed) {
-      // ensure max 10% of subtotal
-      coinsUsed = Math.min(user.coins, Math.floor(subtotal * 0.1));
-    } else {
-      coinsUsed = 0;
-    }
+    // ✅ Apply coins (from frontend)
+    let coinsToUse = 0;
+    let finalAmount = subtotal;
 
-    let finalAmount = subtotal - coinsUsed;
+    if (useCoins === "true" && coinsUsed && discountedTotal) {
+      coinsToUse = Math.min(Number(coinsUsed), Math.floor(subtotal * 0.1)); // enforce 10% rule
+      finalAmount = Math.max(0, Number(discountedTotal));
 
-    if (coinsUsed > 0) {
-      user.coins -= coinsUsed;
+      // deduct coins from user
+      user.coins = Math.max(0, user.coins - coinsToUse);
 
-      // 👇 Adjust snapshot prices proportionally (optional, ensures UI matches)
-      const discountPerProduct = coinsUsed / validCartItems.length;
+      // 👇 optional: adjust snapshot prices proportionally
+      const discountPerProduct = coinsToUse / validCartItems.length;
       products = products.map(p => ({
         ...p,
         snapshot: {
@@ -213,12 +211,9 @@ exports.placeOrder = async (req, res) => {
       }));
     }
 
-    // reset session
-    req.session.coinDiscount = 0;
-
     // ✅ Create Order
     let newOrder;
-    if (paymentMode === "online") {
+    if (paymentMode === "online" || paymentMode === "razorpay") {
       const options = {
         amount: finalAmount * 100,
         currency: "INR",
@@ -230,9 +225,9 @@ exports.placeOrder = async (req, res) => {
       newOrder = await orderModel.create({
         user: user._id,
         products,
-        subtotal,             // 🔥 add subtotal
+        subtotal,
         totalAmount: finalAmount,
-        coinsUsed,
+        coinsUsed: coinsToUse,
         address: finalAddress,
         status: "Pending",
         paymentMethod: "Razorpay",
@@ -263,9 +258,9 @@ exports.placeOrder = async (req, res) => {
     newOrder = await orderModel.create({
       user: user._id,
       products,
-      subtotal,             // 🔥 add subtotal
+      subtotal,
       totalAmount: finalAmount,
-      coinsUsed,
+      coinsUsed: coinsToUse,
       address: finalAddress,
       status: "Pending",
       paymentMethod: "COD",
@@ -285,7 +280,7 @@ exports.placeOrder = async (req, res) => {
 
     req.flash(
       "success",
-      `✅ Order placed! You earned ${rewardCoins} coins${coinsUsed > 0 ? ` and used ${coinsUsed} coins` : ""}.`
+      `✅ Order placed! You earned ${rewardCoins} coins${coinsToUse > 0 ? ` and used ${coinsToUse} coins` : ""}.`
     );
     res.redirect("/orders");
 
@@ -295,6 +290,7 @@ exports.placeOrder = async (req, res) => {
     res.redirect("/orders/checkout");
   }
 };
+
 
 
 

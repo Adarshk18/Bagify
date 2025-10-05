@@ -80,6 +80,8 @@
             <div class="flex flex-wrap gap-4">
               <form id="checkoutForm" action="/orders/checkout" method="GET" class="inline">
                 <input type="hidden" name="useCoins" id="hiddenUseCoins" value="false" />
+                <input type="hidden" name="coinsUsed" id="coinsUsed" value="0" />
+                <input type="hidden" name="discountedTotal" id="discountedTotal" value="<%= total %>" />
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
                   ✅ Place Order (COD)
                 </button>
@@ -144,10 +146,16 @@
           discountInfo.textContent = `✅ Applied ${discount} coins. You saved ₹${discount}.`;
           discountInfo.classList.remove("hidden");
           hiddenUseCoins.value = "true";
+
+          document.getElementById("coinsUsed").value = discount;
+          document.getElementById("discountedTotal").value = newTotal;
         } else {
           totalEl.textContent = baseTotal;
           discountInfo.classList.add("hidden");
           hiddenUseCoins.value = "false";
+
+          document.getElementById("coinsUsed").value = 0;
+          document.getElementById("discountedTotal").value = baseTotal;
         }
       });
     });
