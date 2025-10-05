@@ -26,7 +26,7 @@
 
                   <% if (order.paymentMethod) { %>
                     <p class="text-xs text-gray-600">
-                      💳 Payment Mode: <%= order.paymentMethod %>
+                      💳 Payment Mode: <%= order.paymentMethod === 'Razorpay' ? 'Online Payment' : order.paymentMethod %>
                     </p>
                     <% } %>
 
